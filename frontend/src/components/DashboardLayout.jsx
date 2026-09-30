@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import Brand from './Brand';
 import { useAuth } from '../context/AuthContext';
 import { statutLabel } from '../utils/statuts';
 
@@ -14,10 +15,7 @@ export default function DashboardLayout({ title, subtitle, children }) {
   return (
     <div className="dash">
       <header className="dash-header">
-        <div className="brand">
-          <span className="brand-mark">O</span>
-          <span className="brand-name">ORTALOG</span>
-        </div>
+        <Brand />
         <div className="dash-user">
           <span className="dash-username">{user?.name}</span>
           <button type="button" className="btn btn-ghost btn-sm" onClick={handleLogout}>

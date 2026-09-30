@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BRAND } from '../../config/brand';
 import { Navigate } from 'react-router-dom';
 import { Boxes, CheckCircle, Truck, Undo2, Send, Hand, Route, TrendingUp, TrendingDown } from 'lucide-react';
 import api from '../../api/client';
@@ -37,7 +38,7 @@ export default function Accueil() {
     <>
       <div className="welcome-banner welcome-compact">
         <h1>☀️ Bonjour, {user?.name} !</h1>
-        <p>Bienvenue sur votre tableau de bord ORTALOG.</p>
+        <p>Bienvenue sur votre tableau de bord {BRAND.name}.</p>
       </div>
 
       {error && <div className="form-error">{error}</div>}
@@ -48,7 +49,7 @@ export default function Accueil() {
           <DateRangeSelect value={range} onChange={setRange} />
         </div>
         <div className="stats-grid stats-grid-accueil">
-          <StatIconCard icon={Boxes} label="Total colis" value={formatNombre(c?.total_colis)} color="#1c428a" bg="rgba(28, 66, 138, 0.08)" />
+          <StatIconCard icon={Boxes} label="Total colis" value={formatNombre(c?.total_colis)} color={BRAND.colorPrimary} bg="rgba(216, 6, 19, 0.08)" />
           <StatIconCard icon={CheckCircle} label="Livrés" value={formatNombre(c?.livres)} color="#28a745" bg="rgba(40, 167, 69, 0.08)" />
           <StatIconCard icon={Truck} label="En cours" value={formatNombre(c?.en_cours)} color="#17a2b8" bg="rgba(23, 162, 184, 0.08)" />
           <StatIconCard icon={Undo2} label="Retournés" value={formatNombre(c?.retournes)} color="#dc3545" bg="rgba(220, 53, 69, 0.08)" />

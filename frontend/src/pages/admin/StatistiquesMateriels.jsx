@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BRAND } from '../../config/brand';
 import {
   BarChart3,
   Boxes,
@@ -93,7 +94,7 @@ function CartesType({ type, totaux }) {
   if (type === 'auto') {
     return (
       <div className="stats-grid stats-grid-4">
-        <StatIconCard icon={Boxes} label="Consommation totale" value={formatNombre(t?.conso)} sub="consommations véhicules + sorties" color="#1c428a" bg={bg('#1c428a')} />
+        <StatIconCard icon={Boxes} label="Consommation totale" value={formatNombre(t?.conso)} sub="consommations véhicules + sorties" color={BRAND.colorPrimary} bg={bg(BRAND.colorPrimary)} />
         <StatIconCard icon={Fuel} label="Consommations véhicules" value={formatNombre(t?.consommation)} sub="sur les véhicules du parc" color="#fd7e14" bg={bg('#fd7e14')} />
         <StatIconCard icon={PackageMinus} label="Sorties stock" value={formatNombre(t?.sortie)} sub="perte / casse / correction" color="#e74c3c" bg={bg('#e74c3c')} />
         <StatIconCard icon={Coins} label="Valeur consommée" value={t ? formatMontant(t.valeur) : undefined} sub={valeurSub} color="#8f5fe8" bg={bg('#8f5fe8')} />
@@ -104,7 +105,7 @@ function CartesType({ type, totaux }) {
   // Types vendables : consommable / emballage.
   return (
     <div className="stats-grid stats-grid-4">
-      <StatIconCard icon={Boxes} label="Consommation totale" value={formatNombre(t?.conso)} sub="ventes clients + sorties" color="#1c428a" bg={bg('#1c428a')} />
+      <StatIconCard icon={Boxes} label="Consommation totale" value={formatNombre(t?.conso)} sub="ventes clients + sorties" color={BRAND.colorPrimary} bg={bg(BRAND.colorPrimary)} />
       <StatIconCard
         icon={HandCoins}
         label="Ventes clients"

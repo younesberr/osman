@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { BRAND, pageTitle } from './src/config/brand.js';
 
 /**
  * Font Awesome déclare ses polices avec `font-display: block` : les icônes
@@ -7,7 +8,7 @@ import react from '@vitejs/plugin-react';
  * « Font display »). On force `swap` sur ses seules déclarations.
  */
 const fontAwesomeDisplaySwap = {
-  postcssPlugin: 'ortalog-fontawesome-display-swap',
+  postcssPlugin: 'fontawesome-display-swap',
   Declaration: {
     'font-display': (decl) => {
       const file = decl.source?.input?.file || '';
@@ -16,8 +17,25 @@ const fontAwesomeDisplaySwap = {
   }
 };
 
+/**
+ * index.html ne porte aucun texte de marque : le titre et la meta description
+ * viennent de src/config/brand.js (placeholders {{BRAND_TITLE}} / {{BRAND_DESCRIPTION}}),
+ * en dev comme au build.
+ */
+const brandHtml = {
+  name: 'brand-html',
+  transformIndexHtml: {
+    order: 'pre',
+    handler(html) {
+      return html
+        .replaceAll('{{BRAND_TITLE}}', pageTitle(null))
+        .replaceAll('{{BRAND_DESCRIPTION}}', BRAND.metaDescriptionAr);
+    }
+  }
+};
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), brandHtml],
   css: {
     postcss: { plugins: [fontAwesomeDisplaySwap] }
   },
@@ -37,7 +55,6 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    allowedHosts: ['washbowl-data-slapstick.ngrok-free.dev'],
     proxy: {
       '/api': {
         target: 'http://localhost:5000',

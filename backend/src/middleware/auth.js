@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { hasAccess, parseServices, SUPER_ADMIN_TYPE } = require('../utils/access');
+const { BRAND } = require('../config/brand');
 
-const COOKIE_NAME = 'ortalog_token';
+const COOKIE_NAME = BRAND.cookieName;
 const DEACTIVATED = { message: 'Compte désactivé. Contactez votre responsable.' };
 
 function getToken(req) {
@@ -18,8 +19,8 @@ function requireAuth(req, res, next) {
   if (!token) return res.status(401).json({ message: 'Authentification requise.' });
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET, {
-      issuer: 'ortalog',
-      audience: 'ortalog-app'
+      issuer: BRAND.jwtIssuer,
+      audience: BRAND.jwtAudience
     });
     req.user = payload;
     return next();

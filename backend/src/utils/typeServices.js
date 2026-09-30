@@ -45,8 +45,6 @@ const ALL_SERVICES = [
   'MATERIEL',
   'COMPTABILITES',
   'STATISTIQUES',
-  'API_LIAISON', // API liaison (hors Discussions) — types 1 et 2 uniquement (ni défaut ni optionnel pour 3, 4, 6)
-  'WHATSAPP_DISCUSSIONS', // API liaison › Discussions WhatsApp seules — types 1 et 2, indépendant d'API_LIAISON
   'CONFIGURATION'
 ];
 

@@ -3,7 +3,7 @@ const { getAgenceScope } = require('../utils/agenceScope');
 
 /*
  * Frais supplémentaires livreurs (page
- * /admin/facturation-livreurs/frais-supplementaires) — table ORTALOG
+ * /admin/facturation-livreurs/frais-supplementaires) — table de l'application
  * delevery_livreur_frais (sql/2026-08-20_frais-livreurs.sql) : frais saisis
  * manuellement pour un livreur (users_type = 5, y compris les livreurs
  * salariés), destinés à être repris plus tard dans la facturation.

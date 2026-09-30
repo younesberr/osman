@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const { TYPES_ENTREE, ajouterEntreeCaisse } = require('../utils/caisse');
 const { getAgenceScope, villeInAgenceSql, clientDansAgence } = require('../utils/agenceScope');
 
@@ -37,7 +36,7 @@ const { getAgenceScope, villeInAgenceSql, clientDansAgence } = require('../utils
  *    parcel_status_second REFUSE / CANCELED, drapeau parcel_refuse_invoiced
  *    = 0, et frais de refus > 0 uniquement (frais nuls : rien à facturer,
  *    colis non listé) — mêmes règles que la facturation livreurs ;
- *  - et, règle ORTALOG absente du legacy : le colis doit être dans une
+ *  - et, règle de l'application absente du legacy : le colis doit être dans une
  *    facture livreur « Enregistré » ou « Payé » — drapeaux livreur
  *    parcel_paid_livreur (livré) / parcel_refuse_livreur (refusé / annulé)
  *    = 2, écrits par la facturation livreurs (0 = aucune facture livreur,
@@ -57,9 +56,9 @@ const { getAgenceScope, villeInAgenceSql, clientDansAgence } = require('../utils
  *
  * Prix d'une ligne : livré → COD (parcel_price) - frais - frais supp de
  * livraison ; refusé / annulé → -frais - frais supp de livraison. Montant net
- * = somme des prix - frais supplémentaires ORTALOG (delevery_client_frais) -
+ * = somme des prix - frais supplémentaires de l'application (delevery_client_frais) -
  * frais legacy (delevery_invoice_extra) - remise (invoice_discount, legacy —
- * jamais écrite par ORTALOG).
+ * jamais écrite par l'application).
  *
  * Génération automatique : la périodicité de facturation de la fiche client
  * (customers_facturation_periode / customers_facturation_jours) est
@@ -71,7 +70,7 @@ const { getAgenceScope, villeInAgenceSql, clientDansAgence } = require('../utils
  * n'est jamais restreinte. Client ayant déjà une facture brouillon : elle est
  * complétée (colis + frais du jour) au lieu d'en créer une nouvelle.
  *
- * Frais supplémentaires (delevery_client_frais, table ORTALOG) : à la
+ * Frais supplémentaires (delevery_client_frais, table de l'application) : à la
  * création d'une facture, les frais « Nouveau » du client non rattachés et
  * datés du jour de la facture ou avant y sont rattachés (frais_facture_id).
  * Tant que la facture est en brouillon, les frais « Nouveau » non rattachés
@@ -165,7 +164,7 @@ const STATUT_TIME_SQL = `CASE WHEN p.parcel_status = 'DELIVERED' THEN p.parcel_d
 
 /* Composantes du montant net d'une facture (alias i = delevery_invoice) :
  * colis (COD - frais - frais supp de livraison), frais supplémentaires
- * ORTALOG et frais legacy. Net = colis - frais supp - frais legacy - remise.
+ * de l'application et frais legacy. Net = colis - frais supp - frais legacy - remise.
  * FRAIS_COLIS_SQL : total des frais client des lignes (colonne « Frais » du
  * détail, hors frais supp de livraison et frais supplémentaires) — colonne
  * « Frais TTC » de l'export Excel de la liste admin. */
@@ -548,7 +547,7 @@ async function attachFrais(conn, factureId, clientId, factureTime) {
 
 /**
  * Frais rattachés à la facture (détail, modale, PDF) : frais supplémentaires
- * ORTALOG (delevery_client_frais) + frais legacy (delevery_invoice_extra,
+ * de l'application (delevery_client_frais) + frais legacy (delevery_invoice_extra,
  * lecture seule, id préfixé « x »), même forme pour l'affichage.
  */
 async function loadFactureFrais(factureId) {
@@ -671,7 +670,7 @@ async function loadFactureParcels(factureId) {
 /**
  * GET /api/factures-clients/:id — détail d'une facture : informations +
  * lignes (code, destinataire, statut, date livraison / annulation, ville,
- * COD, frais, frais supp de livraison, prix) + frais rattachés (ORTALOG +
+ * COD, frais, frais supp de livraison, prix) + frais rattachés (application +
  * legacy) + frais « Nouveau »
  * du client non rattachés (fraisDisponibles, ajoutables en brouillon). Sert
  * la page de modification, la modale « Voir détail » et le PDF.
@@ -732,7 +731,7 @@ async function attachFraisFacture(req, res, next) {
 
 /**
  * DELETE /api/factures-clients/:id/frais/:fraisId — retire un frais
- * supplémentaire ORTALOG de la facture (brouillon uniquement) : le frais
+ * supplémentaire de l'application de la facture (brouillon uniquement) : le frais
  * redevient « Nouveau » non rattaché (rattachable à une autre facture).
  * Les frais legacy (invoice_extra) ne sont pas détachables.
  */
@@ -1088,7 +1087,7 @@ async function removeParcel(req, res, next) {
  * facture est enregistrée ou payée, à 1 quand elle repasse en brouillon ;
  * colis en statut « Facturé » (parcel_situation INVOICED + historique) dès
  * que la facture quitte le brouillon, situation restaurée au retour.
- * Les frais supplémentaires ORTALOG rattachés suivent le statut de la facture
+ * Les frais supplémentaires de l'application rattachés suivent le statut de la facture
  * (enregistré / payé, retour en brouillon → « Nouveau ») ; les frais legacy
  * (invoice_extra) ne sont pas touchés.
  * Payé : date + auteur du paiement enregistrés (invoice_paid_time /
@@ -1180,7 +1179,7 @@ async function setStatut(req, res, next) {
           [now, Number(req.user.id) || 0, facture.id]
         );
       }
-      // Les frais supplémentaires ORTALOG rattachés suivent le statut de la facture.
+      // Les frais supplémentaires de l'application rattachés suivent le statut de la facture.
       await conn.query(
         `UPDATE delevery_client_frais SET frais_statut = ? WHERE frais_facture_id = ?`,
         [FRAIS_STATUTS[cible], facture.id]
@@ -1203,13 +1202,6 @@ async function setStatut(req, res, next) {
       throw err;
     } finally {
       conn.release();
-    }
-    // CRM WhatsApp (après commit) : brouillon -> enregistrée / payée.
-    if (code !== STATUTS.draft && Number(facture.statut) === STATUTS.draft) {
-      emettreEvenement('FACTURE_CLIENT_ENREGISTREE', { factureId: facture.id, clientId: facture.client_id, userId: Number(req.user.id) || 0 });
-    }
-    if (code === STATUTS.paid) {
-      emettreEvenement('FACTURE_CLIENT_PAYEE', { factureId: facture.id, clientId: facture.client_id, userId: Number(req.user.id) || 0 });
     }
     res.json({
       id: facture.id,

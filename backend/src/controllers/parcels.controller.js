@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const { getServicePhone } = require('./clients.controller');
 const { getAgenceScope, parcelInAgence, userAgenceSql, agenceIdFromVille } = require('../utils/agenceScope');
 const { getScanSonUrls } = require('../utils/scanSons');
@@ -1163,7 +1162,7 @@ async function doCreateParcel(customerId, body, res, next, memberId = 0, userId 
       );
       const parcelId = result.insertId;
 
-      // Codes au format legacy : "DRG0726266195TO" et "X07-30-266195".
+      // Codes au format legacy : "OSM0926100001AB" et "X07-30-266195".
       const d = new Date(now * 1000);
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const yy = String(d.getFullYear() % 100).padStart(2, '0');
@@ -1246,8 +1245,6 @@ async function doCreateParcel(customerId, body, res, next, memberId = 0, userId 
       // colis normal uniquement : la marchandise d'un colis de stock est déjà
       // en agence, rien à ramasser chez le client.
       if (!fromStock) await createAutoDemandeRamassage(customerId, memberId);
-      // CRM WhatsApp : actions automatiques (après commit, best-effort).
-      emettreEvenement('COLIS_CREE', { parcelId, origine: fromStock ? 'saisie_stock' : 'saisie' });
       // extra_fees : frais supp automatiques appliqués (0 si aucun), champ additif.
       res.status(201).json({ parcel_id: parcelId, parcel_code: parcelCode, extra_fees: extraFees });
     } catch (err) {
@@ -1979,7 +1976,7 @@ async function doImportParcels(customerId, rawParcels, res, next, memberId = 0, 
         );
         const parcelId = result.insertId;
 
-        // Codes au format legacy : "DRG0726266195TO" et "X07-30-266195".
+        // Codes au format legacy : "OSM0926100001AB" et "X07-30-266195".
         const parcelCode = row.code || `${randLetters(3)}${mm}${yy}${parcelId}${randLetters(2)}`;
         const codeInterne = `${randLetters(1)}${mm}-${dd}-${parcelId}`;
         await conn.query(
@@ -2000,11 +1997,6 @@ async function doImportParcels(customerId, rawParcels, res, next, memberId = 0, 
       await conn.commit();
       // Demande de ramassage automatique : une seule par lot (hors transaction).
       if (created.length) await createAutoDemandeRamassage(customerId, memberId);
-      // CRM WhatsApp : un événement par colis + un événement de lot (après commit).
-      for (const c of created) emettreEvenement('COLIS_CREE', { parcelId: c.parcel_id, origine: 'import' });
-      if (created.length) {
-        emettreEvenement('COLIS_IMPORTES', { customerId, nb: created.length, parcelIds: created.map((c) => c.parcel_id), userId });
-      }
       // extra_fees_count : colis ayant reçu des frais supp automatiques (champ additif).
       res.status(201).json({ count: created.length, parcels: created, extra_fees_count: nbFraisMontant });
     } catch (err) {
@@ -2251,7 +2243,7 @@ async function doImportStockParcels(customerId, rawParcels, res, next, memberId 
         );
         const parcelId = result.insertId;
 
-        // Codes au format legacy : "DRG0726266195TO" et "X07-30-266195".
+        // Codes au format legacy : "OSM0926100001AB" et "X07-30-266195".
         const parcelCode = row.code || `${randLetters(3)}${mm}${yy}${parcelId}${randLetters(2)}`;
         const codeInterne = `${randLetters(1)}${mm}-${dd}-${parcelId}`;
         await conn.query(
@@ -2324,10 +2316,6 @@ async function doImportStockParcels(customerId, rawParcels, res, next, memberId 
       await conn.commit();
       // Pas de demande de ramassage automatique : colis de stock (marchandise
       // déjà en agence), contrairement à doImportParcels.
-      for (const c of created) emettreEvenement('COLIS_CREE', { parcelId: c.parcel_id, origine: 'import_stock' });
-      if (created.length) {
-        emettreEvenement('COLIS_IMPORTES', { customerId, nb: created.length, parcelIds: created.map((c) => c.parcel_id), userId });
-      }
       // extra_fees_count : colis ayant reçu des frais supp automatiques (champ additif).
       res.status(201).json({ count: created.length, parcels: created, extra_fees_count: nbFraisMontant });
     } catch (err) {
@@ -2566,7 +2554,6 @@ async function createClientRemboursement(req, res, next) {
       ]
     );
 
-    emettreEvenement('REMB_DEMANDE', { rembId: remb.insertId, parcelId: parcel.parcel_id, montant, origine: 'client' });
     res.status(201).json({ parcel_id: parcel.parcel_id, remb_demande: 1 });
   } catch (err) {
     next(err);
@@ -2603,7 +2590,6 @@ async function createClientReclamation(req, res, next) {
       [parcel.parcel_id, titre, texte, memberOf(req), Math.floor(Date.now() / 1000)]
     );
 
-    emettreEvenement('RECLAMATION_CREEE', { reclamationId: recl.insertId, parcelId: parcel.parcel_id, origine: 'client' });
     res.status(201).json({ parcel_id: parcel.parcel_id });
   } catch (err) {
     next(err);
@@ -2929,7 +2915,6 @@ async function scanRamassage(req, res, next) {
       conn.release();
     }
 
-    emettreEvenement('STATUT', { parcelId: parcel.id, code: 'PICKED_UP', userId: Number(req.user.id) || 0 });
     res.json({
       message: `Colis « ${parcel.code} » ramassé.`,
       parcel: { ...info, status: 'PICKED_UP' }

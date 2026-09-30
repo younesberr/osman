@@ -1,10 +1,11 @@
 import { BASE_URL, CopyBtn, Code, Endpoint, Params, Section, ApiToc } from '../../components/ApiDocBlocks';
+import { BRAND } from '../../config/brand';
 
 /*
  * Documentation API du dashboard client (/client/api/documentation, menu
  * « API liaison » → Documentation) : page statique décrivant les endpoints
  * ouverts aux comptes client (delevery_customers, et membres d'équipe selon
- * leurs tâches) pour connecter une boutique ou un système externe à ORTALOG :
+ * leurs tâches) pour connecter une boutique ou un système externe à la plateforme :
  * connexion, villes / tarifs, création de colis, liste et suivi, modification /
  * blocage / suppression, demandes de ramassage, suivi public.
  * Seuls les endpoints utiles à une intégration sont documentés ici (les autres
@@ -31,9 +32,9 @@ export default function DocumentationApi() {
   return (
     <div className="api-doc">
       <div className="welcome-banner">
-        <h1>Documentation API ORTALOG</h1>
+        <h1>Documentation API {BRAND.name}</h1>
         <p>
-          Connectez votre boutique ou votre système à ORTALOG : créez vos colis, suivez leurs
+          Connectez votre boutique ou votre système à {BRAND.name} : créez vos colis, suivez leurs
           statuts et demandez vos ramassages depuis votre propre plateforme.
         </p>
       </div>
@@ -248,7 +249,7 @@ export default function DocumentationApi() {
         <Endpoint
           method="POST"
           path="/parcels/client"
-          desc="Création d’un colis normal (marchandise chez vous, à ramasser) ou d’un colis de stock (marchandise déjà en agence ORTALOG). Tâche : COLIS_SAISIE."
+          desc={`Création d’un colis normal (marchandise chez vous, à ramasser) ou d’un colis de stock (marchandise déjà en agence ${BRAND.name}). Tâche : COLIS_SAISIE.`}
         >
           <Params
             rows={[
@@ -257,7 +258,7 @@ export default function DocumentationApi() {
               ['city', 'corps', 'Identifiant de la ville de destination (id de /parcels/client/new).', true],
               ['address', 'corps', 'Adresse de livraison (2000 caractères max).', true],
               ['price', 'corps', 'Montant CRBT à encaisser, en DH (nombre ≥ 0 ; 0 = colis sans encaissement).', true],
-              ['code', 'corps', 'Code colis personnalisé (100 caractères max, ex. numéro de commande). Doit être unique (409 sinon). Sans code, ORTALOG en génère un.'],
+              ['code', 'corps', `Code colis personnalisé (100 caractères max, ex. numéro de commande). Doit être unique (409 sinon). Sans code, ${BRAND.name} en génère un.`],
               ['product', 'corps', 'Marchandise (colis normal uniquement, 250 caractères max).'],
               ['qty', 'corps', 'Quantité de marchandise (colis normal uniquement, 1 par défaut, 9999 max).'],
               ['note', 'corps', 'Commentaire pour le livreur (2000 caractères max).'],
@@ -507,7 +508,7 @@ export default function DocumentationApi() {
             </li>
             <li>
               <code className="mono">preuve</code> : chemin de la photo jointe par le livreur au
-              changement de statut, à préfixer par <code className="mono">https://ortalog.ma</code>{' '}
+              changement de statut, à préfixer par <code className="mono">{BRAND.siteUrl}</code>{' '}
               ; <code className="mono">member</code> : nom du membre de votre équipe à l’origine de
               l’étape, le cas échéant.
             </li>
@@ -538,7 +539,7 @@ export default function DocumentationApi() {
             Colis de stock : <code className="mono">produits</code> liste les produits envoyés{' '}
             <code className="mono">[{'{'} "produit", "variante", "qty" {'}'}]</code>.{' '}
             <code className="mono">crbt</code> = montant effectivement à encaisser (0 si le CRBT a
-            été annulé par ORTALOG).
+            été annulé par {BRAND.name}).
           </p>
         </Endpoint>
       </Section>
@@ -547,7 +548,7 @@ export default function DocumentationApi() {
       <Section
         id="api-modification"
         title="Modification, blocage et suppression"
-        intro="Mêmes règles que le dashboard : un colis en attente de ramassage se modifie et se supprime librement ; après ramassage, la modification devient une demande validée par ORTALOG. Tâche : COLIS_MODIFICATION."
+        intro={`Mêmes règles que le dashboard : un colis en attente de ramassage se modifie et se supprime librement ; après ramassage, la modification devient une demande validée par ${BRAND.name}. Tâche : COLIS_MODIFICATION.`}
       >
         <Endpoint
           method="GET"
@@ -639,7 +640,7 @@ export default function DocumentationApi() {
           <ul className="api-list">
             <li>
               Après ramassage, rien n’est modifié immédiatement : la demande est validée (ou
-              refusée) par ORTALOG, puis visible dans le suivi du colis.
+              refusée) par {BRAND.name}, puis visible dans le suivi du colis.
             </li>
             <li>
               400 « Aucune modification détectée » si toutes les valeurs sont identiques ; 409 si
@@ -859,7 +860,7 @@ export default function DocumentationApi() {
               </tr>
               <tr>
                 <td><span className="mono">500</span></td>
-                <td className="api-cell-wrap">Erreur interne : réessayez, puis contactez ORTALOG si l’erreur persiste.</td>
+                <td className="api-cell-wrap">Erreur interne : réessayez, puis contactez {BRAND.name} si l’erreur persiste.</td>
               </tr>
             </tbody>
           </table>

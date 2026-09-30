@@ -4,10 +4,11 @@ import api from '../api/client';
 import HomeFooter from '../components/HomeFooter';
 import SearchableSelect from '../components/SearchableSelect';
 import '../home.css';
+import PublicLogo from '../components/PublicLogo';
 
 /**
  * Page tarifs publique — même design que la page « tarifs » de l'ancien site
- * PHP (orta/files/tarifs.php), avec la logique de la saisie des colis :
+ * PHP (ancien site PHP), avec la logique de la saisie des colis :
  * la liste déroulante propose les villes de ramassage de la matrice tarifaire,
  * et le tableau affiche pour la ville choisie les tarifs de la matrice puis,
  * en second, les tarifs par défaut (delevery_tarifs) des villes absentes de
@@ -118,7 +119,7 @@ export default function TarifsPublic() {
             <i className="fa fa-home" /> الرئيسية
           </Link>
           <Link to="/" className="navbar-brand">
-            <img className="logo-header" src="/home/header-logo.png" width="780" height="220" alt="أورطالوج" />
+            <PublicLogo className="logo-header" />
           </Link>
         </div>
       </nav>

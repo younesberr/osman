@@ -1,0 +1,11 @@
+.env
+.claude
+node_modules/
+frontend/dist/
+
+# Fichiers envoyes par les utilisateurs : hors depot, sauf les visuels de la marque.
+backend/uploads/**
+!backend/uploads/**/
+!backend/uploads/**/.gitkeep
+!backend/uploads/branding/logo-osmanexpress.png
+!backend/uploads/branding/icon-osmanexpress.png

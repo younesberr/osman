@@ -22,8 +22,6 @@ const { CLIENT_SANS_ADRESSE_WHERE } = require('./parcels.controller');
  *  - clients : clients avec demande de modification de fiche PENDING (même
  *    compteur que /api/clients/demandes/en-attente) ;
  *  - clientsNonVerifies : clients non vérifiés ayant saisi au moins un colis ;
- *  - whatsapp : discussions WhatsApp avec des messages entrants non lus (CRM,
- *    service WHATSAPP_DISCUSSIONS de la page Discussions).
  * Un service inaccessible à l'employé renvoie 0 (le menu est masqué de toute
  * façon) ; une table / colonne de migration pas encore exécutée aussi.
  * Employés type 3/4/6 : mêmes périmètres d'agence que les pages.
@@ -86,8 +84,7 @@ async function compteursSidebar(req, res, next) {
       messagesAccueil,
       nouveauxClients,
       clients,
-      clientsNonVerifies,
-      whatsapp
+      clientsNonVerifies
     ] = await Promise.all([
       compte(
         'STOCK',
@@ -171,10 +168,6 @@ async function compteursSidebar(req, res, next) {
           WHERE IFNULL(c.customers_verified, 0) = 0
             AND EXISTS (SELECT 1 FROM delevery_parcel dp WHERE dp.parcel_customer = c.customers_id)${villeSql}`,
         villeParams
-      ),
-      compte(
-        'WHATSAPP_DISCUSSIONS',
-        `SELECT COUNT(*) AS n FROM delevery_whatsapp_conversation WHERE wac_non_lus > 0`
       )
     ]);
 
@@ -191,8 +184,7 @@ async function compteursSidebar(req, res, next) {
       messagesAccueil,
       nouveauxClients,
       clients,
-      clientsNonVerifies,
-      whatsapp
+      clientsNonVerifies
     });
   } catch (err) {
     next(err);

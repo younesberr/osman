@@ -13,7 +13,7 @@ const {
 /*
  * Gestion de stock > Inventaire — produits en stock (delevery_product).
  * Les colonnes product_ref, product_qte, product_qte_attente, product_rayonnage,
- * product_statut, product_created_at et product_created_by sont des extensions ORTALOG
+ * product_statut, product_created_at et product_created_by sont des extensions de l'application
  * ajoutées à la table legacy (migrations SQL à exécuter manuellement,
  * l'utilisateur MySQL de l'app n'ayant pas ALTER).
  * Le nom du magasin vient de delevery_customers (customers_store).

@@ -15,6 +15,7 @@
  */
 
 import { pagesVersPdf } from './pdfCapture';
+import { BRAND } from '../config/brand';
 
 import { statutLabel } from './statuts';
 
@@ -24,7 +25,7 @@ const PAGE_H = 1485;
 const PAD_TOP = 240; // ≈ 48 mm : le texte ne touche pas le logo de l'en-tête.
 const PAD_SIDE = 60; // ≈ 12 mm
 const PAD_BOTTOM = 170; // ≈ 34 mm : réservé au pied de page.
-const BLEU = '#1c428a'; // Bleu du papier à en-tête (texte du pied posé sur la bande jaune).
+const BLEU = BRAND.colorPrimary; // Couleur principale de la marque (texte du pied de page).
 
 const STYLE = `
 .bp-page {

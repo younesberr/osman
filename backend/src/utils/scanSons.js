@@ -2,16 +2,17 @@ const path = require('path');
 const fs = require('fs');
 const pool = require('../config/db');
 const UPLOADS_ROOT = require('../config/uploadsRoot');
+const { cfgKey } = require('../config/brand');
 
 /*
  * Sons du scanner, gérés depuis Configuration > Options : un son par étape
  * (ramassage / envoi / distribution / retour, en succès ou échec). Une ligne
- * par son dans delevery_configs : configs_var = 'ortalog_scan_son',
+ * par son dans delevery_configs : configs_var = app_scan_son,
  * configs_val = JSON { type, file }. Les fichiers audio sont stockés dans
  * backend/uploads/sons.
  */
 
-const CONFIG_VAR = 'ortalog_scan_son';
+const CONFIG_VAR = cfgKey('scan_son');
 const SON_TYPES = [
   'ramassage_success',
   'ramassage_error',

@@ -5,7 +5,6 @@ import {
   Coins,
   Eye,
   Hourglass,
-  MessageCircle,
   PackageOpen,
   Plus,
   Power,
@@ -390,13 +389,10 @@ function RadioRow({ label, value, onChange, name, disabled = false }) {
  * selon le montant du colis » (customers_frais_montant, réglage admin
  * uniquement : 20 DH de frais supp ajoutés automatiquement par tranche de
  * 2 500 DH au-delà de 2 500 DH de montant, activé par défaut ; désactivé =
- * aucun frais automatique pour ce client) ; puis section
- * « Notifications WhatsApp » : mêmes choix que /client/configuration (bon
- * retour expédié, réclamation traitée, remboursement, modification de colis,
- * factures). Le tout est chargé par GET /clients/:id/options
- * (default_open, default_essayage, frais_montant.{disponible, actif, seuil,
- * montant}, whatsapp.{disponible, options, prefs}, table
- * delevery_whatsapp_pref_client) et enregistré avec les autres options.
+ * aucun frais automatique pour ce client). Le tout est chargé par GET
+ * /clients/:id/options (default_open, default_essayage,
+ * frais_montant.{disponible, actif, seuil, montant}) et enregistré avec les
+ * autres options.
  */
 function OptionsModal({ client, onClose, onSaved }) {
   const [livreurShow, setLivreurShow] = useState(client.livreur_show === 1 ? 1 : 0);
@@ -407,8 +403,6 @@ function OptionsModal({ client, onClose, onSaved }) {
   const [defauts, setDefauts] = useState(null);
   // null = chargement ; { disponible, actif: 0|1, seuil, montant } (frais supp selon le montant).
   const [fraisMontant, setFraisMontant] = useState(null);
-  // null = chargement ; { disponible, options: [{ code, label }], prefs: { code: 0|1 } }
-  const [whatsapp, setWhatsapp] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -431,11 +425,6 @@ function OptionsModal({ client, onClose, onSaved }) {
           seuil: Number(res.data.frais_montant?.seuil) || 2500,
           montant: Number(res.data.frais_montant?.montant) || 20
         });
-        setWhatsapp({
-          disponible: Boolean(res.data.whatsapp?.disponible),
-          options: Array.isArray(res.data.whatsapp?.options) ? res.data.whatsapp.options : [],
-          prefs: { ...(res.data.whatsapp?.prefs || {}) }
-        });
       })
       .catch((err) => {
         if (!cancelled) setLoadError(err.response?.data?.message || 'Options non chargées.');
@@ -452,10 +441,6 @@ function OptionsModal({ client, onClose, onSaved }) {
 
   function setInterdireEssayage(v) {
     setDefauts((d) => (d ? { ...d, interdireEssayage: v } : d));
-  }
-
-  function setWhatsappPref(code, value) {
-    setWhatsapp((w) => (w ? { ...w, prefs: { ...w.prefs, [code]: value } } : w));
   }
 
   async function save(e) {
@@ -476,9 +461,7 @@ function OptionsModal({ client, onClose, onSaved }) {
             }
           : {}),
         // Frais selon le montant : envoyé seulement si la colonne est migrée.
-        ...(fraisMontant?.disponible ? { fraisMontant: fraisMontant.actif } : {}),
-        // Préférences WhatsApp envoyées seulement si la migration est en place.
-        ...(whatsapp?.disponible ? { whatsappNotifs: whatsapp.prefs } : {})
+        ...(fraisMontant?.disponible ? { fraisMontant: fraisMontant.actif } : {})
       });
       onSaved(res.data);
       onClose();
@@ -583,39 +566,6 @@ function OptionsModal({ client, onClose, onSaved }) {
                   onChange={(v) => setFraisMontant((f) => (f ? { ...f, actif: v } : f))}
                   disabled={!fraisMontant.disponible}
                 />
-              </div>
-            </>
-          )}
-
-          <div className="option-section-title">
-            <MessageCircle size={14} /> Notifications WhatsApp
-          </div>
-          <p className="option-section-hint">
-            Messages automatiques du CRM WhatsApp envoyés au client (numéro personnel, sinon celui du magasin). Le
-            client a les mêmes choix dans son dashboard › Configuration.
-          </p>
-          {loadError ? (
-            <div className="option-section-note">{loadError}</div>
-          ) : !whatsapp ? (
-            <div className="cell-sub">Chargement…</div>
-          ) : (
-            <>
-              {!whatsapp.disponible && (
-                <div className="option-section-note">
-                  Préférences indisponibles : exécutez sql/2026-09-18_whatsapp-preferences-client.sql dans phpMyAdmin.
-                </div>
-              )}
-              <div className="option-rows">
-                {whatsapp.options.map((o) => (
-                  <RadioRow
-                    key={o.code}
-                    label={o.label}
-                    name={`wa_${o.code}`}
-                    value={whatsapp.prefs[o.code] === 0 ? 0 : 1}
-                    onChange={(v) => setWhatsappPref(o.code, v)}
-                    disabled={!whatsapp.disponible}
-                  />
-                ))}
               </div>
             </>
           )}

@@ -1,9 +1,10 @@
 import { BASE_URL, CopyBtn, Code, Endpoint, Params, Section, ApiToc } from '../../components/ApiDocBlocks';
+import { BRAND } from '../../config/brand';
 
 /*
  * Documentation API du dashboard livreur (/livreur/api) : page statique
  * décrivant les endpoints ouverts aux comptes livreur (fonction Livreur,
- * users_type 5) pour connecter une plateforme externe à ORTALOG.
+ * users_type 5) pour connecter une plateforme externe à la plateforme.
  * Seuls les endpoints les plus utilisés sont documentés ici (connexion,
  * statuts actifs, changement de statut par code colis) : les autres
  * endpoints livreur restent disponibles côté backend mais ne sont pas
@@ -25,9 +26,9 @@ export default function DocumentationApi() {
   return (
     <div className="api-doc">
       <div className="welcome-banner">
-        <h1>Documentation API ORTALOG</h1>
+        <h1>Documentation API {BRAND.name}</h1>
         <p>
-          Connectez votre propre plateforme à ORTALOG : changez le statut de vos colis en tournée
+          Connectez votre propre plateforme à {BRAND.name} : changez le statut de vos colis en tournée
           depuis votre système.
         </p>
       </div>
@@ -141,27 +142,27 @@ export default function DocumentationApi() {
         >
           <Params
             rows={[
-              ['code', 'chemin', 'Code du colis (code client ou code interne ORTALOG imprimé sur l’étiquette). Encodez-le dans l’URL (encodeURIComponent).', true],
+              ['code', 'chemin', `Code du colis (code client ou code interne ${BRAND.name} imprimé sur l’étiquette). Encodez-le dans l’URL (encodeURIComponent).`, true],
               ['statut', 'corps', 'Code du nouveau statut (un code renvoyé par /livreurs/me/colis/statuts/actifs).', true],
               ['commentaire', 'corps', 'Commentaire du livreur. Obligatoire pour REFUSE et CANCELED.'],
               ['date', 'corps', 'Date au format AAAA-MM-JJ. Obligatoire pour PROGRAMMER et POSTPONED (date programmée / reportée).'],
-              ['preuve', 'fichier', 'Photo preuve du changement de statut (JPG, PNG ou WEBP, 8 Mo max), facultative. Envoyez alors la requête en multipart/form-data (champ fichier « preuve », les autres paramètres en champs texte). La photo est visible dans le détail de suivi ORTALOG, côté admin et côté client.']
+              ['preuve', 'fichier', `Photo preuve du changement de statut (JPG, PNG ou WEBP, 8 Mo max), facultative. Envoyez alors la requête en multipart/form-data (champ fichier « preuve », les autres paramètres en champs texte). La photo est visible dans le détail de suivi ${BRAND.name}, côté admin et côté client.`]
             ]}
           />
-          <Code label="Exemple de requête (JSON, sans photo)">{`curl -X POST ${BASE_URL}/livreurs/me/colis/code/DRG0726266195TO/statut \\
+          <Code label="Exemple de requête (JSON, sans photo)">{`curl -X POST ${BASE_URL}/livreurs/me/colis/code/OSM0926100001AB/statut \\
   -H "Authorization: Bearer <votre jeton>" \\
   -H "Content-Type: application/json" \\
   -d '{ "statut": "POSTPONED", "commentaire": "Client absent", "date": "2026-09-02" }'`}</Code>
           <Code label="Réponse 200">{`{
   "parcel_id": 4512,
-  "parcel_code": "DRG0726266195TO",
+  "parcel_code": "OSM0926100001AB",
   "parcel_status": "IN_PROGRESS",
   "statut": "POSTPONED",
   "statut_color": "#fd7e14",
   "report_time": "02/09/2026",
   "preuve": null
 }`}</Code>
-          <Code label="Exemple avec photo preuve (multipart/form-data)">{`curl -X POST ${BASE_URL}/livreurs/me/colis/code/DRG0726266195TO/statut \\
+          <Code label="Exemple avec photo preuve (multipart/form-data)">{`curl -X POST ${BASE_URL}/livreurs/me/colis/code/OSM0926100001AB/statut \\
   -H "Authorization: Bearer <votre jeton>" \\
   -F "statut=DELIVERED" \\
   -F "commentaire=Remis au gardien" \\
@@ -169,7 +170,7 @@ export default function DocumentationApi() {
 # Ne posez pas d'en-tête Content-Type : votre client HTTP le génère avec la frontière multipart.`}</Code>
           <Code label="Réponse 200 (avec photo preuve)">{`{
   "parcel_id": 4512,
-  "parcel_code": "DRG0726266195TO",
+  "parcel_code": "OSM0926100001AB",
   "parcel_status": "DELIVERED",
   "statut": "DELIVERED",
   "statut_color": "#28a745",
@@ -256,7 +257,7 @@ export default function DocumentationApi() {
               </tr>
               <tr>
                 <td><span className="mono">500</span></td>
-                <td className="api-cell-wrap">Erreur interne : réessayez, puis contactez ORTALOG si l’erreur persiste.</td>
+                <td className="api-cell-wrap">Erreur interne : réessayez, puis contactez {BRAND.name} si l’erreur persiste.</td>
               </tr>
             </tbody>
           </table>
@@ -273,11 +274,11 @@ export default function DocumentationApi() {
   -H "Content-Type: application/json" \\
   -d '{ "identifiant": "livreur@exemple.com", "password": "••••••••" }'
 # → conservez la valeur "token" de la réponse (valable 8 h)`}</Code>
-        <Code label="2. Marquer un colis livré (par code colis)">{`curl -X POST ${BASE_URL}/livreurs/me/colis/code/DRG0726266195TO/statut \\
+        <Code label="2. Marquer un colis livré (par code colis)">{`curl -X POST ${BASE_URL}/livreurs/me/colis/code/OSM0926100001AB/statut \\
   -H "Authorization: Bearer <votre jeton>" \\
   -H "Content-Type: application/json" \\
   -d '{ "statut": "DELIVERED" }'`}</Code>
-        <Code label="3. Marquer un colis livré avec photo preuve (par code colis)">{`curl -X POST ${BASE_URL}/livreurs/me/colis/code/DRG0726266195TO/statut \\
+        <Code label="3. Marquer un colis livré avec photo preuve (par code colis)">{`curl -X POST ${BASE_URL}/livreurs/me/colis/code/OSM0926100001AB/statut \\
   -H "Authorization: Bearer <votre jeton>" \\
   -F "statut=DELIVERED" \\
   -F "preuve=@/chemin/photo-livraison.jpg"

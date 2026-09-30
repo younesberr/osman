@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { BRAND } from '../../config/brand';
 import { MessagesSquare, Plus, ChevronLeft } from 'lucide-react';
 import api from '../../api/client';
 import ChatConversation, { formatMessageDate } from '../../components/ChatConversation';
@@ -39,7 +40,7 @@ function ChatListItem({ chat, active, onClick }) {
   );
 }
 
-/** Messages — messagerie du client avec le support ORTALOG. */
+/** Messages — messagerie du client avec le support de la plateforme. */
 export default function Messages() {
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -219,7 +220,7 @@ export default function Messages() {
                     <div className="chat-panel-title">
                       {conversation?.chat?.subject || activeChat?.subject || `Discussion n°${activeId}`}
                     </div>
-                    <div className="chat-panel-sub">Support ORTALOG</div>
+                    <div className="chat-panel-sub">Support {BRAND.name}</div>
                   </div>
                 </div>
                 <ChatConversation

@@ -1,11 +1,9 @@
 import { useEffect } from 'react';
+import { pageTitle } from '../config/brand';
 import { useLocation } from 'react-router-dom';
 import { adminPages, DETAIL_LABELS, resolveDetailLabel } from '../config/adminMenu';
 import { clientPages, CLIENT_DETAIL_LABELS } from '../config/clientMenu';
 import { livreurPages, LIVREUR_DETAIL_LABELS } from '../config/livreurMenu';
-
-// Titre de la page d'accueil publique : identique à l'ancien site (arabe).
-const DEFAULT_TITLE = 'أورتالوج — التوصيل في كل مكان بالمغرب';
 
 /** Titres des routes hors menus. */
 const STATIC_TITLES = {
@@ -26,7 +24,7 @@ const STATIC_TITLES = {
 
 /**
  * Synchronise le titre de l'onglet du navigateur avec la page active :
- * « <Nom de la page> - ORTALOG » (la page d'accueil garde le titre complet).
+ * « <Nom de la page> - <marque> » (la page d'accueil garde le titre complet), voir config/brand.js.
  */
 export default function PageTitle() {
   const { pathname } = useLocation();
@@ -48,7 +46,7 @@ export default function PageTitle() {
           ? resolveDetailLabel(detailLabels[parent.path], path) || parent.label
           : null;
     }
-    document.title = label ? `${label} - ORTALOG` : DEFAULT_TITLE;
+    document.title = pageTitle(label);
   }, [pathname]);
 
   return null;

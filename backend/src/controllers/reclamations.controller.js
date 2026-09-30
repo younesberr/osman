@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const { getAgenceScope, parcelInAgence } = require('../utils/agenceScope');
 
 /*
@@ -337,7 +336,6 @@ async function traiterReclamation(req, res, next) {
         WHERE reclamation_id = ?`,
       [Number(req.user.id), Math.floor(Date.now() / 1000), note, rec.id]
     );
-    emettreEvenement('RECLAMATION_TRAITEE', { reclamationId: rec.id, note, userId: Number(req.user.id) || 0 });
     res.json({ id: rec.id });
   } catch (err) {
     next(err);

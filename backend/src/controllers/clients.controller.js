@@ -1,8 +1,7 @@
 const pool = require('../config/db');
+const { cfgKey } = require('../config/brand');
 const { getAgenceScope, clientDansAgence } = require('../utils/agenceScope');
 const { hashPassword } = require('../utils/password');
-const prefsWhatsApp = require('../services/whatsappPreferencesClient');
-const { estErreurMigration } = require('../utils/whatsappSchema');
 const fraisMontant = require('../utils/fraisMontant');
 
 const MAX_PAGE_SIZE = 100;
@@ -380,9 +379,7 @@ async function lireOptions(id) {
     // Frais supp automatiques selon le montant du colis (customers_frais_montant,
     // utils/fraisMontant) : { disponible, actif: 0|1, seuil, montant } —
     // disponible = false tant que sql/2026-09-28_frais-montant-colis.sql n'est pas passée.
-    frais_montant: await lireFraisMontant(id),
-    // { disponible, options: [{ code, label, description }], prefs: { code: 0|1 } }
-    whatsapp: await prefsWhatsApp.lirePreferences(id)
+    frais_montant: await lireFraisMontant(id)
   };
 }
 
@@ -394,7 +391,7 @@ async function lireFraisMontant(id) {
 
 /**
  * GET /api/clients/:id/options — état de la modale "Options" (flags du compte
- * + préférences de notification WhatsApp du client, cf. setOptions).
+ * + option « frais selon le montant du colis », cf. setOptions).
  */
 async function getOptions(req, res, next) {
   try {
@@ -414,8 +411,7 @@ async function getOptions(req, res, next) {
 /**
  * PATCH /api/clients/:id/options — modale "Options" :
  * body { livreurShow?: 0|1, phoneShow?: 0|1, colisZero?: 0|1,
- *        defaultOpen?: 0|1, defaultEssayage?: 0|1,
- *        whatsappNotifs?: { CODE: 0|1, … } } (au moins un champ).
+ *        defaultOpen?: 0|1, defaultEssayage?: 0|1 } (au moins un champ).
  *  - livreurShow → customers_livreur (voir n° livreur) ;
  *  - phoneShow → customers_phone_show (afficher le n° du vendeur sur les
  *    tickets ; même colonne que « Afficher mon numéro de téléphone sur les
@@ -427,9 +423,6 @@ async function getOptions(req, res, next) {
  *    d'un nouveau colis, mêmes colonnes que /client/configuration ;
  *    default_essayage = 1 signifie essayage autorisé ; ouverture interdite par
  *    défaut → essayage interdit d'office, comme updateMyConfig) ;
- *  - whatsappNotifs → delevery_whatsapp_pref_client (section « Notifications
- *    WhatsApp », mêmes options que /client/configuration ; 503 si la
- *    migration sql/2026-09-18_whatsapp-preferences-client.sql manque) ;
  *  - fraisMontant → customers_frais_montant (section « Frais selon le montant
  *    du colis » : 1 = 20 DH ajoutés automatiquement par tranche de 2 500 DH
  *    au-delà de 2 500 DH de montant, 0 = aucun frais automatique pour ce
@@ -470,9 +463,7 @@ async function setOptions(req, res, next) {
         return res.status(400).json({ message: 'Requête invalide.' });
       }
     }
-    const wa = prefsWhatsApp.normaliserPreferences(req.body?.whatsappNotifs);
-    if (wa.erreur) return res.status(400).json({ message: wa.erreur });
-    if (sets.length === 0 && !wa.prefs && optionFrais === null) {
+    if (sets.length === 0 && optionFrais === null) {
       return res.status(400).json({ message: 'Aucune modification envoyée.' });
     }
 
@@ -508,14 +499,6 @@ async function setOptions(req, res, next) {
         throw err;
       }
     }
-    if (wa.prefs) {
-      try {
-        await prefsWhatsApp.enregistrerPreferences(id, wa.prefs, { origine: 'admin', userId: req.user?.id });
-      } catch (err) {
-        if (estErreurMigration(err)) return res.status(503).json({ message: prefsWhatsApp.MESSAGE_PREF_ABSENT });
-        throw err;
-      }
-    }
 
     const etat = await lireOptions(id);
     if (!etat) return res.status(404).json({ message: 'Client introuvable.' });
@@ -529,7 +512,7 @@ async function setOptions(req, res, next) {
  * Numéro affiché sur les tickets quand le client masque le sien
  * (customers_phone_show = 0) : le « Numéro de mobile » de l'information
  * société (/admin/configuration/plateforme, configs_var =
- * 'ortalog_company_tel_mobile'). Repli si non renseigné : clé legacy
+ * app_company_tel_mobile). Repli si non renseigné : clé legacy
  * 'ws_config_company_phone', dont configs_val contient parfois une référence
  * de traduction « lang_db_… » à résoudre dans delevery_lang
  * (lang_ref ↔ lang_name) ; si introuvable, on renvoie ''.
@@ -537,8 +520,9 @@ async function setOptions(req, res, next) {
 async function getServicePhone() {
   const [[mobile]] = await pool.query(
     `SELECT configs_val FROM delevery_configs
-      WHERE configs_var = 'ortalog_company_tel_mobile'
-      ORDER BY configs_id LIMIT 1`
+      WHERE configs_var = ?
+      ORDER BY configs_id LIMIT 1`,
+    [cfgKey('company_tel_mobile')]
   );
   const telMobile = String(mobile?.configs_val || '').trim();
   if (telMobile) return telMobile;
@@ -562,10 +546,8 @@ async function getServicePhone() {
 
 /**
  * GET /api/clients/me/config — préférences du client connecté (page
- * /client/configuration) : phone_show, default_open, default_essayage,
- * le numéro du service client affiché à titre indicatif, et `whatsapp`
- * ({ disponible, options, prefs } : section « Notifications WhatsApp »,
- * cf. services/whatsappPreferencesClient.js).
+ * /client/configuration) : phone_show, default_open, default_essayage et
+ * le numéro du service client affiché à titre indicatif.
  */
 async function getMyConfig(req, res, next) {
   try {
@@ -581,8 +563,7 @@ async function getMyConfig(req, res, next) {
       phone_show: Number(row.phone_show),
       default_open: Number(row.default_open),
       default_essayage: Number(row.default_essayage),
-      service_phone: await getServicePhone(),
-      whatsapp: await prefsWhatsApp.lirePreferences(Number(req.user.id))
+      service_phone: await getServicePhone()
     });
   } catch (err) {
     next(err);
@@ -591,9 +572,7 @@ async function getMyConfig(req, res, next) {
 
 /**
  * PATCH /api/clients/me/config — body { phoneShow?, defaultOpen?,
- * defaultEssayage?, whatsappNotifs?: { CODE: 0|1, … } } (0|1, au moins un
- * champ). whatsappNotifs → delevery_whatsapp_pref_client (503 si la migration
- * sql/2026-09-18_whatsapp-preferences-client.sql manque). Renvoie l'état à jour.
+ * defaultEssayage? } (0|1, au moins un champ). Renvoie l'état à jour.
  */
 async function updateMyConfig(req, res, next) {
   try {
@@ -613,9 +592,7 @@ async function updateMyConfig(req, res, next) {
       sets.push(`${column} = ?`);
       params.push(value);
     }
-    const wa = prefsWhatsApp.normaliserPreferences(req.body?.whatsappNotifs);
-    if (wa.erreur) return res.status(400).json({ message: wa.erreur });
-    if (sets.length === 0 && !wa.prefs) {
+    if (sets.length === 0) {
       return res.status(400).json({ message: 'Aucune modification envoyée.' });
     }
 
@@ -634,14 +611,6 @@ async function updateMyConfig(req, res, next) {
           WHERE customers_id = ? AND IFNULL(customers_default_open, 0) = 1`,
         [customerId]
       );
-    }
-    if (wa.prefs) {
-      try {
-        await prefsWhatsApp.enregistrerPreferences(customerId, wa.prefs, { origine: 'client' });
-      } catch (err) {
-        if (estErreurMigration(err)) return res.status(503).json({ message: prefsWhatsApp.MESSAGE_PREF_ABSENT });
-        throw err;
-      }
     }
     return getMyConfig(req, res, next);
   } catch (err) {

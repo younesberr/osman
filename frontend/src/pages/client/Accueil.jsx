@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BRAND } from '../../config/brand';
 import { Link } from 'react-router-dom';
 import {
   Boxes,
@@ -74,7 +75,7 @@ export default function Accueil() {
     <>
       <div className="welcome-banner welcome-compact">
         <h1>☀️ Bonjour, {user?.name} !</h1>
-        <p>Bienvenue sur votre espace client ORTALOG.</p>
+        <p>Bienvenue sur votre espace client {BRAND.name}.</p>
       </div>
 
       {error && <div className="form-error">{error}</div>}
@@ -112,8 +113,8 @@ export default function Accueil() {
           label="Total colis"
           value={formatNombre(c?.total_colis)}
           sub="Hors attente de ramassage"
-          color="#1c428a"
-          bg="rgba(28, 66, 138, 0.08)"
+          color={BRAND.colorPrimary}
+          bg="rgba(216, 6, 19, 0.08)"
         />
         <StatIconCard
           icon={CheckCircle}
@@ -141,8 +142,8 @@ export default function Accueil() {
           label="CA encaissé"
           value={formatMontant(c?.ca_encaisse)}
           sub="COD des colis facturés"
-          color="#1c428a"
-          bg="rgba(28, 66, 138, 0.08)"
+          color={BRAND.colorPrimary}
+          bg="rgba(216, 6, 19, 0.08)"
         />
         <StatIconCard
           icon={HandCoins}

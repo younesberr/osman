@@ -3,7 +3,7 @@ const pool = require('../config/db');
 /*
  * Module Transport — facturation (pages /admin/transport/facturation et
  * /admin/transport/facturation/:id, service TRANSPORT, types 1/2 dans les
- * routes). Table legacy delevery_transport_factures + colonnes ORTALOG
+ * routes). Table legacy delevery_transport_factures + colonnes de l'application
  * facture_total / facture_nb_colis / facture_paid_time
  * (sql/2026-08-24_transport-tickets.sql).
  *
@@ -15,7 +15,7 @@ const pool = require('../config/db');
  * n'ont pas ces valeurs (facture_paid_time = 0) → totaux calculés en direct.
  *
  * Références : nouvelles factures FCT-JJMMAA-0{id}0-{2 chiffres} (pattern
- * ortalog, séquentiel) ; les références legacy FCT + 7 caractères aléatoires
+ * application, séquentiel) ; les références legacy FCT + 7 caractères aléatoires
  * restent affichées telles quelles.
  */
 
@@ -145,7 +145,7 @@ async function listSocietesFacturables(req, res, next) {
  * GET /api/transport/factures — liste paginée pour la datatable, de la plus
  * récente à la plus ancienne. Query : page, pageSize (5-100), societe,
  * statut (impayee | payee, '' = toutes), debut / fin (date de création).
- * Totaux : figés si payée via ORTALOG (facture_paid_time > 0), sinon en
+ * Totaux : figés si payée via l'application (facture_paid_time > 0), sinon en
  * direct. Renvoie { rows, total, page, pageSize, totalPages }.
  */
 async function listFactures(req, res, next) {

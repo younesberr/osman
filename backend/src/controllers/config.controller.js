@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { BRAND, cfgKey } = require('../config/brand');
 const {
   CONFIG_VAR: SON_CONFIG_VAR,
   SON_TYPES,
@@ -14,7 +15,7 @@ const { invaliderStatutLabels } = require('../utils/statutLabels');
  * Le libellé est porté par delevery_string (string_ref = parcel_statut_name,
  * lang 'fr'), comme dans le système legacy ; parcel_statut_name reçoit une clé
  * de langue lang_db_parcel_statut_<code>. parcel_statut_nom n'est conservé
- * qu'en miroir : l'API mobile legacy (orta/api_orta, StatutModel) le lit encore.
+ * qu'en miroir : l'API mobile de l'ancien système PHP le lit encore.
  */
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
@@ -539,12 +540,12 @@ async function deleteSon(req, res, next) {
  * Configuration > Options — moyens logistiques : catalogue des marques de
  * véhicules et intervalles de maintenance par type de moyen (Moto, VL, PL).
  * Stockage : delevery_configs — une ligne JSON par marque
- * (var 'ortalog_moyen_marque') et une ligne JSON d'intervalles par type
- * (var 'ortalog_moyen_maintenance').
+ * (var app_moyen_marque) et une ligne JSON d'intervalles par type
+ * (var app_moyen_maintenance).
  */
 
-const MARQUE_CONFIG_VAR = 'ortalog_moyen_marque';
-const MAINTENANCE_CONFIG_VAR = 'ortalog_moyen_maintenance';
+const MARQUE_CONFIG_VAR = cfgKey('moyen_marque');
+const MAINTENANCE_CONFIG_VAR = cfgKey('moyen_maintenance');
 
 const MOYEN_TYPES = ['moto', 'vl', 'pl'];
 
@@ -780,14 +781,14 @@ async function saveMaintenance(req, res, next) {
 /*
  * Configuration > Options — modèle du message WhatsApp que le livreur envoie
  * au destinataire depuis /livreur/colis (bouton « Message WhatsApp »).
- * Stockage : delevery_configs, une ligne (var 'ortalog_message_livreur'),
+ * Stockage : delevery_configs, une ligne (var app_message_livreur),
  * créée au premier enregistrement. Balises remplacées côté livreur par les
  * données du colis : {destinataire} {code} {magasin} {crbt} {adresse} {ville}.
  */
 
-const MESSAGE_LIVREUR_CONFIG_VAR = 'ortalog_message_livreur';
+const MESSAGE_LIVREUR_CONFIG_VAR = cfgKey('message_livreur');
 const MESSAGE_LIVREUR_DEFAUT =
-  'Bonjour {destinataire}, je suis le livreur ORTALOG. J’ai un colis pour vous : {code} ({magasin}), montant à régler : {crbt}. Adresse : {adresse}, {ville}. Merci de me confirmer votre disponibilité.';
+  BRAND.messages.livreurDefaut;
 const MESSAGE_LIVREUR_MAX = 1000;
 
 /** Modèle courant (défaut si jamais enregistré) — réutilisé par l'API livreur. */

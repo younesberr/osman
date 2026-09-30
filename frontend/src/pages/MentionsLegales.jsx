@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import HomeFooter from '../components/HomeFooter';
-import { HOME_INFO } from '../config/homeInfo';
+import { BRAND, HOME_INFO } from '../config/brand';
 import '../home.css';
+import PublicLogo from '../components/PublicLogo';
 
 /**
  * Page publique « Mentions légales » — portage de l'ancienne page PHP
- * (orta/files/mentions_legales.php), complétée avec les vraies coordonnées
+ * (ancien site PHP), complétée avec les vraies coordonnées
  * de la société (l'ancienne page contenait des valeurs à remplir du type
  * « ICE : 00XXXXXXXX »), dans l'habillage public du nouveau site.
  */
@@ -18,7 +19,7 @@ export default function MentionsLegales() {
             <i className="fa fa-home" /> الرئيسية
           </Link>
           <Link to="/" className="navbar-brand">
-            <img className="logo-header" src="/home/header-logo.png" width="780" height="220" alt="أورطالوج" />
+            <PublicLogo className="logo-header" />
           </Link>
         </div>
       </nav>
@@ -29,7 +30,7 @@ export default function MentionsLegales() {
             <i className="fa fa-scale-balanced" /> الإشارات القانونية
           </div>
           <h1>الإشارات القانونية</h1>
-          <p>Mentions légales — ORTALOG</p>
+          <p>Mentions légales — {BRAND.name}</p>
         </div>
       </div>
 
@@ -40,7 +41,7 @@ export default function MentionsLegales() {
               <i className="fa fa-building" /> 1. Présentation du site
             </h2>
             <p>
-              <strong>ORTALOG</strong> est une société spécialisée dans la livraison de colis
+              <strong>{BRAND.name}</strong> est une société spécialisée dans la livraison de colis
               partout au Maroc.
             </p>
             <p>
@@ -73,19 +74,21 @@ export default function MentionsLegales() {
             </h2>
             <p>Le site est hébergé par :</p>
             <p>
-              <strong>Hostinger International Ltd.</strong>
+              <strong>{HOME_INFO.hebergeur.nom}</strong>
             </p>
-            <p>
-              <a href="https://www.hostinger.com" target="_blank" rel="noopener noreferrer">
-                www.hostinger.com
-              </a>
-            </p>
+            {HOME_INFO.hebergeur.url && (
+              <p>
+                <a href={HOME_INFO.hebergeur.url} target="_blank" rel="noopener noreferrer">
+                  {HOME_INFO.hebergeur.url}
+                </a>
+              </p>
+            )}
 
             <h2>
               <i className="fa fa-copyright" /> 3. Propriété intellectuelle
             </h2>
             <p>
-              Le contenu du site ORTALOG (textes, images, logos, design, etc.) est protégé par
+              Le contenu du site {BRAND.name} (textes, images, logos, design, etc.) est protégé par
               le droit d'auteur. Toute reproduction, distribution ou modification sans
               autorisation écrite est strictement interdite.
             </p>
@@ -94,7 +97,7 @@ export default function MentionsLegales() {
               <i className="fa fa-user-shield" /> 4. Collecte et protection des données
             </h2>
             <p>
-              ORTALOG s'engage à protéger les informations personnelles collectées via le
+              {BRAND.name} s'engage à protéger les informations personnelles collectées via le
               formulaire de contact, l'inscription clients ou le suivi des colis.
             </p>
             <p>Aucune donnée ne sera vendue ou partagée avec des tiers sans consentement.</p>
@@ -111,7 +114,7 @@ export default function MentionsLegales() {
               <i className="fa fa-triangle-exclamation" /> 6. Responsabilité
             </h2>
             <p>
-              ORTALOG s'efforce de fournir des informations exactes mais ne peut garantir
+              {BRAND.name} s'efforce de fournir des informations exactes mais ne peut garantir
               l'absence totale d'erreurs.
             </p>
 

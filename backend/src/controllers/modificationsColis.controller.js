@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const { resolveClientFees, CLIENT_EDIT_FIELDS } = require('./parcels.controller');
 const { lireOptionFraisMontant, ajusterFraisMontant } = require('../utils/fraisMontant');
 
@@ -346,7 +345,6 @@ async function accepterDemande(req, res, next) {
     );
 
     await conn.commit();
-    emettreEvenement('MODIF_ACCEPTEE', { demandeId: id, nbChangements: changes.length, userId: Number(req.user.id) || 0 });
     res.json({
       id,
       statut: 'ACCEPTED',
@@ -376,7 +374,6 @@ async function refuserDemande(req, res, next) {
     if (!result.affectedRows) {
       return res.status(404).json({ message: 'Demande introuvable ou déjà traitée.' });
     }
-    emettreEvenement('MODIF_REFUSEE', { demandeId: id, userId: Number(req.user.id) || 0 });
     res.json({ id, statut: 'REFUSED', treated_by: req.user.name || '', treated_time: now });
   } catch (err) {
     next(err);

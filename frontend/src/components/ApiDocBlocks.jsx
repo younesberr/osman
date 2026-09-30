@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BRAND } from '../config/brand';
 import { Copy, Check } from 'lucide-react';
 
 /*
@@ -9,7 +10,7 @@ import { Copy, Check } from 'lucide-react';
  */
 
 /** URL de base de l'API (production). */
-export const BASE_URL = 'https://ortalog.ma/api';
+export const BASE_URL = BRAND.apiBaseUrl;
 
 /** Bouton copier : icône Copy → Check pendant 1,6 s après la copie. */
 export function CopyBtn({ text, title = 'Copier' }) {

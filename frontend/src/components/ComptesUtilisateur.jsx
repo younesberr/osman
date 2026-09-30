@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { BRAND } from '../config/brand';
 import { KeyRound, Pencil, Plus, Power, Save, X } from 'lucide-react';
 import api from '../api/client';
 import SearchableSelect from './SearchableSelect';
@@ -196,7 +197,7 @@ function CompteModal({ userId, compte, comptes, filtres, onClose, onSaved }) {
                 type="text"
                 value={form.users_email}
                 maxLength={250}
-                placeholder="compte@ortalog.ma"
+                placeholder={`compte@${BRAND.emailDomain}`}
                 onChange={(e) => setField('users_email', e.target.value)}
               />
             </label>
@@ -373,7 +374,7 @@ function CompteSelfModal({ apiBase, compte, onClose, onSaved }) {
                 type="text"
                 value={form.users_email}
                 maxLength={250}
-                placeholder="compte@ortalog.ma"
+                placeholder={`compte@${BRAND.emailDomain}`}
                 onChange={(e) => setField('users_email', e.target.value)}
               />
             </label>

@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const { getScanSonUrls } = require('../utils/scanSons');
 const { getAgenceScope, getAgenceVilleIds, parcelInAgence } = require('../utils/agenceScope');
 const { isBlockedByClient } = require('../utils/blocageClient');
@@ -519,7 +518,6 @@ async function addParcels(req, res, next) {
     } finally {
       conn.release();
     }
-    for (const a of added) emettreEvenement('STATUT', { parcelId: a.id, code: 'SENT', bonId: bon.id, userId: Number(req.user.id) || 0 });
     res.json({ added, skipped });
   } catch (err) {
     next(err);
@@ -608,7 +606,6 @@ async function scanParcel(req, res, next) {
     }
 
     if (failure) return res.status(failure.status).json({ message: failure.message });
-    emettreEvenement('STATUT', { parcelId: addedParcel.id, code: 'SENT', bonId: bon.id, userId: Number(req.user.id) || 0 });
     res.json({ message: `Colis « ${addedParcel.code} » ajouté au bon.`, parcel: addedParcel });
   } catch (err) {
     next(err);
@@ -801,7 +798,6 @@ async function setReceived(req, res, next) {
         );
       }
       await conn.commit();
-      for (const p of parcels) emettreEvenement('STATUT', { parcelId: p.id, code: 'RECEIVED', bonId: bon.id, userId: Number(req.user.id) || 0 });
       res.json({ id: bon.id, delivered: 1, closed: 1, receivedCount: parcels.length });
     } catch (err) {
       await conn.rollback();

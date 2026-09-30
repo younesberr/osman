@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const { TYPES_ENTREE, ajouterEntreeCaisse } = require('../utils/caisse');
 const UPLOADS_ROOT = require('../config/uploadsRoot');
 const { getAgenceScope } = require('../utils/agenceScope');
@@ -33,7 +32,7 @@ const { getAgenceScope } = require('../utils/agenceScope');
  *    (parcel_refused_by, repli parcel_livreur), et frais de refus > 0
  *    uniquement (frais nuls : rien à payer, colis non listé).
  *
- * Frais livreur d'un colis (ordre de priorité) : tarifs du livreur ORTALOG
+ * Frais livreur d'un colis (ordre de priorité) : tarifs du livreur de l'application
  * (delevery_livreur_tarifs, fiche livreur) → tarifs legacy (delevery_liv_fees)
  * → tarif par défaut du livreur (users_livreur_delivered_price /
  * users_livreur_refused_price). Colis de remboursement livré (parcel_is_remb
@@ -44,7 +43,7 @@ const { getAgenceScope } = require('../utils/agenceScope');
  * -frais. Montant total = somme des prix (mêmes règles que le legacy),
  * moins les frais supplémentaires du livreur rattachés à la facture.
  *
- * Frais supplémentaires (delevery_livreur_frais, table ORTALOG) : à la
+ * Frais supplémentaires (delevery_livreur_frais, table de l'application) : à la
  * création d'une facture, les frais « Nouveau » du livreur non rattachés et
  * datés du jour de la facture ou avant y sont rattachés (frais_facture_id).
  * Tant que la facture est en brouillon, les frais « Nouveau » non rattachés
@@ -102,7 +101,7 @@ const ELIGIBLE_REFUSE_SQL = `(p.parcel_status IN ('IN_PROGRESS', 'RETURNED')
 
 /**
  * Expression SQL du frais livreur d'un colis (alias p) pour le livreur
- * `livExpr` : tarifs ORTALOG → tarifs legacy → tarif par défaut du livreur.
+ * `livExpr` : tarifs de l'application → tarifs legacy → tarif par défaut du livreur.
  * Colis de remboursement livré (parcel_is_remb = 1, seul le colis créé à
  * l'acceptation porte ce drapeau — utils/remboursement) : montant remboursé
  * seul (frais supp du colis, parcel_extra_fees).
@@ -201,7 +200,7 @@ function factureEditable(facture) {
   return Number(facture.statut) === STATUTS.draft;
 }
 
-/** La preuve : URL locale si le fichier est chez ORTALOG, sinon marqueur legacy. */
+/** La preuve : URL locale si le fichier est hébergé par l'application, sinon marqueur legacy. */
 function preuveInfo(screen) {
   const name = String(screen || '').trim();
   if (!name) return null;
@@ -1119,13 +1118,6 @@ async function setStatut(req, res, next) {
     } finally {
       conn.release();
     }
-    // CRM WhatsApp (après commit) : brouillon -> enregistrée / payée.
-    if (code !== STATUTS.draft && Number(facture.statut) === STATUTS.draft) {
-      emettreEvenement('FACTURE_LIVREUR_ENREGISTREE', { factureId: facture.id, livreurId: facture.livreur_id, userId: Number(req.user.id) || 0 });
-    }
-    if (code === STATUTS.paid) {
-      emettreEvenement('FACTURE_LIVREUR_PAYEE', { factureId: facture.id, livreurId: facture.livreur_id, userId: Number(req.user.id) || 0 });
-    }
     res.json({
       id: facture.id,
       statut: code,
@@ -1276,7 +1268,7 @@ async function deleteFacture(req, res, next) {
  * POST /api/factures-livreurs/:id/preuve — upload de la preuve de paiement
  * (photo ou PDF, multer en amont). Fichier stocké dans uploads/versements,
  * nom enregistré dans payment_note_screen (colonne legacy) ; l'ancien fichier
- * ORTALOG est supprimé (jamais un fichier legacy).
+ * de l'application est supprimé (jamais un fichier legacy).
  */
 async function uploadPreuve(req, res, next) {
   try {

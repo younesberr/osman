@@ -1,3 +1,4 @@
+import { BRAND } from '../config/brand';
 /*
  * Outils communs aux générateurs PDF (html2canvas + jsPDF).
  *
@@ -89,8 +90,8 @@ function couleurApp(nom, defaut) {
  */
 export function ecrireOngletAttente(win, libelle = 'Génération du PDF…') {
   if (!win) return;
-  const primaire = couleurApp('--primary', '#1c428a');
-  const secondaire = couleurApp('--secondary', '#f6db14');
+  const primaire = couleurApp('--primary', BRAND.colorPrimary);
+  const secondaire = couleurApp('--secondary', BRAND.colorSecondary);
   const logo = document.querySelector('img.brand-logo')?.src || '';
   const html = `<!doctype html>
 <html lang="fr"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -106,7 +107,7 @@ export function ecrireOngletAttente(win, libelle = 'Génération du PDF…') {
   }
   .carte {
     width: min(420px, 100%); background: #fff; border-radius: 20px; padding: 34px 30px 28px; text-align: center;
-    box-shadow: 0 20px 60px rgba(28, 66, 138, 0.12); animation: apparait 0.45s ease-out;
+    box-shadow: 0 20px 60px rgba(216, 6, 19, 0.12); animation: apparait 0.45s ease-out;
   }
   .logo { display: block; max-height: 56px; max-width: 220px; margin: 0 auto 24px; }
   .anneau { position: relative; width: 78px; height: 78px; margin: 0 auto 22px; }

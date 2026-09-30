@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { BRAND } from '../../config/brand';
 import { Link } from 'react-router-dom';
 import {
   ArrowDown,
@@ -116,7 +117,7 @@ function InfoProduitModal({ produitId, onClose }) {
  * Modale « Entrée au stock » / « Sortie du stock » : mouvement fait par le
  * client sur son propre produit (flux normal, tracé dans delevery_product_mvnt).
  * Le mouvement part en « stock en attente » (product_qte_attente) et ne sera
- * appliqué au stock disponible qu'après validation par ORTALOG.
+ * appliqué au stock disponible qu'après validation par la société.
  * Le commentaire est facultatif et enregistré dans mvnt_commentaire.
  */
 function MouvementModal({ produit, type, onClose, onSaved }) {
@@ -205,7 +206,7 @@ function MouvementModal({ produit, type, onClose, onSaved }) {
             <TriangleAlert size={16} />
             <span>
               Ce mouvement sera ajouté au stock en attente et appliqué au stock disponible après
-              validation par ORTALOG.
+              validation par {BRAND.name}.
             </span>
           </p>
 

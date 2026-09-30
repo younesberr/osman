@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const { getScanSonUrls } = require('../utils/scanSons');
 const { getAgenceScope } = require('../utils/agenceScope');
 const { statutLabel } = require('../utils/statutLabels');
@@ -194,7 +193,7 @@ async function listZones(req, res, next) {
 /**
  * GET /api/bons-distribution/livreurs — livreurs actifs (users_type = 5).
  * Query zone : restreint aux livreurs rattachés à la zone — users_city
- * legacy (zone_id ou ville de la zone) ou users_ville_id ORTALOG (ville de
+ * legacy (zone_id ou ville de la zone) ou users_ville_id de l'application (ville de
  * la zone). Sans zone : tous (filtre livreur de la liste des bons).
  */
 async function listLivreurs(req, res, next) {
@@ -636,7 +635,6 @@ async function addParcels(req, res, next) {
     } finally {
       conn.release();
     }
-    for (const a of added) emettreEvenement('STATUT', { parcelId: a.id, code: 'DISTRIBUTION', bonId: bon.id, livreurId: bon.livreur_id, userId: Number(req.user.id) || 0 });
     res.json({ added, skipped });
   } catch (err) {
     next(err);
@@ -719,7 +717,6 @@ async function scanParcel(req, res, next) {
     }
 
     if (failure) return res.status(failure.status).json({ message: failure.message });
-    emettreEvenement('STATUT', { parcelId: addedParcel.id, code: 'DISTRIBUTION', bonId: bon.id, livreurId: bon.livreur_id, userId: Number(req.user.id) || 0 });
     res.json({ message: `Colis « ${addedParcel.code} » ajouté au bon.`, parcel: addedParcel });
   } catch (err) {
     next(err);
@@ -966,7 +963,6 @@ async function setSaved(req, res, next) {
         WHERE distribution_note_id = ?`,
       [saved, bon.id]
     );
-    if (saved === 1) emettreEvenement('BON_DISTRIBUTION_ENREGISTRE', { bonId: bon.id, livreurId: bon.livreur_id, userId: Number(req.user.id) || 0 });
     res.json({ id: bon.id, save: saved });
   } catch (err) {
     next(err);

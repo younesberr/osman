@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { BRAND } from '../../config/brand';
 import {
   Ban,
   CheckCircle2,
@@ -790,7 +791,7 @@ function RamasseurCard({ demande, actif, onRamasse }) {
               <a
                 className="btn ram-action-ico ram-action-wa btn-whatsapp"
                 href={`https://wa.me/${waPhone(phone)}?text=${encodeURIComponent(
-                  'Bonjour, je suis le ramasseur ORTALOG. Je vous contacte au sujet du ramassage de vos colis.'
+                  BRAND.messages.ramasseurRamassage
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -962,7 +963,7 @@ function BonRetourCard({ bon, onRetourne }) {
             <a
               className="btn ram-action-ico ram-action-wa btn-whatsapp"
               href={`https://wa.me/${waPhone(phone)}?text=${encodeURIComponent(
-                'Bonjour, je suis le ramasseur ORTALOG. Je vous contacte au sujet du retour de vos colis.'
+                BRAND.messages.ramasseurRetour
               )}`}
               target="_blank"
               rel="noopener noreferrer"

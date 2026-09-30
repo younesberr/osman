@@ -4,6 +4,7 @@ import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { ADMIN_MENU, DETAIL_LABELS, childService, hasAccess, hasTypeAccess } from '../config/adminMenu';
 import SidebarLayout from './SidebarLayout';
+import { BRAND } from '../config/brand';
 
 /*
  * Compteur de notification (badge rouge) de chaque entrée de la sidebar :
@@ -23,19 +24,18 @@ const BADGE_KEYS = {
   '/admin/messages/form-accueil': 'messagesAccueil',
   '/admin/nouveaux-clients': 'nouveauxClients',
   '/admin/clients': 'clients',
-  '/admin/clients-non-verifies': 'clientsNonVerifies',
-  '/admin/api-liaison/whatsapp/discussions': 'whatsapp'
+  '/admin/clients-non-verifies': 'clientsNonVerifies'
 };
 
 /**
  * Dashboard admin : SidebarLayout avec le menu admin filtré par les services
  * de l'employé, puis les items et sous-menus par fonction (`types`) et, pour
- * les sous-menus qui portent leur propre `service` (ex. Discussions WhatsApp),
+ * les sous-menus qui portent leur propre `service`,
  * par ce code — le parent reste visible dès qu'un sous-menu l'est.
  * Les badges rouges (éléments en attente de chaque module) viennent d'un seul
  * appel /dashboard/admin/compteurs, rafraîchi à chaque navigation — traiter un
  * élément puis changer de page met donc les compteurs à jour — et sur
- * l'événement window « ortalog:compteurs » (ex. discussion WhatsApp ouverte).
+ * l'événement window BRAND.events.compteurs (ex. colis scanné dans Sans adresse).
  */
 export default function AdminLayout() {
   const { user } = useAuth();
@@ -52,10 +52,10 @@ export default function AdminLayout() {
         })
         .catch(() => {});
     charger();
-    window.addEventListener('ortalog:compteurs', charger);
+    window.addEventListener(BRAND.events.compteurs, charger);
     return () => {
       cancelled = true;
-      window.removeEventListener('ortalog:compteurs', charger);
+      window.removeEventListener(BRAND.events.compteurs, charger);
     };
   }, [user, location.pathname]);
 

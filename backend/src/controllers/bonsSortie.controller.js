@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const { getServicePhone } = require('./clients.controller');
 const { getAgenceScope, parcelInAgence } = require('../utils/agenceScope');
 const { getProduitsByParcel, attachStockProduits } = require('../utils/parcelProduits');
@@ -18,13 +17,13 @@ const { statutLabel } = require('../utils/statutLabels');
  *  - sinon delivery_note_stock_affecter renseigné → « Affecté » ;
  *  - sinon → « Nouveau ».
  *
- * delivery_note_stock_affecter (colonne ORTALOG, migration SQL manuelle) :
+ * delivery_note_stock_affecter (colonne de l'application, migration SQL manuelle) :
  * utilisateur auquel le bon est affecté. Le traitement, le PDF et les tickets
  * ne sont possibles qu'après affectation.
  *
  * Ajout d'un colis au bon : simple ligne delevery_dns_parcels, le colis reste
  * WAITING_PICKUP (dans le legacy le colis passait NEW_PARCEL → WAITING_PICKUP,
- * statut que les colis de stock ORTALOG ont déjà à leur création). Traitement :
+ * statut que les colis de stock de l'application ont déjà à leur création). Traitement :
  * les colis du bon encore WAITING_PICKUP passent en PICKED_UP + ligne
  * d'historique, comme le ramassage par scan.
  */
@@ -523,7 +522,6 @@ async function traiterBon(req, res, next) {
         );
       }
       await conn.commit();
-      for (const p of parcels) emettreEvenement('STATUT', { parcelId: p.id, code: 'PICKED_UP', bonId: bon.id, userId: Number(req.user.id) || 0 });
       res.json({ id: bon.id, delivered: 1, pickedCount: parcels.length });
     } catch (err) {
       await conn.rollback();

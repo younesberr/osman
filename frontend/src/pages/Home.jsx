@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import api from '../api/client';
 import HomeFooter from '../components/HomeFooter';
-import { HOME_INFO } from '../config/homeInfo';
+import { BRAND, HOME_INFO } from '../config/brand';
 import '../home.css';
+import PublicLogo from '../components/PublicLogo';
 
 /**
  * Page d'accueil publique — reproduction fidèle de la page d'accueil de
- * l'ancien site PHP (orta/files/home.php) : arabe RTL, police Cairo,
- * bleu #1C428A / jaune #f6db14. Le suivi de colis et le formulaire de
+ * l'ancien site PHP (ancien site PHP) : arabe RTL, police Cairo,
+ * rouge #d80613 / noir #111111. Le suivi de colis et le formulaire de
  * contact appellent les endpoints publics /api/public/*.
  */
 
@@ -27,7 +28,7 @@ const SERVICES = [
     title: 'توصيل سريع في كل المغرب',
     icon: 'fa-truck-fast',
     accent: false,
-    text: 'بفضل شبكتنا الوطنية المحسّنة، تضمن أورطالوج آجال تسليم قصيرة وموثوقة. أينما كان عملاؤك، نضمن توزيعاً فعّالاً وفي الوقت المحدد.'
+    text: `بفضل شبكتنا الوطنية المحسّنة، تضمن ${BRAND.nameAr} آجال تسليم قصيرة وموثوقة. أينما كان عملاؤك، نضمن توزيعاً فعّالاً وفي الوقت المحدد.`
   },
   {
     title: 'استلام من طرد واحد',
@@ -125,7 +126,7 @@ const RULES = [
     icon: 'fa-ban',
     variant: 'accent',
     title: 'المنتجات الممنوعة',
-    text: 'يُحظر إرسال المواد المحظورة قانوناً. تتبرأ أورطالوج من أي مسؤولية عن هذه الشحنات.'
+    text: `يُحظر إرسال المواد المحظورة قانوناً. تتبرأ ${BRAND.nameAr} من أي مسؤولية عن هذه الشحنات.`
   },
   {
     icon: 'fa-box-open',
@@ -137,7 +138,7 @@ const RULES = [
     icon: 'fa-comments',
     variant: 'primary',
     title: 'تواصل فوري وسريع',
-    text: 'أبلغوا أورطالوج فوراً عند أي تغيير أو مشكلة لتحسين عملية التسليم وتجنب التأخير.'
+    text: `أبلغوا ${BRAND.nameAr} فوراً عند أي تغيير أو مشكلة لتحسين عملية التسليم وتجنب التأخير.`
   }
 ];
 
@@ -315,7 +316,7 @@ export default function Home() {
       <nav className="navbar-custom">
         <div className="container navbar-inner">
           <Link to="/" className="navbar-brand">
-            <img className="logo-header" src="/home/header-logo.png" width="780" height="220" alt="أورطالوج" />
+            <PublicLogo className="logo-header" />
           </Link>
           <button
             type="button"
@@ -381,7 +382,7 @@ export default function Home() {
                 في كل مكان بالمغرب
               </h1>
               <p className="hero-subtitle">
-                أورطالوج — الحل الأمثل لإدارة شحناتك. من الاستلام حتى التسليم بتتبع لحظي وخدمة عملاء
+                {BRAND.nameAr} — الحل الأمثل لإدارة شحناتك. من الاستلام حتى التسليم بتتبع لحظي وخدمة عملاء
                 احترافية تُعلي من قيمة تجارتك.
               </p>
               <div className="hero-cta">
@@ -483,7 +484,7 @@ export default function Home() {
       <section id="how-it-works" className="how-section">
         <div className="container">
           <div className="section-title">
-            <h2>كيف تعمل أورطالوج؟</h2>
+            <h2>كيف تعمل {BRAND.nameAr}؟</h2>
             <p>أربع خطوات بسيطة لإيصال طردك وتحصيل ثمنه في أسرع وقت</p>
           </div>
           <div className="steps-grid">

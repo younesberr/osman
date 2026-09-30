@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { BRAND } from '../../config/brand';
 import { Landmark, MapPin, MessageCircle, Plus, Power, RefreshCw, Save, Scale, Tags, Trash2, Truck, Upload, Volume2, Wrench } from 'lucide-react';
 import api from '../../api/client';
 import { statutLabel, rafraichirStatutLabels } from '../../utils/statuts';
@@ -21,7 +22,7 @@ function ColorPicker({ value, onChange }) {
         value={value}
         maxLength={7}
         onChange={(e) => onChange(e.target.value.trim())}
-        placeholder="#1c428a"
+        placeholder={BRAND.colorPrimary}
       />
     </span>
   );
@@ -673,7 +674,7 @@ function SonsSection() {
 /** Balises remplacées par les données du colis + valeurs d'exemple pour l'aperçu. */
 const MSG_LIVREUR_BALISES = [
   { balise: '{destinataire}', label: 'Destinataire', exemple: 'Mohamed Alami' },
-  { balise: '{code}', label: 'Code du colis', exemple: 'HCM0726260513LR' },
+  { balise: '{code}', label: 'Code du colis', exemple: 'OSM0926100002LR' },
   { balise: '{magasin}', label: 'Magasin', exemple: 'Amine shop' },
   { balise: '{crbt}', label: 'Montant à encaisser', exemple: '700 DH' },
   { balise: '{adresse}', label: 'Adresse', exemple: '17 Rue Oued Zem' },

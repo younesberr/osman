@@ -1,5 +1,5 @@
 /* ================================================================
-   ORTALOG — Page d'accueil publique (RTL arabe, bleu & jaune)
+   Page d'accueil publique (RTL arabe, couleurs de la marque)
    Portage fidèle de assets/main-page/css/style_home.css de l'ancien
    site PHP. Tout est scopé sous .home-ar : aucun impact sur le reste
    de l'application (dashboards en français LTR).
@@ -39,8 +39,8 @@
 }
 
 .home-ar {
-  --main-color: #1C428A;
-  --second-color: #f6db14;
+  --main-color: #d80613;
+  --second-color: #111111;
   --dark-bg: #0b1220;
   --light-bg: #f4f7fb;
   --text-dark: #1a2332;
@@ -194,7 +194,11 @@
 }
 /* width/height auto : les attributs width/height de l'<img> (anti-CLS) ne fixent
    que le ratio, la hauteur max garde la taille d'affichage. */
-.home-ar .logo-header { max-height: 55px; width: auto; height: auto; display: block; }
+.home-ar .logo-header {
+  max-height: 47px; width: auto; height: auto; display: block;
+  /* Pastille blanche : logo à texte noir lisible sur la barre colorée. */
+  background: #fff; padding: 4px 10px; border-radius: 8px;
+}
 .home-ar .navbar-menu {
   display: flex;
   align-items: center;
@@ -241,7 +245,7 @@
   gap: 6px;
   transition: var(--transition);
 }
-.home-ar .btn-nav-solid:hover { background: #e6cb00; }
+.home-ar .btn-nav-solid:hover { background: #333333; }
 .home-ar .navbar-burger {
   display: none;
   background: transparent;
@@ -295,7 +299,7 @@
    SECTION HERO
    ================================================================ */
 .home-ar .hero-section {
-  background: linear-gradient(135deg, #08173d 0%, #1C428A 55%, #1a5cb0 100%);
+  background: linear-gradient(135deg, #3a0004 0%, #d80613 55%, #ff3b3b 100%);
   min-height: 92vh;
   display: flex;
   align-items: center;
@@ -313,7 +317,7 @@
 .home-ar .hero-bg-circle { position: absolute; border-radius: 50%; pointer-events: none; }
 .home-ar .hero-bg-circle.c1 {
   width: 520px; height: 520px;
-  background: rgba(246, 219, 20, 0.05);
+  background: rgba(17, 17, 17, 0.05);
   bottom: -160px; left: -160px;
 }
 .home-ar .hero-bg-circle.c2 {
@@ -323,7 +327,7 @@
 }
 .home-ar .hero-bg-circle.c3 {
   width: 200px; height: 200px;
-  background: rgba(246, 219, 20, 0.06);
+  background: rgba(17, 17, 17, 0.06);
   top: 40%; right: 30%;
 }
 
@@ -331,8 +335,8 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(246, 219, 20, 0.12);
-  border: 1px solid rgba(246, 219, 20, 0.4);
+  background: rgba(17, 17, 17, 0.12);
+  border: 1px solid rgba(17, 17, 17, 0.4);
   color: var(--second-color);
   padding: 7px 20px;
   border-radius: 50px;
@@ -373,10 +377,10 @@
   cursor: pointer;
 }
 .home-ar .btn-hero-primary:hover {
-  background: #e6cb00;
+  background: #333333;
   color: var(--main-color);
   transform: translateY(-3px);
-  box-shadow: 0 10px 28px rgba(246, 219, 20, 0.45);
+  box-shadow: 0 10px 28px rgba(17, 17, 17, 0.45);
 }
 .home-ar .btn-hero-outline {
   display: inline-flex;
@@ -433,7 +437,7 @@
   flex: 1;
   min-width: 0;
 }
-.home-ar .tracking-box .form-control:focus { box-shadow: 0 0 0 3px rgba(246, 219, 20, 0.4); }
+.home-ar .tracking-box .form-control:focus { box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.4); }
 .home-ar .btn-track {
   height: 52px;
   background: var(--second-color);
@@ -453,9 +457,9 @@
   gap: 6px;
 }
 .home-ar .btn-track:hover {
-  background: #e6cb00;
+  background: #333333;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(246, 219, 20, 0.35);
+  box-shadow: 0 6px 20px rgba(17, 17, 17, 0.35);
 }
 .home-ar .track-result { margin-top: 16px; }
 .home-ar .track-result .alert { margin-bottom: 0; }
@@ -505,7 +509,7 @@
   box-shadow: var(--card-shadow);
   transition: var(--transition);
   height: 100%;
-  border: 1px solid rgba(28, 66, 138, 0.06);
+  border: 1px solid rgba(216, 6, 19, 0.06);
   position: relative;
   overflow: hidden;
 }
@@ -522,14 +526,14 @@
 .home-ar .service-card:hover {
   transform: translateY(-9px);
   box-shadow: var(--card-hover-shadow);
-  border-color: rgba(28, 66, 138, 0.12);
+  border-color: rgba(216, 6, 19, 0.12);
 }
 .home-ar .service-card:hover::after { width: 100%; }
 .home-ar .service-icon {
   width: 70px;
   height: 70px;
   border-radius: 18px;
-  background: linear-gradient(135deg, var(--main-color), #1a5cb0);
+  background: linear-gradient(135deg, var(--main-color), #ff3b3b);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -540,7 +544,7 @@
   flex-shrink: 0;
 }
 .home-ar .service-icon.accent {
-  background: linear-gradient(135deg, var(--second-color), #e6cb00);
+  background: linear-gradient(135deg, var(--second-color), #333333);
   color: var(--main-color);
 }
 .home-ar .service-card:hover .service-icon { transform: scale(1.08); }
@@ -561,7 +565,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--main-color), #1a5cb0);
+  background: linear-gradient(135deg, var(--main-color), #ff3b3b);
   color: #fff;
   font-size: 1.7rem;
   font-weight: 900;
@@ -569,7 +573,7 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px;
-  box-shadow: 0 8px 25px rgba(28, 66, 138, 0.3);
+  box-shadow: 0 8px 25px rgba(216, 6, 19, 0.3);
   font-family: 'Cairo', sans-serif;
   position: relative;
   z-index: 1;
@@ -580,7 +584,7 @@
   right: calc(50% + 32px);
   width: calc(100% - 64px);
   height: 2px;
-  background: linear-gradient(to left, rgba(28, 66, 138, 0.4), rgba(246, 219, 20, 0.6));
+  background: linear-gradient(to left, rgba(216, 6, 19, 0.4), rgba(17, 17, 17, 0.6));
   z-index: 0;
 }
 .home-ar .step-icon-wrap {
@@ -588,7 +592,7 @@
   height: 78px;
   border-radius: 22px;
   background: #f0f5ff;
-  border: 2px dashed rgba(28, 66, 138, 0.18);
+  border: 2px dashed rgba(216, 6, 19, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -598,7 +602,7 @@
   transition: var(--transition);
 }
 .home-ar .step-item:hover .step-icon-wrap {
-  background: linear-gradient(135deg, var(--main-color), #1a5cb0);
+  background: linear-gradient(135deg, var(--main-color), #ff3b3b);
   color: #fff;
   border-color: transparent;
   transform: scale(1.05);
@@ -656,9 +660,9 @@
   margin-bottom: 20px;
   transition: var(--transition);
 }
-.home-ar .rule-icon.primary { background: linear-gradient(135deg, var(--main-color), #1a5cb0); color: #fff; }
-.home-ar .rule-icon.accent { background: linear-gradient(135deg, var(--second-color), #e6cb00); color: var(--main-color); }
-.home-ar .rule-icon.ghost { background: rgba(28, 66, 138, 0.07); color: var(--main-color); }
+.home-ar .rule-icon.primary { background: linear-gradient(135deg, var(--main-color), #ff3b3b); color: #fff; }
+.home-ar .rule-icon.accent { background: linear-gradient(135deg, var(--second-color), #333333); color: var(--main-color); }
+.home-ar .rule-icon.ghost { background: rgba(216, 6, 19, 0.07); color: var(--main-color); }
 .home-ar .rule-card:hover .rule-icon { transform: scale(1.08); }
 .home-ar .rule-card h5 { color: var(--main-color); font-weight: 700; font-size: 1rem; margin-bottom: 10px; }
 .home-ar .rule-card p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.75; margin: 0; }
@@ -668,7 +672,7 @@
    ================================================================ */
 .home-ar .pricing-section {
   padding: 80px 0;
-  background: linear-gradient(135deg, #08173d 0%, var(--main-color) 60%, #1a5cb0 100%);
+  background: linear-gradient(135deg, #3a0004 0%, var(--main-color) 60%, #ff3b3b 100%);
   position: relative;
   overflow: hidden;
 }
@@ -676,7 +680,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 80% 50%, rgba(246, 219, 20, 0.06), transparent 60%);
+  background: radial-gradient(ellipse at 80% 50%, rgba(17, 17, 17, 0.06), transparent 60%);
 }
 .home-ar .pricing-inner { position: relative; z-index: 1; }
 .home-ar .pricing-card {
@@ -692,7 +696,7 @@
 .home-ar .pricing-card:hover {
   background: rgba(255, 255, 255, 0.14);
   transform: translateY(-7px);
-  border-color: rgba(246, 219, 20, 0.3);
+  border-color: rgba(17, 17, 17, 0.3);
 }
 .home-ar .pricing-card .p-icon {
   width: 66px;
@@ -768,7 +772,7 @@
 }
 .home-ar .contact-form-wrap .form-control:focus {
   border-color: var(--main-color);
-  box-shadow: 0 0 0 3px rgba(28, 66, 138, 0.1);
+  box-shadow: 0 0 0 3px rgba(216, 6, 19, 0.1);
 }
 .home-ar .btn-submit {
   background: var(--main-color);
@@ -790,7 +794,7 @@
 .home-ar .btn-submit:hover {
   background: #153672;
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(28, 66, 138, 0.3);
+  box-shadow: 0 10px 28px rgba(216, 6, 19, 0.3);
   color: #fff;
 }
 .home-ar .btn-submit:disabled { opacity: 0.65; cursor: not-allowed; transform: none; box-shadow: none; }
@@ -804,14 +808,14 @@
   border-radius: var(--radius);
   margin-bottom: 14px;
   transition: var(--transition);
-  border: 1px solid rgba(28, 66, 138, 0.06);
+  border: 1px solid rgba(216, 6, 19, 0.06);
 }
 .home-ar .contact-info-item:hover { background: #eef3fc; transform: translateX(-4px); }
 .home-ar .ci-icon {
   width: 52px;
   height: 52px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--main-color), #1a5cb0);
+  background: linear-gradient(135deg, var(--main-color), #ff3b3b);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -819,11 +823,11 @@
   font-size: 20px;
   flex-shrink: 0;
 }
-.home-ar .ci-icon.yellow { background: linear-gradient(135deg, var(--second-color), #e6cb00); color: var(--main-color); }
+.home-ar .ci-icon.yellow { background: linear-gradient(135deg, var(--second-color), #333333); color: var(--main-color); }
 .home-ar .ci-icon.green { background: linear-gradient(135deg, #1db954, #25d366); color: #fff; }
 .home-ar .ci-label { font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 2px; }
 .home-ar .ci-value { font-weight: 700; color: var(--main-color); font-size: 0.95rem; display: block; }
-.home-ar a.ci-value:hover { color: #1a5cb0; }
+.home-ar a.ci-value:hover { color: #ff3b3b; }
 .home-ar .follow-label { color: var(--main-color); font-weight: 700; margin: 24px 0 14px; }
 
 .home-ar .social-links { display: flex; gap: 12px; }
@@ -893,7 +897,8 @@
 .home-ar .footer-contact .footer-hours { color: rgba(192, 202, 219, 0.7); }
 .home-ar .footer-about p { color: #c0cadb; line-height: 1.85; font-size: 0.9rem; margin-top: 4px; }
 .home-ar .footer-logo {
-  max-height: 52px;
+  max-height: 44px;
+  background: #fff; padding: 4px 10px; border-radius: 8px;
   width: auto;
   height: auto;
   margin-bottom: 16px;
@@ -1012,7 +1017,7 @@
 .home-ar .page-nav-inner { display: flex; align-items: center; justify-content: space-between; }
 
 /* ================================================================
-   PAGE TARIFS PUBLIQUE (portage de orta/files/tarifs.php)
+   PAGE TARIFS PUBLIQUE (portage de l'ancien site PHP)
    ================================================================ */
 .home-ar .tarifs-hero {
   background: var(--main-color);
@@ -1023,7 +1028,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(246, 219, 20, 0.18);
+  background: rgba(17, 17, 17, 0.18);
   color: var(--second-color);
   border-radius: 30px;
   padding: 5px 18px;
@@ -1073,7 +1078,7 @@
 .home-ar .ss-control:focus,
 .home-ar .ss-control-open {
   border-color: var(--main-color);
-  box-shadow: 0 0 0 3px rgba(28, 66, 138, 0.1);
+  box-shadow: 0 0 0 3px rgba(216, 6, 19, 0.1);
 }
 .home-ar .ss-menu {
   border: 2px solid #dde3ef;
@@ -1173,7 +1178,7 @@
   font-weight: 700;
   white-space: nowrap;
 }
-.home-ar .badge-price.livraison { background: #e8f3ff; color: #1C428A; }
+.home-ar .badge-price.livraison { background: #fdeaea; color: #d80613; }
 .home-ar .badge-price.retour { background: #fff4e5; color: #b85c00; }
 .home-ar .badge-price.free { background: #e6f9f0; color: #0a7a4b; }
 
@@ -1247,8 +1252,8 @@
 }
 
 /* ================================================================
-   PAGES CONTRAT & MENTIONS LÉGALES (portage de orta/files/contrat.php
-   et orta/files/mentions_legales.php : documents français LTR dans
+   PAGES CONTRAT & MENTIONS LÉGALES (portage de l'ancien site PHP
+   et de l'ancien site PHP : documents français LTR dans
    l'habillage public RTL)
    ================================================================ */
 .home-ar .legal-section { background: #f4f7fb; padding: 40px 0 64px; }
@@ -1506,7 +1511,7 @@
 
 /* ================================================================
    PAGE CONDITIONS D'UTILISATION (portage de
-   orta/files/conditions_utilisation.php : document français LTR —
+   ancien site PHP : document français LTR —
    sommaire à ancres, cartes numérotées, carte contact en dégradé)
    ================================================================ */
 .home-ar .cond-content {
@@ -1700,7 +1705,7 @@
    PAGE INSCRIPTION /register (« Devenir client »)
    Structure héritée de l'ancienne page register.php (carte à en-tête
    dégradé, sections, grille 2 colonnes, consentements), recolorée à
-   la charte du site public (bleu #1C428A / jaune #f6db14).
+   la charte du site public (rouge #d80613 / noir #111111).
    ================================================================ */
 .home-ar .reg-body {
   min-height: calc(100vh - 75px);
@@ -1719,7 +1724,7 @@
   overflow: hidden;
 }
 .home-ar .reg-head {
-  background: linear-gradient(135deg, #08173d 0%, var(--main-color) 60%, #1a5cb0 100%);
+  background: linear-gradient(135deg, #3a0004 0%, var(--main-color) 60%, #ff3b3b 100%);
   padding: 30px 36px 26px;
   text-align: center;
 }
@@ -1735,8 +1740,8 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: rgba(246, 219, 20, 0.12);
-  border: 1px solid rgba(246, 219, 20, 0.35);
+  background: rgba(17, 17, 17, 0.12);
+  border: 1px solid rgba(17, 17, 17, 0.35);
   border-radius: 8px;
   padding: 5px 14px;
   font-size: 0.78rem;
@@ -1789,7 +1794,7 @@
 .home-ar .reg-field input:focus {
   border-color: var(--main-color);
   background: #fff;
-  box-shadow: 0 0 0 4px rgba(28, 66, 138, 0.12);
+  box-shadow: 0 0 0 4px rgba(216, 6, 19, 0.12);
 }
 .home-ar .reg-field input::placeholder { color: #9ca3af; }
 .home-ar .reg-field.optional input { border-style: dashed; }
@@ -1844,7 +1849,7 @@
 .home-ar .reg-btn:hover {
   background: #153672;
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(28, 66, 138, 0.3);
+  box-shadow: 0 10px 28px rgba(216, 6, 19, 0.3);
 }
 .home-ar .reg-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; box-shadow: none; }
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BRAND } from '../../config/brand';
 import { Building2, Pencil, Plus, Power, Save, X } from 'lucide-react';
 import api from '../../api/client';
 import { usePagination, Pager } from '../../components/Pagination';
@@ -318,7 +319,7 @@ function GestionAgencesSection() {
               type="text"
               value={form.email}
               maxLength={255}
-              placeholder="agence@ortalog.ma"
+              placeholder={`agence@${BRAND.emailDomain}`}
               onChange={(e) => setField('email', e.target.value)}
             />
           </label>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { BRAND } from '../../config/brand';
 import {
   ArrowDown,
   ArrowUp,
@@ -352,8 +353,8 @@ export default function Statistiques() {
             label="CA facturé"
             value={formatMontant(ca?.cod_facture)}
             sub={ca ? `${formatNombre(ca.nb_livres_factures)} colis livrés sur factures payées` : undefined}
-            color="#1c428a"
-            bg={bg('#1c428a')}
+            color={BRAND.colorPrimary}
+            bg={bg(BRAND.colorPrimary)}
           />
           <StatIconCard
             icon={HandCoins}

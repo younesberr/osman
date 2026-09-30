@@ -2,41 +2,42 @@ const path = require('path');
 const fs = require('fs');
 const pool = require('../config/db');
 const UPLOADS_ROOT = require('../config/uploadsRoot');
+const { BRAND, cfgKey } = require('../config/brand');
 
 /**
  * Paramètres de la plateforme (branding) stockés dans delevery_configs.
- * Clés préfixées « ortalog_platform_ » : propres à cette application,
+ * Clés préfixées « app_ » (cfgKey) : propres à cette application,
  * on ne touche jamais aux clés historiques (config_company_logo, etc.).
  */
 const KEYS = {
-  logo: 'ortalog_platform_logo',
-  icon: 'ortalog_platform_favicon',
-  colorPrimary: 'ortalog_platform_color_primary',
-  colorSecondary: 'ortalog_platform_color_secondary',
-  entete: 'ortalog_company_entete'
+  logo: cfgKey('platform_logo'),
+  icon: cfgKey('platform_favicon'),
+  colorPrimary: cfgKey('platform_color_primary'),
+  colorSecondary: cfgKey('platform_color_secondary'),
+  entete: cfgKey('company_entete')
 };
 
 const DEFAULTS = {
   logo: null,
   icon: null,
-  colorPrimary: '#1c428a',
-  colorSecondary: '#f6db14',
+  colorPrimary: BRAND.colorPrimary,
+  colorSecondary: BRAND.colorSecondary,
   entete: null
 };
 
 /* Information société : une ligne delevery_configs par champ (créée si absente). */
 const SOCIETE_KEYS = {
-  nom: 'ortalog_company_name',
-  formeJuridique: 'ortalog_company_forme_juridique',
-  siege: 'ortalog_company_siege',
-  telFixe: 'ortalog_company_tel_fixe',
-  telMobile: 'ortalog_company_tel_mobile',
-  email: 'ortalog_company_email',
-  website: 'ortalog_company_website',
-  ice: 'ortalog_company_ice',
-  rc: 'ortalog_company_rc',
-  ifFiscal: 'ortalog_company_if',
-  cnss: 'ortalog_company_cnss'
+  nom: cfgKey('company_name'),
+  formeJuridique: cfgKey('company_forme_juridique'),
+  siege: cfgKey('company_siege'),
+  telFixe: cfgKey('company_tel_fixe'),
+  telMobile: cfgKey('company_tel_mobile'),
+  email: cfgKey('company_email'),
+  website: cfgKey('company_website'),
+  ice: cfgKey('company_ice'),
+  rc: cfgKey('company_rc'),
+  ifFiscal: cfgKey('company_if'),
+  cnss: cfgKey('company_cnss')
 };
 
 const UPLOAD_DIR = path.join(UPLOADS_ROOT, 'branding');
@@ -250,10 +251,10 @@ async function uploadBranding(req, res, next) {
  * version (nom du fichier) ; fichiers dans <uploads>/contrats/.
  * ------------------------------------------------------------------ */
 const CONTRAT_VERSIONS = {
-  particulier_fr: 'ortalog_contrat_particulier_fr',
-  particulier_ar: 'ortalog_contrat_particulier_ar',
-  societe_fr: 'ortalog_contrat_societe_fr',
-  societe_ar: 'ortalog_contrat_societe_ar'
+  particulier_fr: cfgKey('contrat_particulier_fr'),
+  particulier_ar: cfgKey('contrat_particulier_ar'),
+  societe_fr: cfgKey('contrat_societe_fr'),
+  societe_ar: cfgKey('contrat_societe_ar')
 };
 const CONTRATS_DIR = path.join(UPLOADS_ROOT, 'contrats');
 

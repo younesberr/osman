@@ -1,4 +1,5 @@
 import React from 'react';
+import { BRAND } from './config/brand';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
@@ -17,7 +18,7 @@ import './styles.css';
 // onglet resté ouvert échoue à charger une page différée (React.lazy).
 // On recharge alors la page une fois pour repartir sur le nouveau build.
 window.addEventListener('vite:preloadError', (event) => {
-  const KEY = 'ortalog:preload-reload';
+  const KEY = BRAND.storage.preloadReload;
   try {
     const last = Number(sessionStorage.getItem(KEY) || 0);
     if (Date.now() - last < 10000) return; // pas de boucle de rechargements

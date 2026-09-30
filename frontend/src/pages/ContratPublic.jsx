@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
 import HomeFooter from '../components/HomeFooter';
-import { HOME_INFO } from '../config/homeInfo';
+import { BRAND, HOME_INFO } from '../config/brand';
 import '../home.css';
+import PublicLogo from '../components/PublicLogo';
 
 /**
  * Page publique « Contrat de prestation de services ».
@@ -15,7 +16,7 @@ import '../home.css';
  * les boutons : les navigateurs mobiles n'affichent pas les PDF en iframe).
  *
  * Sans PDF, la version particulier / français garde le texte intégré porté
- * de l'ancienne page PHP (orta/files/contrat.php : document imprimable,
+ * de l'ancienne page PHP (ancien site PHP : document imprimable,
  * filigrane, format A4) ; les autres versions sont signalées non disponibles.
  */
 
@@ -92,7 +93,7 @@ function ContratIndisponible({ lang }) {
 
 /**
  * Texte intégré du contrat particulier / français (portage fidèle de
- * orta/files/contrat.php) : affiché tant qu'aucun PDF n'est chargé pour
+ * ancien site PHP) : affiché tant qu'aucun PDF n'est chargé pour
  * cette version.
  */
 function ContratParticulierFrTexte() {
@@ -105,7 +106,7 @@ function ContratParticulierFrTexte() {
       </div>
 
       <div className="contract-container" dir="ltr" lang="fr">
-        <div className="watermark" aria-hidden="true">ORTALOG</div>
+        <div className="watermark" aria-hidden="true">{BRAND.name}</div>
 
         <h2>CONTRAT DE PRESTATION DE SERVICES</h2>
 
@@ -116,7 +117,7 @@ function ContratParticulierFrTexte() {
         <p>
           <strong>D'une part,</strong>
           <br />
-          La société <strong>ORTALOG</strong>, une société à responsabilité limitée, au
+          La société <strong>{BRAND.name}</strong>, {HOME_INFO.formeJuridique}, au
           capital de {HOME_INFO.capital} dirhams, dont le siège social est situé au{' '}
           <strong>{HOME_INFO.siegeFr}</strong>, immatriculée au registre de commerce de{' '}
           {HOME_INFO.rcVille} sous le numéro <strong>{HOME_INFO.rc}</strong>, et disposant
@@ -287,7 +288,7 @@ export default function ContratPublic() {
             <i className="fa fa-home" /> الرئيسية
           </Link>
           <Link to="/" className="navbar-brand">
-            <img className="logo-header" src="/home/header-logo.png" width="780" height="220" alt="أورطالوج" />
+            <PublicLogo className="logo-header" />
           </Link>
         </div>
       </nav>
@@ -298,7 +299,7 @@ export default function ContratPublic() {
             <i className="fa fa-file-signature" /> عقد الخدمة
           </div>
           <h1>عقد تقديم الخدمات</h1>
-          <p>Contrat de prestation de services — ORTALOG</p>
+          <p>Contrat de prestation de services — {BRAND.name}</p>
         </div>
       </div>
 

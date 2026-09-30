@@ -68,7 +68,7 @@ function handleSonUpload(req, res, next) {
   });
 }
 
-// Sons du scanner de ramassage (delevery_configs, var 'ortalog_scan_son').
+// Sons du scanner de ramassage (delevery_configs, var app_scan_son).
 router.get('/sons', listSons);
 router.post('/sons', handleSonUpload, createSon);
 router.put('/sons/:id', handleSonUpload, updateSon);
@@ -103,17 +103,17 @@ router.post('/statuts', createStatut);
 router.put('/statuts/:id', updateStatut);
 router.patch('/statuts/:id/active', setStatutActive);
 
-// Moyens logistiques : marques de véhicules (delevery_configs, var 'ortalog_moyen_marque').
+// Moyens logistiques : marques de véhicules (delevery_configs, var app_moyen_marque).
 router.get('/moyens/marques', listMarques);
 router.post('/moyens/marques', createMarque);
 router.put('/moyens/marques/:id', updateMarque);
 router.patch('/moyens/marques/:id/active', setMarqueActive);
 
-// Moyens logistiques : intervalles maintenance par type (var 'ortalog_moyen_maintenance').
+// Moyens logistiques : intervalles maintenance par type (var app_moyen_maintenance).
 router.get('/moyens/maintenance', getMaintenance);
 router.put('/moyens/maintenance/:type', saveMaintenance);
 
-// Modèle du message WhatsApp livreur → destinataire (var 'ortalog_message_livreur').
+// Modèle du message WhatsApp livreur → destinataire (var app_message_livreur).
 router.get('/message-livreur', getMessageLivreur);
 router.put('/message-livreur', saveMessageLivreur);
 

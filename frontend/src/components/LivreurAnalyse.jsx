@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { BRAND } from '../config/brand';
 import {
   ArrowDown,
   ArrowUp,
@@ -668,8 +669,8 @@ export default function LivreurAnalyse({ fiche }) {
                 icon={Wallet}
                 label="Frais facturés aux clients"
                 value={formatMontant(e?.frais_clients)}
-                color="#1c428a"
-                bg={bg('#1c428a')}
+                color={BRAND.colorPrimary}
+                bg={bg(BRAND.colorPrimary)}
               />
               <StatIconCard
                 icon={HandCoins}

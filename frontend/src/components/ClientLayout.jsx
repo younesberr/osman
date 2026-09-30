@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BRAND } from '../config/brand';
 import { useLocation } from 'react-router-dom';
 import api from '../api/client';
 import { CLIENT_MENU, CLIENT_DETAIL_LABELS } from '../config/clientMenu';
@@ -22,7 +23,7 @@ const BADGE_KEYS = {
  * disparaît aussi.
  * Les badges rouges (ex. colis « Sans adresse » en attente de confirmation)
  * viennent d'un seul appel /dashboard/client/compteurs, rafraîchi à chaque
- * navigation et sur l'événement window « ortalog:compteurs ».
+ * navigation et sur l'événement window BRAND.events.compteurs.
  */
 export default function ClientLayout() {
   const { user } = useAuth();
@@ -39,10 +40,10 @@ export default function ClientLayout() {
         })
         .catch(() => {});
     charger();
-    window.addEventListener('ortalog:compteurs', charger);
+    window.addEventListener(BRAND.events.compteurs, charger);
     return () => {
       cancelled = true;
-      window.removeEventListener('ortalog:compteurs', charger);
+      window.removeEventListener(BRAND.events.compteurs, charger);
     };
   }, [user, location.pathname]);
 

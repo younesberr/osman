@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { HOME_INFO } from '../config/homeInfo';
+import { BRAND, HOME_INFO } from '../config/brand';
+import PublicLogo from './PublicLogo';
 
 /**
  * Footer des pages publiques (accueil, tarifs) — identique au ws_footer()
@@ -21,10 +22,10 @@ export default function HomeFooter({ scrollTo }) {
         <div className="footer-grid">
           <div className="footer-about">
             <Link to="/">
-              <img className="footer-logo" src="/home/header-logo.png" width="780" height="220" alt="أورطالوج" />
+              <PublicLogo className="footer-logo" />
             </Link>
             <p>
-              أورطالوج شركة متخصصة في خدمات التوصيل واللوجستيك، تقدم حلول النقل والاستلام والتخزين
+              {BRAND.nameAr} شركة متخصصة في خدمات التوصيل واللوجستيك، تقدم حلول النقل والاستلام والتخزين
               في جميع أرجاء المغرب.
             </p>
             <div className="social-links">
@@ -93,7 +94,7 @@ export default function HomeFooter({ scrollTo }) {
         </div>
       </div>
 
-      <div className="footer-bottom">© {new Date().getFullYear()} أورطالوج — جميع الحقوق محفوظة</div>
+      <div className="footer-bottom">© {new Date().getFullYear()} {BRAND.nameAr} — جميع الحقوق محفوظة</div>
     </footer>
   );
 }

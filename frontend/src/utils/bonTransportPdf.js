@@ -21,6 +21,7 @@
  */
 
 import { pagesVersPdf } from './pdfCapture';
+import { BRAND } from '../config/brand';
 
 // Page A4 rendue à 5 px / mm (1050 × 1485 px), capturée à l'échelle ECHELLE_A4 (utils/pdfCapture.js).
 const PAGE_W = 1050;
@@ -28,7 +29,7 @@ const PAGE_H = 1485;
 const PAD_TOP = 240; // ≈ 48 mm : le texte ne touche pas le logo de l'en-tête.
 const PAD_SIDE = 60; // ≈ 12 mm
 const PAD_BOTTOM = 170; // ≈ 34 mm : réservé au pied de page.
-const BLEU = '#1c428a'; // Bleu du papier à en-tête (texte du pied posé sur la bande jaune).
+const BLEU = BRAND.colorPrimary; // Couleur principale de la marque (texte du pied de page).
 // Coupure d'une ligne d'expéditeur en bas de page : on garde la partie qui
 // tient si elle compte au moins ce nombre de codes, sinon la ligne entière
 // part sur la page suivante.

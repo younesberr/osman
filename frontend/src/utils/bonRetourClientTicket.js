@@ -49,7 +49,7 @@ function esc(value) {
     .replace(/>/g, '&gt;');
 }
 
-/** "0661280962" → "06-61-28-09-62" (les autres formats sont laissés tels quels). */
+/** "0612345678" → "06-12-34-56-78" (les autres formats sont laissés tels quels). */
 function formatPhone(phone) {
   const digits = String(phone || '').replace(/\D/g, '');
   return digits.length === 10 ? digits.replace(/(\d{2})(?=\d)/g, '$1-') : String(phone || '');

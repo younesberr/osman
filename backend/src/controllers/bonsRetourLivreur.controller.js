@@ -1,12 +1,11 @@
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const { getScanSonUrls } = require('../utils/scanSons');
 const { statutLabel } = require('../utils/statutLabels');
 const { STATUT_ATTENTE_REEXPEDITION } = require('../utils/reexpedition');
 
 /*
  * Bons de retour livreur (delevery_return_note + delevery_rn_parcels, tables
- * ORTALOG — sql/2026-08-21_bons-retour-livreur.sql) : un bon regroupe les
+ * de l'application — sql/2026-08-21_bons-retour-livreur.sql) : un bon regroupe les
  * colis « En cours » (IN_PROGRESS) d'un livreur à retourner vers l'agence
  * principale, ainsi que ses colis échange livrés (parcel_replace = 1) dont la
  * marchandise échangée n'est pas encore retournée (parcel_returned_livreur =
@@ -553,7 +552,6 @@ async function addParcels(req, res, next) {
     } finally {
       conn.release();
     }
-    for (const a of added) emettreEvenement('STATUT', { parcelId: a.id, code: STATUT_EXPEDIE, bonId: bon.id, userId: Number(req.user.id) || 0 });
     res.json({ added, skipped });
   } catch (err) {
     next(err);
@@ -626,7 +624,6 @@ async function scanParcel(req, res, next) {
     }
 
     if (failure) return res.status(failure.status).json({ message: failure.message });
-    emettreEvenement('STATUT', { parcelId: addedParcel.id, code: STATUT_EXPEDIE, bonId: bon.id, userId: Number(req.user.id) || 0 });
     res.json({ message: `Colis « ${addedParcel.code} » ajouté au bon.`, parcel: addedParcel });
   } catch (err) {
     next(err);
@@ -878,7 +875,6 @@ async function scanReception(req, res, next) {
     }
 
     if (failure) return res.status(failure.status).json({ message: failure.message });
-    emettreEvenement('STATUT', { parcelId: receivedParcel.id, code: STATUT_RECU, bonId: bon.id, userId: Number(req.user.id) || 0 });
     res.json({
       message: `Colis « ${receivedParcel.code} » reçu par l'agence.`,
       parcel: receivedParcel,
@@ -931,7 +927,6 @@ async function setReceived(req, res, next) {
           await receiveParcel(conn, bon, parcel, null, Number(req.user.id), now);
         }
         await conn.commit();
-        for (const p of parcels) emettreEvenement('STATUT', { parcelId: p.id, code: STATUT_RECU, bonId: bon.id, userId: Number(req.user.id) || 0 });
         return res.json({ id: bon.id, delivered: 1, received_time: now, receivedCount: parcels.length });
       }
 

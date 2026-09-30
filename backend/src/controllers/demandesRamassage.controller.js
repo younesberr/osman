@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const {
   getAgenceScope,
   villeInAgenceSql,
@@ -18,7 +17,7 @@ const {
  *  - pickup_request_type   : SIMPLE_PARCEL (colis) | STOCK (colis de stock) ;
  *  - pickup_request_affected_to : ramasseur (users_type = 6) auquel la demande
  *    est affectée, 0 = non affectée (colonne legacy, jamais renseignée avant
- *    ORTALOG) ;
+ *    cette application) ;
  *  - pickup_request_member : membre d'équipe auteur de la demande (0 =
  *    propriétaire / legacy), colonne ajoutée par
  *    sql/2026-08-23_demandes-ramassage-colonne-membre.sql (absence tolérée) ;
@@ -32,7 +31,7 @@ const {
  *  - pickup_request_canceled : 1 = clôturée par « Annuler le ramassage »
  *    (statut TREATED comme un ramassage normal — le legacy ne connaît pas
  *    d'autre statut fermé et le cycle des demandes automatiques repart —
- *    mais affichée « Annulée » dans ORTALOG), colonne ajoutée par
+ *    mais affichée « Annulée » dans l'application), colonne ajoutée par
  *    sql/2026-08-27_ramassage-annulation.sql (absence tolérée : le bouton
  *    « Annuler le ramassage » renvoie alors un message d'indisponibilité) ;
  *  - l'admin peut aussi créer une demande manuellement pour un client
@@ -229,7 +228,6 @@ async function createClientDemande(req, res, next) {
       );
     }
 
-    emettreEvenement('RAMASSAGE_CREEE', { demandeId: result.insertId, origine: 'client' });
     res.status(201).json({
       id: result.insertId,
       type,
@@ -287,9 +285,8 @@ async function createAutoDemandeRamassage(customerId, memberId = 0) {
         [...params, Number(customerId), STATUTS.new, STATUTS.received]
       );
     const base = [Number(customerId), 'SIMPLE_PARCEL', phone, address, NOTE_AUTO, now, STATUTS.new];
-    let resultat = null;
     try {
-      [resultat] = await insert(
+      await insert(
         `pickup_request_customer, pickup_request_type, pickup_request_data_id,
          pickup_request_phone, pickup_request_address, pickup_request_note,
          pickup_request_time, pickup_request_statut, pickup_request_affected_to,
@@ -301,7 +298,7 @@ async function createAutoDemandeRamassage(customerId, memberId = 0) {
       // pickup_request_member absent : on retente sans attribution nominative.
       if (err.code !== 'ER_BAD_FIELD_ERROR') throw err;
       try {
-        [resultat] = await insert(
+        await insert(
           `pickup_request_customer, pickup_request_type, pickup_request_data_id,
            pickup_request_phone, pickup_request_address, pickup_request_note,
            pickup_request_time, pickup_request_statut, pickup_request_affected_to,
@@ -314,10 +311,6 @@ async function createAutoDemandeRamassage(customerId, memberId = 0) {
         // migration n'est pas exécutée (aucune ligne "indistinguable" créée).
         if (err2.code !== 'ER_BAD_FIELD_ERROR') throw err2;
       }
-    }
-    // CRM WhatsApp : demande réellement créée (NOT EXISTS satisfait).
-    if (resultat && resultat.affectedRows > 0) {
-      emettreEvenement('RAMASSAGE_CREEE', { demandeId: resultat.insertId, origine: 'auto' });
     }
   } catch (err) {
     console.error('Demande de ramassage automatique non créée :', err.message);
@@ -400,12 +393,6 @@ async function createDemandesPeriodiques(date = new Date()) {
     }
     if (result.affectedRows > 0) {
       console.log(`Ramassage périodique (${jour}) : ${result.affectedRows} demande(s) créée(s).`);
-      // CRM WhatsApp : un événement par demande créée à l'instant.
-      const [creees] = await pool.query(
-        'SELECT pickup_request_id FROM delevery_pickup_request WHERE pickup_request_note = ? AND pickup_request_time = ?',
-        [NOTE_PERIODIQUE, now]
-      );
-      for (const d of creees) emettreEvenement('RAMASSAGE_CREEE', { demandeId: d.pickup_request_id, origine: 'periodique' });
     }
   } catch (err) {
     console.error('Demandes de ramassage périodiques non créées :', err.message);
@@ -517,7 +504,6 @@ async function createAdminDemande(req, res, next) {
         [clientId, type, phone, address, note, now, STATUTS.new]
       );
     }
-    emettreEvenement('RAMASSAGE_CREEE', { demandeId: result.insertId, origine: 'admin', userId: Number(req.user.id) || 0 });
     res.status(201).json({ id: result.insertId, statut: 'new' });
   } catch (err) {
     next(err);
@@ -801,7 +787,6 @@ async function affecterDemande(req, res, next) {
         WHERE pickup_request_id = ?`,
       [ramasseur.id, STATUTS.received, demande.id]
     );
-    emettreEvenement('RAMASSAGE_AFFECTEE', { demandeId: demande.id, ramasseurId: ramasseur.id, userId: Number(req.user.id) || 0 });
     res.json({ id: demande.id, statut: 'received', affecterId: ramasseur.id, affecterNom: ramasseur.nom });
   } catch (err) {
     next(err);
@@ -858,7 +843,6 @@ async function ramasserDemande(req, res, next) {
         WHERE pickup_request_id = ?`,
       [STATUTS.treated, demande.id]
     );
-    emettreEvenement('RAMASSAGE_EFFECTUEE', { demandeId: demande.id, userId: Number(req.user.id) || 0 });
     res.json({ id: demande.id, statut: 'treated' });
   } catch (err) {
     next(err);
@@ -871,7 +855,7 @@ async function ramasserDemande(req, res, next) {
  * legacy ne connaît pas d'autre statut fermé, le cycle repart donc à
  * l'identique — le prochain colis saisi par le client recréera une demande
  * automatique) mais marquée pickup_request_canceled = 1, affichée « Annulée »
- * dans ORTALOG. Mêmes droits que « Ramasser ». Refusée si la colonne n'est
+ * dans l'application. Mêmes droits que « Ramasser ». Refusée si la colonne n'est
  * pas encore migrée, plutôt que d'afficher à tort la demande comme ramassée.
  */
 async function annulerDemande(req, res, next) {
@@ -893,7 +877,6 @@ async function annulerDemande(req, res, next) {
           "L'annulation n'est pas encore disponible (migration sql/2026-08-27_ramassage-annulation.sql à exécuter)."
       });
     }
-    emettreEvenement('RAMASSAGE_ANNULEE', { demandeId: demande.id, userId: Number(req.user.id) || 0 });
     res.json({ id: demande.id, statut: 'treated', canceled: 1 });
   } catch (err) {
     next(err);

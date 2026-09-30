@@ -15,6 +15,7 @@
  */
 
 import { pagesVersPdf } from './pdfCapture';
+import { BRAND } from '../config/brand';
 
 import { statutLabel } from './statuts';
 
@@ -23,7 +24,7 @@ const PAGE_H = 1485;
 const PAD_TOP = 240;
 const PAD_SIDE = 60;
 const PAD_BOTTOM = 170;
-const BLEU = '#1c428a';
+const BLEU = BRAND.colorPrimary;
 
 const STYLE = `
 .fp-page {

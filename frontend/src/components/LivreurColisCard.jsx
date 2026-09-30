@@ -1,4 +1,5 @@
 import { Banknote, Lock, MapPin, MessageSquare, Phone, PhoneCall, RefreshCw, Route, User } from 'lucide-react';
+import { BRAND } from '../config/brand';
 import {
   statutLabel,
   STATUT_ATTENTE_REEXPEDITION,
@@ -22,8 +23,7 @@ function waPhone(phone) {
 
 /* Modèle de repli si le serveur ne répond pas — même défaut que le backend
  * (Configuration > Options > Message WhatsApp livreur). */
-const WA_TEMPLATE_DEFAUT =
-  'Bonjour {destinataire}, je suis le livreur ORTALOG. J’ai un colis pour vous : {code} ({magasin}), montant à régler : {crbt}. Adresse : {adresse}, {ville}. Merci de me confirmer votre disponibilité.';
+const WA_TEMPLATE_DEFAUT = BRAND.messages.livreurDefaut;
 
 /** Balises du modèle admin → valeurs du colis. */
 function waMessage(parcel, template) {

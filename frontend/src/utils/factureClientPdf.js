@@ -16,6 +16,7 @@
  */
 
 import { pagesVersPdf } from './pdfCapture';
+import { BRAND } from '../config/brand';
 
 import { statutLabel } from './statuts';
 import { montantEnLettres } from './factureLivreurPdf';
@@ -25,7 +26,7 @@ const PAGE_H = 1485;
 const PAD_TOP = 240;
 const PAD_SIDE = 60;
 const PAD_BOTTOM = 170;
-const BLEU = '#1c428a';
+const BLEU = BRAND.colorPrimary;
 
 const STYLE = `
 .fp-page {
@@ -283,7 +284,7 @@ export async function genererFactureClientPdf({ facture, parcels, societe, onPro
     }),
     { crbt: 0, frais: 0, fraisSupp: 0, prix: 0 }
   );
-  // Frais rattachés (ORTALOG + legacy) et remise : déduits du net à payer.
+  // Frais rattachés (application + legacy) et remise : déduits du net à payer.
   const fraisSupp = facture.frais || [];
   const totalFraisSupp = fraisSupp.reduce((acc, f) => acc + Number(f.montant || 0), 0);
   const remise = Number(facture.remise) || 0;

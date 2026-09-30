@@ -128,11 +128,6 @@ const FicheLogistique = lazy(() => import('./pages/admin/FicheLogistique'));
 const Materiel = lazy(() => import('./pages/admin/Materiel'));
 const StatistiquesGlobales = lazy(() => import('./pages/admin/StatistiquesGlobales'));
 const StatistiquesMateriels = lazy(() => import('./pages/admin/StatistiquesMateriels'));
-const ApiLiaisonConfiguration = lazy(() => import('./pages/admin/ApiLiaisonConfiguration'));
-const WhatsAppDiscussions = lazy(() => import('./pages/admin/WhatsAppDiscussions'));
-const WhatsAppModeles = lazy(() => import('./pages/admin/WhatsAppModeles'));
-const WhatsAppActions = lazy(() => import('./pages/admin/WhatsAppActions'));
-const WhatsAppStatistiques = lazy(() => import('./pages/admin/WhatsAppStatistiques'));
 
 /** Pages admin développées ; les autres chemins retombent sur EmptyPage. */
 const PAGE_COMPONENTS = {
@@ -190,12 +185,7 @@ const PAGE_COMPONENTS = {
   '/admin/configuration/villes': Villes,
   '/admin/configuration/tarifs': Tarifs,
   '/admin/configuration/options': Options,
-  '/admin/configuration/plateforme': PlatformSettings,
-  '/admin/api-liaison/configuration': ApiLiaisonConfiguration,
-  '/admin/api-liaison/whatsapp/discussions': WhatsAppDiscussions,
-  '/admin/api-liaison/whatsapp/modeles': WhatsAppModeles,
-  '/admin/api-liaison/whatsapp/actions': WhatsAppActions,
-  '/admin/api-liaison/whatsapp/statistiques': WhatsAppStatistiques
+  '/admin/configuration/plateforme': PlatformSettings
 };
 
 /** Bons de retour du livreur connecté : page admin réutilisée en mode « self ». */

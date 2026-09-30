@@ -37,7 +37,7 @@ import { factureClientStatut, ligneStatut } from './FacturesClients';
  * (déduits du montant total, comme la remise legacy ; rattachement
  * automatique à la création ; frais legacy en lecture seule) + frais
  * « Nouveau » non rattachés du client. En brouillon : bouton « Ajouter » sur
- * les frais non rattachés, « Retirer » sur les rattachés ORTALOG.
+ * les frais non rattachés, « Retirer » sur les rattachés de l’application.
  * Facture enregistrée ou payée : lecture seule.
  * Prix : livré → COD - frais - frais supp ; refusé / annulé → -frais - frais
  * supp. Montant total = somme des prix - frais - remise.
@@ -383,7 +383,7 @@ export default function FactureClientEdit() {
     }
   }
 
-  /** Retire un frais supplémentaire ORTALOG de la facture (jamais un legacy). */
+  /** Retire un frais supplémentaire de l’application de la facture (jamais un legacy). */
   async function retirerFrais(frais) {
     if (busy || !editable || frais.legacy) return;
     setBusy(true);
@@ -769,7 +769,7 @@ export default function FactureClientEdit() {
       </section>
 
       {/* Section 4 : frais supplémentaires du client — rattachés à la facture
-          (ORTALOG + legacy, déduits du montant total) + non rattachés,
+          (application + legacy, déduits du montant total) + non rattachés,
           ajoutables / retirables tant que la facture est en brouillon (les
           frais legacy restent en lecture seule). */}
       <section className="platform-card">

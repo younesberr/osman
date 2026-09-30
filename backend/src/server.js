@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { BRAND } = require('./config/brand');
 
 const express = require('express');
 const helmet = require('helmet');
@@ -43,30 +44,18 @@ const notificationsRoutes = require('./routes/notifications.routes');
 const logistiquesRoutes = require('./routes/logistiques.routes');
 const materielRoutes = require('./routes/materiel.routes');
 const statistiquesRoutes = require('./routes/statistiques.routes');
-const whatsappRoutes = require('./routes/whatsapp.routes');
 const pool = require('./config/db');
 const UPLOADS_ROOT = require('./config/uploadsRoot');
 const { startRamassagePeriodique } = require('./jobs/ramassagePeriodique');
-const { startWhatsappFile } = require('./jobs/whatsappFile');
-const { isSecretKeyConfigured, SECRET_KEY_ENV, SECRET_KEY_MIN } = require('./utils/secrets');
 
 if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
   console.error('ERREUR: JWT_SECRET manquant ou trop court (min 32 caractères) dans .env');
   process.exit(1);
 }
-// Clé de chiffrement des secrets WhatsApp (API liaison) : facultative au
-// démarrage — sans elle, la page explique quoi faire et refuse seulement
-// d'enregistrer le jeton Meta (voir utils/secrets.js).
-if (!isSecretKeyConfigured()) {
-  console.warn(
-    `AVERTISSEMENT: ${SECRET_KEY_ENV} absente ou trop courte (min ${SECRET_KEY_MIN} caractères) dans .env — ` +
-      'les secrets de la liaison WhatsApp ne pourront pas être enregistrés.'
-  );
-}
 
 const app = express();
 app.disable('x-powered-by');
-// Derrière le proxy Hostinger (TLS terminé en amont) : IP client réelle
+// Derrière le proxy de l'hébergeur (TLS terminé en amont) : IP client réelle
 // pour express-rate-limit et cookies secure.
 app.set('trust proxy', 1);
 
@@ -96,18 +85,7 @@ app.use(
 );
 // 2 Mo : les imports Excel de colis (jusqu'à 500 lignes, POST /api/parcels/
 // import*) envoient un JSON qui dépasse largement les 10 Ko par défaut.
-// `verify` conserve le corps brut du seul webhook WhatsApp : la signature
-// X-Hub-Signature-256 de Meta est un HMAC des octets reçus, impossible à
-// recalculer depuis l'objet JSON parsé (routes/whatsapp.routes.js).
-const WHATSAPP_WEBHOOK = '/api/whatsapp/webhook';
-app.use(
-  express.json({
-    limit: '2mb',
-    verify: (req, res, buf) => {
-      if (req.originalUrl.startsWith(WHATSAPP_WEBHOOK)) req.rawBody = buf;
-    }
-  })
-);
+app.use(express.json({ limit: '2mb' }));
 app.use(cookieParser());
 
 app.use(
@@ -117,10 +95,7 @@ app.use(
     limit: 120,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
-    message: { message: 'Trop de requêtes, veuillez patienter.' },
-    // Meta envoie les accusés de réception WhatsApp par rafales depuis peu
-    // d'adresses IP : le webhook a son propre limiteur (600/min).
-    skip: (req) => req.originalUrl.startsWith(WHATSAPP_WEBHOOK)
+    message: { message: 'Trop de requêtes, veuillez patienter.' }
   })
 );
 
@@ -167,7 +142,6 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/logistiques', logistiquesRoutes);
 app.use('/api/materiel', materielRoutes);
 app.use('/api/statistiques', statistiquesRoutes);
-app.use('/api/whatsapp', whatsappRoutes);
 
 // Fichiers uploadés (branding, fiches, pièces jointes…). En production,
 // UPLOADS_DIR pointe hors du checkout git : voir src/config/uploadsRoot.js.
@@ -230,9 +204,7 @@ app.use((err, req, res, next) => {
 
 const PORT = Number(process.env.PORT) || 5000;
 app.listen(PORT, () => {
-  console.log(`ORTALOG API démarrée sur http://localhost:${PORT}`);
+  console.log(`${BRAND.name} API démarrée sur http://localhost:${PORT}`);
   // Demandes de ramassage périodiques (12h00, jours de la fiche client).
   startRamassagePeriodique();
-  // File d'envoi WhatsApp (actions automatiques du CRM, toutes les 5 s).
-  startWhatsappFile();
 });

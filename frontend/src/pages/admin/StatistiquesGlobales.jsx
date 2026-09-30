@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BRAND } from '../../config/brand';
 import {
   AlertCircle,
   Bike,
@@ -132,7 +133,7 @@ function OngletPeriode({ data, range, onRange }) {
       <section className="dash-section" style={{ marginTop: 0 }}>
         <h2>Colis de la période</h2>
         <div className="stats-grid stats-grid-4">
-          <StatIconCard icon={Boxes} label="Total colis" value={formatNombre(c?.total)} color="#1c428a" bg={bg('#1c428a')} />
+          <StatIconCard icon={Boxes} label="Total colis" value={formatNombre(c?.total)} color={BRAND.colorPrimary} bg={bg(BRAND.colorPrimary)} />
           <StatIconCard icon={CheckCircle} label="Colis livrés" value={formatNombre(c?.livres)} color="#10b759" bg={bg('#10b759')} />
           <StatIconCard
             icon={Truck}
@@ -185,8 +186,8 @@ function OngletPeriode({ data, range, onRange }) {
             label="COD facturé"
             value={formatMontant(m?.cod_facture)}
             sub={m ? `${formatNombre(m.nb_livres_factures)} colis sur factures clients payées` : undefined}
-            color="#1c428a"
-            bg={bg('#1c428a')}
+            color={BRAND.colorPrimary}
+            bg={bg(BRAND.colorPrimary)}
           />
           <StatIconCard
             icon={HandCoins}
@@ -245,8 +246,8 @@ function OngletPeriode({ data, range, onRange }) {
             label="Réclamations"
             value={formatNombre(r?.total)}
             sub="créées dans la période"
-            color="#1c428a"
-            bg={bg('#1c428a')}
+            color={BRAND.colorPrimary}
+            bg={bg(BRAND.colorPrimary)}
           />
           <StatIconCard
             icon={CheckCircle}

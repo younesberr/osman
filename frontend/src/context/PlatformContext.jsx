@@ -1,11 +1,12 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { BRAND } from '../config/brand';
 import api from '../api/client';
 
 const DEFAULT_CONFIG = {
   logo: null,
   icon: null,
-  colorPrimary: '#1c428a',
-  colorSecondary: '#f6db14'
+  colorPrimary: BRAND.colorPrimary,
+  colorSecondary: BRAND.colorSecondary
 };
 
 const PlatformContext = createContext({ config: DEFAULT_CONFIG, refresh: () => {} });

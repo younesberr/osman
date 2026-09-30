@@ -8,7 +8,7 @@
  *  - sinon → parcel_status (type 2).
  * (parcel_statut_code, parcel_statut_type) est unique dans delevery_parcel_statut.
  * Défini ici (et non dans un contrôleur) pour être utilisable par les services
- * (ex. services/whatsappEvenements.js) sans cycle de require ;
+ * et les utilitaires sans cycle de require ;
  * parcels.controller.js le ré-exporte pour les contrôleurs existants.
  * Même CASE dans colisZero.controller.js et modificationsColis.controller.js.
  */

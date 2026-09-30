@@ -160,10 +160,9 @@ router.post('/:id/traiter', requireAuth, requireService('COLIS_ATTENTION'), marq
 // aussi ouvert au service BON_DISTRIBUTION (bouton « Détail de suivi » des
 // tableaux de la page d'un bon de distribution) et au service RETOUR (même
 // bouton sur les deux tableaux de la page d'un bon de retour livreur).
-// Suivi aussi ouvert au service WHATSAPP_DISCUSSIONS (volet contact des discussions WhatsApp).
 // Suivi, information, modification et changement de statut aussi ouverts au
 // service COLIS_SANS_ADRESSE (actions de ligne de la page Sans adresse).
-router.get('/:id/suivi', requireAuth, requireService(['COLIS', 'RECLAMATIONS', 'COLIS_ATTENTION', 'COLIS_SANS_ADRESSE', 'BON_DISTRIBUTION', 'RETOUR', 'WHATSAPP_DISCUSSIONS']), getParcelSuivi);
+router.get('/:id/suivi', requireAuth, requireService(['COLIS', 'RECLAMATIONS', 'COLIS_ATTENTION', 'COLIS_SANS_ADRESSE', 'BON_DISTRIBUTION', 'RETOUR']), getParcelSuivi);
 router.get('/:id/details', requireAuth, requireService(['COLIS', 'COLIS_ATTENTION', 'COLIS_SANS_ADRESSE']), getParcelDetails);
 router.get('/:id/edit', requireAuth, requireService(['COLIS', 'COLIS_ATTENTION', 'COLIS_SANS_ADRESSE']), getParcelEditData);
 router.get('/:id/tarif', requireAuth, requireService(['COLIS', 'COLIS_ATTENTION', 'COLIS_SANS_ADRESSE']), getParcelTarif);

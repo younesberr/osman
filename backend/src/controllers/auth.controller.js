@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { verifyPassword, hashPassword, isLegacyHash } = require('../utils/password');
 const { COOKIE_NAME } = require('../middleware/auth');
+const { BRAND } = require('../config/brand');
 
 const { parseServices } = require('../utils/access');
 
@@ -13,8 +14,8 @@ const COOKIE_TTL_MS = 8 * 60 * 60 * 1000;
 function signToken(payload) {
   return jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: TOKEN_TTL,
-    issuer: 'ortalog',
-    audience: 'ortalog-app'
+    issuer: BRAND.jwtIssuer,
+    audience: BRAND.jwtAudience
   });
 }
 
@@ -60,7 +61,7 @@ async function loginClient(req, res, next) {
       const ok = await verifyPassword(password, customer.customers_password);
       if (!ok) return res.status(401).json(GENERIC_FAIL);
       if (Number(customer.customers_active) !== 1) {
-        return res.status(403).json({ message: 'Compte désactivé. Contactez ORTALOG.' });
+        return res.status(403).json({ message: BRAND.messages.compteDesactive });
       }
 
       if (process.env.UPGRADE_LEGACY_HASHES === 'true' && isLegacyHash(customer.customers_password)) {
@@ -110,7 +111,7 @@ async function loginClient(req, res, next) {
       return res.status(403).json({ message: 'Compte désactivé. Contactez le propriétaire du compte.' });
     }
     if (Number(member.customers_active) !== 1) {
-      return res.status(403).json({ message: 'Compte désactivé. Contactez ORTALOG.' });
+      return res.status(403).json({ message: BRAND.messages.compteDesactive });
     }
 
     await pool.execute('UPDATE delevery_customer_members SET member_last_login_at = NOW() WHERE member_id = ?', [

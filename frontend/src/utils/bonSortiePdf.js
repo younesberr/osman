@@ -16,6 +16,7 @@
  */
 
 import { pagesVersPdf } from './pdfCapture';
+import { BRAND } from '../config/brand';
 
 // Page A4 rendue à 5 px / mm (1050 × 1485 px), capturée à l'échelle ECHELLE_A4 (utils/pdfCapture.js : 1,5 ≈ 190 dpi).
 const PAGE_W = 1050;
@@ -33,8 +34,8 @@ const STYLE = `
 .bs-content { height: 100%; overflow: hidden; }
 .bs-logo { height: 90px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
 .bs-logo img { max-height: 90px; max-width: 420px; }
-.bs-logo-txt { font-size: 44px; font-weight: 800; color: #1c428a; letter-spacing: 1px; }
-.bs-logo-txt span { color: #f6db14; }
+.bs-logo-txt { font-size: 44px; font-weight: 800; color: ${BRAND.colorPrimary}; letter-spacing: 1px; }
+.bs-logo-txt span { color: ${BRAND.colorSecondary}; }
 .bs-title { font-size: 23px; font-weight: 800; margin-bottom: 14px; }
 .bs-info { display: flex; flex-wrap: wrap; gap: 14px; border: 2px solid #1f2937; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; background: #fff; }
 .bs-info-item { flex: 1; min-width: 150px; }
@@ -95,7 +96,7 @@ function logoHtml(logoUrl) {
   return `<div class="bs-logo">${
     logoUrl
       ? `<img src="${logoUrl}" alt="" />`
-      : '<div class="bs-logo-txt">ORTALOG<span> LIVRAISON</span></div>'
+      : `<div class="bs-logo-txt">${BRAND.logoText.main}<span> ${BRAND.logoText.sub}</span></div>`
   }</div>`;
 }
 

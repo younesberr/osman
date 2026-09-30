@@ -17,7 +17,7 @@ const { estMigrationManquante } = require('../utils/transportBons');
  * résoudre la société de façon fiable ; unicité société × ville de la grille
  * conservée.
  *
- * Section « Trajets » (ORTALOG, sql/2026-09-18_transport-bons.sql) : un
+ * Section « Trajets » (application, sql/2026-09-18_transport-bons.sql) : un
  * trajet = un nom + des zones (delevery_zone) ; une zone n'appartient qu'à un
  * seul trajet. Les colis dont la ville de destination est dans une zone du
  * trajet rejoignent le bon de transport du jour de ce trajet.

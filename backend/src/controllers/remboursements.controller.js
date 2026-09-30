@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const { agenceIdFromVille } = require('../utils/agenceScope');
 
 /*
@@ -215,7 +214,6 @@ async function accepterRemboursement(req, res, next) {
     );
 
     await conn.commit();
-    emettreEvenement('REMB_ACCEPTE', { rembId: id, codeRemb: newCode, userId: Number(req.user.id) || 0 });
     res.json({
       id,
       statut: 'ACCEPTED',
@@ -246,7 +244,6 @@ async function refuserRemboursement(req, res, next) {
     if (!result.affectedRows) {
       return res.status(404).json({ message: 'Demande introuvable ou déjà traitée.' });
     }
-    emettreEvenement('REMB_REFUSE', { rembId: id, userId: Number(req.user.id) || 0 });
     res.json({ id, statut: 'REFUSED', treated_by: req.user.name || '', treated_time: now });
   } catch (err) {
     next(err);

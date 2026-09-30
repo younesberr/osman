@@ -1,7 +1,7 @@
 {
-  "name": "ortalog-backend",
+  "name": "osmanexpress-backend",
   "version": "1.0.0",
-  "description": "API de gestion ORTALOG - livraisons, personnel, materiel",
+  "description": "API de gestion OSMAN EXPRESS - livraisons, personnel, materiel",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

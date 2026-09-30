@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
 import '../home.css';
+import PublicLogo from '../components/PublicLogo';
+import { BRAND } from '../config/brand';
 
 /**
  * Page publique /register — « Devenir client » : reproduction de l'ancienne
- * page d'inscription (orta/clients/files/register.php) adaptée à la charte du
- * nouveau site public (arabe RTL, bleu #1C428A / jaune #f6db14, labels
+ * page d'inscription (ancien site PHP) adaptée à la charte du
+ * nouveau site public (arabe RTL, rouge #d80613 / noir #111111, labels
  * bilingues comme l'original). Mêmes champs et mêmes règles : nom, magasin,
  * CIN, email, téléphones, ville, adresse, mot de passe ×2, site web, RIB,
  * consentements CGU + CNDP. La demande part sur POST /api/public/register
@@ -122,7 +124,7 @@ export default function Register() {
             <i className="fa fa-home" /> الرئيسية
           </Link>
           <Link to="/" className="navbar-brand">
-            <img className="logo-header" src="/home/header-logo.png" width="780" height="220" alt="أورطالوج" />
+            <PublicLogo className="logo-header" />
           </Link>
         </div>
       </nav>
@@ -133,7 +135,7 @@ export default function Register() {
             <h1>
               إنضم إلينا <span className="reg-head-fr">— Devenir client</span>
             </h1>
-            <p>أنشئ حسابك في أورطالوج مجاناً — سنتواصل معك بعد مراجعة طلبك</p>
+            <p>أنشئ حسابك في {BRAND.nameAr} مجاناً — سنتواصل معك بعد مراجعة طلبك</p>
             <div className="reg-required-note">
               <i className="fa fa-asterisk" /> الخانات المميزة بعلامة * إجبارية
             </div>
@@ -147,7 +149,7 @@ export default function Register() {
                 </div>
                 <h2>تم إرسال طلبك بنجاح!</h2>
                 <p>
-                  شكراً لثقتك بأورطالوج. سيقوم فريقنا بمراجعة طلبك والتواصل معك في أقرب وقت
+                  شكراً لثقتك ب{BRAND.nameAr}. سيقوم فريقنا بمراجعة طلبك والتواصل معك في أقرب وقت
                   لتفعيل حسابك.
                 </p>
                 <Link to="/" className="btn-hero-primary">
@@ -330,7 +332,7 @@ export default function Register() {
                       <Link to="/conditions-utilisation" target="_blank">
                         شروط الاستخدام وسياسة الخصوصية
                       </Link>{' '}
-                      الخاصة بأورطالوج.<span className="reg-req">*</span>
+                      الخاصة ب{BRAND.nameAr}.<span className="reg-req">*</span>
                     </span>
                   </label>
                   <label className="reg-consent-item">
@@ -360,7 +362,7 @@ export default function Register() {
         </div>
 
         <div className="reg-footer">
-          © {new Date().getFullYear()} أورطالوج — جميع الحقوق محفوظة
+          © {new Date().getFullYear()} {BRAND.nameAr} — جميع الحقوق محفوظة
         </div>
       </div>
     </div>

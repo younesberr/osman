@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BRAND } from '../config/brand';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Brand from '../components/Brand';
@@ -67,7 +68,7 @@ export default function Login() {
             type="email"
             value={identifiant}
             onChange={(e) => setIdentifiant(e.target.value)}
-            placeholder={tab === 'clients' ? 'client@exemple.com' : 'employe@ortalog.ma'}
+            placeholder={tab === 'clients' ? 'client@exemple.com' : `employe@${BRAND.emailDomain}`}
             maxLength={100}
             required
           />

@@ -2,7 +2,7 @@ const pool = require('../config/db');
 
 /*
  * Statistiques du dashboard client (/client/statistiques) : volumes, KPIs
- * et tableaux repris de l'ancien système (orta/clients/files/
+ * et tableaux repris de l'ancien système PHP (
  * data_statistique.php + fonctions statClient* de includes/functions.php) ;
  * le chiffre d'affaires est lui basé sur les factures clients payées
  * (chiffreAffairesFactures). Période sur parcel_time (date de création),

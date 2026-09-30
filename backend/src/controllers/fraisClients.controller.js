@@ -9,7 +9,7 @@ const {
 
 /*
  * Frais supplémentaires clients (page
- * /admin/facturation-clients/frais-supplementaires) — table ORTALOG
+ * /admin/facturation-clients/frais-supplementaires) — table de l'application
  * delevery_client_frais (sql/2026-08-20_frais-clients.sql +
  * sql/2026-08-25_materiel.sql) : frais saisis manuellement pour un client
  * (delevery_customers), destinés à être repris plus tard dans la facturation

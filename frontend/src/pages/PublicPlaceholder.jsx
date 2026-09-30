@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import '../home.css';
+import PublicLogo from '../components/PublicLogo';
 
 /**
  * Page publique vierge (register, tarifs, mentions légales, contrat,
@@ -15,7 +16,7 @@ export default function PublicPlaceholder({ title }) {
             <i className="fa fa-home" /> الرئيسية
           </Link>
           <Link to="/" className="navbar-brand">
-            <img className="logo-header" src="/home/header-logo.png" width="780" height="220" alt="أورطالوج" />
+            <PublicLogo className="logo-header" />
           </Link>
         </div>
       </nav>

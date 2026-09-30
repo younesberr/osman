@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { BRAND } from '../../config/brand';
 import { Building2, FileSignature, FileText, Image, Palette, Save, Upload } from 'lucide-react';
 import api from '../../api/client';
 import { usePlatform } from '../../context/PlatformContext';
@@ -76,7 +77,7 @@ function ColorField({ label, value, onChange }) {
           value={value}
           maxLength={7}
           onChange={(e) => onChange(e.target.value.trim())}
-          placeholder="#1c428a"
+          placeholder={BRAND.colorPrimary}
         />
       </span>
     </label>
@@ -85,7 +86,7 @@ function ColorField({ label, value, onChange }) {
 
 /* Champs texte de la section Information société : [clé API, libellé, placeholder]. */
 const SOCIETE_FIELDS = [
-  ['nom', 'Nom de la société', 'Ex. : Ortalog'],
+  ['nom', 'Nom de la société', `Ex. : ${BRAND.name}`],
   ['siege', 'Siège social', 'Adresse complète du siège'],
   ['telFixe', 'Téléphone fixe', 'Ex. : 05 22 00 00 00'],
   ['telMobile', 'Téléphone mobile', 'Ex. : 06 00 00 00 00'],
@@ -159,7 +160,7 @@ function SocieteSection() {
               type="text"
               value={societe.nom}
               maxLength={255}
-              placeholder="Ex. : Ortalog"
+              placeholder={`Ex. : ${BRAND.name}`}
               onChange={(e) => setField('nom', e.target.value)}
             />
           </label>
@@ -345,7 +346,7 @@ export default function PlatformSettings() {
 
   async function saveColors() {
     if (!HEX_RE.test(colorPrimary) || !HEX_RE.test(colorSecondary)) {
-      setFeedback({ type: 'error', text: 'Format de couleur invalide (ex. : #1c428a).' });
+      setFeedback({ type: 'error', text: `Format de couleur invalide (ex. : ${BRAND.colorPrimary}).` });
       return;
     }
     setSaving(true);

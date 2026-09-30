@@ -15,10 +15,7 @@
  *    = WAITING_CONFIRMATION) reste affecté à son livreur mais son statut est
  *    verrouillé pour les types 5 (livreur) et 6 (ramasseur) : seuls les
  *    employés de type 1-4 peuvent le faire évoluer (« Changer statut » de la
- *    page Sans adresse ou de la page Colis, ajout à un bon de distribution) ;
- *  - le scan émet l'événement WhatsApp « Changement de statut » (STATUT) avec
- *    ce code : une règle d'Actions automatiques filtrée sur « Attente
- *    confirmation » envoie le message au destinataire / client / livreur.
+ *    page Sans adresse ou de la page Colis, ajout à un bon de distribution).
  */
 
 const STATUT_ATTENTE_CONFIRMATION = 'WAITING_CONFIRMATION';

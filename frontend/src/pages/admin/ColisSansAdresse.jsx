@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BRAND } from '../../config/brand';
 import {
   Camera,
   CheckCircle2,
@@ -36,9 +37,7 @@ import {
  * n'est pas exploitable est scanné ici (douchette — validation par Entrée —,
  * saisie manuelle ou caméra du téléphone) : il passe en statut second
  * « Attente confirmation » (WAITING_CONFIRMATION), seule voie pour obtenir ce
- * statut (backend : utils/sansAdresse.js). Le scan émet l'événement WhatsApp
- * « Changement de statut » : une règle d'Actions automatiques filtrée sur ce
- * statut prévient le destinataire.
+ * statut (backend : utils/sansAdresse.js).
  * Au-dessous, le tableau des colis en attente de confirmation (du plus récent
  * scan au plus ancien), colonnes empilées : magasin sous le code, téléphone
  * sous le destinataire, adresse sous la ville, zone sous le livreur ; actions
@@ -255,7 +254,7 @@ export default function ColisSansAdresse() {
   }
 
   /** Badge de la sidebar (« Sans adresse ») : recalculé après scan / changement de statut. */
-  const rafraichirCompteurs = () => window.dispatchEvent(new Event('ortalog:compteurs'));
+  const rafraichirCompteurs = () => window.dispatchEvent(new Event(BRAND.events.compteurs));
 
   /**
    * Envoie un code au serveur : succès → « Attente confirmation », la ligne du

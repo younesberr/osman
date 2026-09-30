@@ -17,6 +17,7 @@
  */
 
 import { ignorerHorsHost } from './pdfCapture';
+import { BRAND } from '../config/brand';
 
 const LABEL_PX = 500;
 
@@ -44,8 +45,8 @@ const STYLE = `
 /* ---- Ticket client (vierge) ---- */
 .tkt-logo { height: 56px; display: flex; align-items: center; justify-content: center; flex: none; }
 .tkt-logo img { max-height: 56px; max-width: 300px; }
-.tkt-logo-txt { font-size: 30px; font-weight: 800; color: #1c428a; letter-spacing: 1px; }
-.tkt-logo-txt span { color: #f6db14; }
+.tkt-logo-txt { font-size: 30px; font-weight: 800; color: ${BRAND.colorPrimary}; letter-spacing: 1px; }
+.tkt-logo-txt span { color: ${BRAND.colorSecondary}; }
 .tkt-cols { flex: 1; display: flex; gap: 10px; min-height: 0; }
 .tkt-left { width: 148px; display: flex; flex-direction: column; gap: 8px; }
 .tkt-left .tkt-box { flex-shrink: 0; padding: 6px 8px; }
@@ -108,7 +109,7 @@ function ticketTransportHtml(ticket) {
 function ticketClientHtml(code, logoDataUrl) {
   const logo = logoDataUrl
     ? `<img src="${logoDataUrl}" alt="" />`
-    : `<div class="tkt-logo-txt">ORTALOG<span> LIVRAISON</span></div>`;
+    : `<div class="tkt-logo-txt">${BRAND.logoText.main}<span> ${BRAND.logoText.sub}</span></div>`;
   const choix = `<div class="tkt-ar-choix"><span>نعم</span><span>لا</span></div>`;
   return `
 <div class="tkt">

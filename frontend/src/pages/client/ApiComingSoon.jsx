@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { BRAND } from '../../config/brand';
 import { ShoppingCart, Store, BookOpen } from 'lucide-react';
 
 /*
@@ -13,13 +14,13 @@ const PLATFORMS = {
     name: 'WooCommerce',
     Icon: ShoppingCart,
     color: '#7f54b3',
-    desc: 'Vos commandes WooCommerce seront synchronisées automatiquement en colis ORTALOG, avec le suivi des statuts dans votre boutique.'
+    desc: `Vos commandes WooCommerce seront synchronisées automatiquement en colis ${BRAND.name}, avec le suivi des statuts dans votre boutique.`
   },
   shopify: {
     name: 'Shopify',
     Icon: Store,
     color: '#5e8e3e',
-    desc: 'Vos commandes Shopify seront synchronisées automatiquement en colis ORTALOG, avec le suivi des statuts dans votre boutique.'
+    desc: `Vos commandes Shopify seront synchronisées automatiquement en colis ${BRAND.name}, avec le suivi des statuts dans votre boutique.`
   }
 };
 
@@ -39,7 +40,7 @@ export default function ApiComingSoon({ platform }) {
         <p className="coming-soon-sub">Bientôt disponible</p>
         <p>{p.desc}</p>
         <p className="coming-soon-hint">
-          En attendant, vous pouvez déjà connecter votre plateforme grâce à l’API ORTALOG.
+          En attendant, vous pouvez déjà connecter votre plateforme grâce à l’API {BRAND.name}.
         </p>
         <Link to="/client/api/documentation" className="btn btn-primary coming-soon-btn">
           <BookOpen size={17} />

@@ -31,7 +31,6 @@ import {
   Wrench,
   Calculator,
   BarChart3,
-  Cable,
   Settings
 } from 'lucide-react';
 
@@ -40,7 +39,7 @@ import {
  * `service` = code stocké dans delevery_users.users_services (liste séparée par des virgules).
  * Un item sans `service` est visible par tous les employés du dashboard admin.
  * Les sous-menus héritent du code d'accès de leur parent, sauf s'ils portent leur
- * propre `service` (ex. Discussions WhatsApp) : ce code remplace alors celui du
+ * propre `service` : ce code remplace alors celui du
  * parent pour ce sous-menu seul, et le parent reste affiché dès qu'un de ses
  * sous-menus est accessible (voir childService, AdminLayout). `serviceLabel` =
  * libellé de la case à cocher de Utilisateurs › Comptes (sinon libellé du menu).
@@ -205,31 +204,6 @@ export const ADMIN_MENU = [
       { label: 'Clients', path: '/admin/statistiques/clients' },
       { label: 'Logistiques', path: '/admin/statistiques/logistiques' },
       { label: 'Matériels', path: '/admin/statistiques/materiels' }
-    ]
-  },
-  {
-    label: 'API liaison',
-    icon: Cable,
-    // Réservé aux types 1 et 2 : le code n'est ni par défaut ni optionnel pour les
-    // autres fonctions (typeServices.js) ; `types` verrouille en plus les pages.
-    service: 'API_LIAISON',
-    children: [
-      { label: 'Envoi des colis', path: '/admin/api-liaison/envoi-colis', types: [1, 2] },
-      // CRM WhatsApp (discussions, modèles Meta, actions automatiques, statistiques).
-      // Discussions : service propre WHATSAPP_DISCUSSIONS, indépendant d'API_LIAISON,
-      // pour confier la boîte de réception à un employé sans le reste du menu
-      // (miroir backend : whatsapp.routes.js).
-      {
-        label: 'Discussions',
-        path: '/admin/api-liaison/whatsapp/discussions',
-        service: 'WHATSAPP_DISCUSSIONS',
-        serviceLabel: 'Discussions WhatsApp',
-        types: [1, 2]
-      },
-      { label: 'Modèles de message', path: '/admin/api-liaison/whatsapp/modeles', types: [1, 2] },
-      { label: 'Actions automatiques', path: '/admin/api-liaison/whatsapp/actions', types: [1, 2] },
-      { label: 'Statistiques', path: '/admin/api-liaison/whatsapp/statistiques', types: [1, 2] },
-      { label: 'Configuration', path: '/admin/api-liaison/configuration', types: [1, 2] }
     ]
   },
   {

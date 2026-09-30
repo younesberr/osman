@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import HomeFooter from '../components/HomeFooter';
-import { HOME_INFO } from '../config/homeInfo';
+import { BRAND, HOME_INFO } from '../config/brand';
 import '../home.css';
+import PublicLogo from '../components/PublicLogo';
 
 /**
  * Page publique « Conditions d'utilisation & Politique de confidentialité »
- * — portage de l'ancienne page PHP (orta/files/conditions_utilisation.php) :
+ * — portage de l'ancienne page PHP (ancien site PHP) :
  * document français (sommaire à ancres, cartes numérotées, carte contact)
  * dans l'habillage public du nouveau site. C'est la page ouverte par la
  * case de consentement CGU du formulaire /register.
@@ -30,7 +31,7 @@ export default function ConditionsUtilisation() {
             <i className="fa fa-home" /> الرئيسية
           </Link>
           <Link to="/" className="navbar-brand">
-            <img className="logo-header" src="/home/header-logo.png" width="780" height="220" alt="أورطالوج" />
+            <PublicLogo className="logo-header" />
           </Link>
         </div>
       </nav>
@@ -41,7 +42,7 @@ export default function ConditionsUtilisation() {
             <i className="fa fa-shield-halved" /> وثيقة قانونية
           </div>
           <h1>شروط الاستخدام وسياسة الخصوصية</h1>
-          <p>Conditions d'utilisation &amp; Politique de confidentialité — ORTALOG</p>
+          <p>Conditions d'utilisation &amp; Politique de confidentialité — {BRAND.name}</p>
         </div>
       </div>
 
@@ -67,7 +68,7 @@ export default function ConditionsUtilisation() {
                 <h2>Acceptation des conditions</h2>
               </div>
               <p>
-                En créant un compte sur la plateforme <strong>ORTALOG</strong>, vous acceptez
+                En créant un compte sur la plateforme <strong>{BRAND.name}</strong>, vous acceptez
                 sans réserve les présentes Conditions d'utilisation. Si vous n'acceptez pas ces
                 conditions, veuillez ne pas utiliser nos services.
               </p>
@@ -79,7 +80,7 @@ export default function ConditionsUtilisation() {
                 <h2>Description du service</h2>
               </div>
               <p>
-                ORTALOG est une société de livraison de colis au Maroc. La plateforme permet aux
+                {BRAND.name} est une société de livraison de colis au Maroc. La plateforme permet aux
                 clients professionnels de créer et suivre leurs expéditions, de gérer leur
                 inventaire et de consulter leurs relevés financiers.
               </p>
@@ -123,7 +124,7 @@ export default function ConditionsUtilisation() {
               <h3>5.1 Données collectées</h3>
               <p>
                 Dans le cadre de la gestion de votre compte et du traitement de vos expéditions,
-                ORTALOG collecte les données suivantes&nbsp;:
+                {BRAND.name} collecte les données suivantes&nbsp;:
               </p>
               <ul>
                 <li>Nom complet, CIN / pièce d'identité</li>
@@ -150,7 +151,7 @@ export default function ConditionsUtilisation() {
 
               <h3>5.3 Partage des données</h3>
               <p>
-                ORTALOG ne vend ni ne loue vos données personnelles à des tiers. Vos données
+                {BRAND.name} ne vend ni ne loue vos données personnelles à des tiers. Vos données
                 peuvent être partagées uniquement avec nos sous-traitants opérationnels
                 (livreurs, coursiers) dans le strict cadre de l'exécution du service, sous
                 accord de confidentialité.
@@ -159,13 +160,13 @@ export default function ConditionsUtilisation() {
               <h3>5.4 Conservation des données</h3>
               <p>
                 Vos données sont conservées pendant toute la durée de votre relation commerciale
-                avec ORTALOG, et jusqu'à 5 ans après la fin de celle-ci, conformément aux
+                avec {BRAND.name}, et jusqu'à 5 ans après la fin de celle-ci, conformément aux
                 obligations légales marocaines.
               </p>
 
               <h3>5.5 Sécurité</h3>
               <p>
-                ORTALOG met en œuvre des mesures techniques et organisationnelles appropriées
+                {BRAND.name} met en œuvre des mesures techniques et organisationnelles appropriées
                 pour protéger vos données contre tout accès non autorisé, perte ou altération.
               </p>
 
@@ -212,7 +213,7 @@ export default function ConditionsUtilisation() {
                 <h2>Modification des conditions</h2>
               </div>
               <p>
-                ORTALOG se réserve le droit de modifier les présentes conditions à tout moment.
+                {BRAND.name} se réserve le droit de modifier les présentes conditions à tout moment.
                 Toute modification substantielle sera notifiée par e-mail ou par une annonce
                 visible lors de votre connexion.
               </p>
@@ -233,7 +234,7 @@ export default function ConditionsUtilisation() {
                 </div>
                 <div className="cond-contact-item">
                   <strong>Site&nbsp;:</strong>{' '}
-                  <a href="https://www.ortalog.ma" target="_blank" rel="noopener noreferrer">
+                  <a href={BRAND.siteUrl} target="_blank" rel="noopener noreferrer">
                     {HOME_INFO.siteWeb}
                   </a>
                 </div>

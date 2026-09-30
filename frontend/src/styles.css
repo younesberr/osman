@@ -1,8 +1,8 @@
 :root {
-  --primary: #1c428a;
-  --primary-dark: #16336b;
-  --secondary: #f6db14;
-  --side-accent: #5b8def; /* accent sidebar : bleu lisible sur fond sombre */
+  --primary: #d80613;
+  --primary-dark: #a8040f;
+  --secondary: #111111;
+  --side-accent: #ff5c5c; /* accent sidebar : rouge clair lisible sur fond sombre */
   --ink: #1c2330;
   --ink-soft: #4b5565;
   --bg: #f6f7f9;
@@ -87,9 +87,13 @@ h2 { font-size: 1.25rem; margin-bottom: 12px; }
 .brand-name { font-size: 1.15rem; }
 .brand-logo {
   display: block;
-  height: 40px;
+  height: 32px;
   max-width: 180px;
   object-fit: contain;
+  /* Pastille blanche : le logo (texte noir) reste lisible sur la sidebar sombre. */
+  background: #fff;
+  padding: 4px 8px;
+  border-radius: 8px;
 }
 
 /* ---------- Accueil ---------- */
@@ -555,7 +559,7 @@ tbody tr:hover { background: #fafbfc; }
 .topbar-avatar:hover,
 .topbar-avatar[aria-expanded='true'] {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(28, 66, 138, 0.15);
+  box-shadow: 0 0 0 3px rgba(216, 6, 19, 0.15);
 }
 .topbar-avatar img {
   width: 100%;
@@ -1232,7 +1236,7 @@ a.breadcrumb-parent:hover { color: var(--primary); }
   color: var(--primary);
   border-style: solid;
   border-color: var(--primary);
-  background: rgba(28, 66, 138, 0.06);
+  background: rgba(216, 6, 19, 0.06);
 }
 .upload-doc-meta { color: var(--ink-soft); font-size: 0.82rem; }
 .upload-doc-meta a { color: var(--primary); font-weight: 600; }
@@ -2419,7 +2423,7 @@ a.breadcrumb-parent:hover { color: var(--primary); }
 @media (max-width: 640px) {
   .radio-group { flex-wrap: wrap; }
 }
-/* Sous-section « Notifications WhatsApp » de la modale Options (page Clients). */
+/* Sous-sections de la modale Options (page Clients) : titre, aide et note. */
 .option-section-title {
   display: flex;
   align-items: center;
@@ -2588,31 +2592,10 @@ form textarea:focus {
 .cfg-switch-disabled { opacity: 0.55; cursor: not-allowed; }
 .cfg-switch-disabled input { cursor: not-allowed; }
 
-/* Section « Notifications WhatsApp » : texte d'intro, ligne à boutons radio
-   Activer / Désactiver (classes .radio-pill partagées avec la modale Options
-   admin) et note « indisponible » (migration non exécutée). */
-.cfg-section-desc {
-  margin: 8px 0 0;
-  font-size: 0.86rem;
-  line-height: 1.45;
-  color: var(--ink-soft);
-}
-.cfg-row-choice .radio-group { flex: 0 0 auto; margin-top: 2px; }
-.cfg-row-note {
-  padding: 12px 24px;
-  font-size: 0.86rem;
-  color: #8a5a00;
-  background: #fff8e6;
-  border-bottom: 1px solid var(--border);
-}
-
 @media (max-width: 640px) {
   .cfg-section-head { padding: 13px 16px; }
   .cfg-row { padding: 15px 16px; gap: 12px; }
   .cfg-row-icon { width: 32px; height: 32px; border-radius: 8px; }
-  .cfg-row-choice { flex-wrap: wrap; }
-  .cfg-row-choice .radio-group { width: 100%; padding-left: 44px; margin-top: 0; }
-  .cfg-row-note { padding: 11px 16px; }
   .cfg-footer .btn { width: 100%; justify-content: center; }
 }
 
@@ -3509,6 +3492,8 @@ form textarea:focus {
   font-size: 0.92rem;
 }
 .chat-composer textarea:focus { border-color: var(--primary); outline: none; }
+/* Zone de saisie verrouillée (conversation fermée — ChatConversation). */
+.chat-composer.is-disabled textarea { background: #f4f5f7; }
 .chat-tool {
   display: inline-flex;
   align-items: center;
@@ -3840,7 +3825,7 @@ form textarea:focus {
   width: 58px;
   height: 58px;
   border-radius: 16px;
-  background: rgba(28, 66, 138, 0.09);
+  background: rgba(216, 6, 19, 0.09);
   color: var(--primary);
   margin-bottom: 14px;
 }
@@ -3866,7 +3851,7 @@ form textarea:focus {
 .scan-input:focus {
   border-color: var(--primary);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(28, 66, 138, 0.12);
+  box-shadow: 0 0 0 3px rgba(216, 6, 19, 0.12);
 }
 .scan-cam-btn {
   display: inline-flex;
@@ -4198,7 +4183,7 @@ form textarea:focus {
   width: 62px;
   height: 62px;
   border-radius: 16px;
-  background: rgba(28, 66, 138, 0.09);
+  background: rgba(216, 6, 19, 0.09);
   color: var(--primary);
   margin-bottom: 14px;
 }
@@ -4253,7 +4238,7 @@ form textarea:focus {
   color: var(--ink-soft);
   cursor: pointer;
 }
-.ram-chip.is-active { border-color: var(--primary); color: var(--primary); background: rgba(28, 66, 138, 0.06); }
+.ram-chip.is-active { border-color: var(--primary); color: var(--primary); background: rgba(216, 6, 19, 0.06); }
 .ram-chip b { font-weight: 700; }
 /* Pastille colorée : réutilise les fonds des badges de statut. */
 .ram-chip-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
@@ -4335,10 +4320,10 @@ form textarea:focus {
 /* Appeler : bleu primaire sur fond teinté. */
 .ram-card-actions .ram-action-tel {
   color: var(--primary);
-  background: rgba(28, 66, 138, 0.07);
-  border: 1px solid rgba(28, 66, 138, 0.25);
+  background: rgba(216, 6, 19, 0.07);
+  border: 1px solid rgba(216, 6, 19, 0.25);
 }
-.ram-card-actions .ram-action-tel:hover { background: rgba(28, 66, 138, 0.14); }
+.ram-card-actions .ram-action-tel:hover { background: rgba(216, 6, 19, 0.14); }
 /* Appel / message WhatsApp : vert de la marque sur fond teinté. */
 .ram-card-actions .ram-action-wa {
   background: rgba(37, 211, 102, 0.09);
@@ -5736,10 +5721,10 @@ form textarea:focus {
 /* Appeler : bleu primaire sur fond teinté. */
 .lvc-card-actions .lvc-action-tel {
   color: var(--primary);
-  background: rgba(28, 66, 138, 0.07);
-  border: 1px solid rgba(28, 66, 138, 0.25);
+  background: rgba(216, 6, 19, 0.07);
+  border: 1px solid rgba(216, 6, 19, 0.25);
 }
-.lvc-card-actions .lvc-action-tel:hover { background: rgba(28, 66, 138, 0.14); }
+.lvc-card-actions .lvc-action-tel:hover { background: rgba(216, 6, 19, 0.14); }
 /* WhatsApp (message + appel) : vert de la marque sur fond teinté — l'icône FA
    du message est colorée via .btn-whatsapp, celle de l'appel via currentColor. */
 .lvc-card-actions .lvc-action-wa {
@@ -6319,7 +6304,7 @@ form textarea:focus {
 
 /* Encadré d'information (en-tête Authorization, bonnes pratiques). */
 .api-note {
-  background: rgba(28, 66, 138, 0.06);
+  background: rgba(216, 6, 19, 0.06);
   border-left: 3px solid var(--primary);
   border-radius: 0 var(--radius) var(--radius) 0;
   padding: 13px 16px;
@@ -6694,750 +6679,6 @@ form textarea:focus {
   .lsc-form .btn { justify-content: center; }
 }
 
-/* ---------- API liaison : WhatsApp (Meta Cloud API) ---------- */
-/* Page /admin/api-liaison/configuration : bandeau d'état, formulaire des
-   identifiants et secrets, tests, guide pas à pas, journal des messages. */
-.wa-page .fiche-tabs { margin-top: 4px; }
-.wa-page .badge { margin-left: 0; }
-.wa-etat {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-.wa-etat-titre {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--primary);
-}
-.wa-etat-infos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 22px;
-  margin-top: 14px;
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-}
-.wa-etat-infos strong { color: var(--ink); }
-.wa-etat-card .form-error,
-.wa-etat-card .form-notice { margin: 14px 0 0; }
-.wa-etat-card code,
-.wa-page .wa-test-bloc code,
-.wa-steps code {
-  background: #f2f4f7;
-  border-radius: 6px;
-  padding: 1px 6px;
-  font-size: 0.88em;
-}
-
-/* Champs : libellé + saisie + aide « où le trouver ». */
-.wa-field { min-width: 0; }
-.wa-field-hint {
-  display: block;
-  margin-top: 6px;
-  color: var(--ink-soft);
-  font-size: 0.82rem;
-  line-height: 1.45;
-}
-.wa-secrets-grid {
-  display: grid;
-  gap: 16px;
-  margin-bottom: 22px;
-}
-.secret-field { min-width: 0; }
-.secret-input {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.secret-input input { flex: 1; min-width: 0; }
-.secret-input .api-copy,
-.wa-readonly .api-copy { width: 40px; height: 40px; }
-.secret-input .btn-sm { padding: 8px 12px; }
-.wa-readonly {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.wa-readonly input {
-  flex: 1;
-  min-width: 160px;
-  background: #f6f7f9;
-  font-family: Consolas, monospace;
-  font-size: 0.88rem;
-}
-.wa-readonly .btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.wa-actions { flex-wrap: wrap; }
-.wa-switch-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
-  font-size: 0.92rem;
-}
-.wa-switch-row .cfg-switch { margin-top: 0; }
-.wa-page form .wa-field-hint { margin-top: 12px; }
-
-/* Tests. */
-.wa-tests { display: flex; flex-direction: column; gap: 22px; }
-.wa-test-bloc h3 { font-size: 0.96rem; margin-bottom: 6px; }
-.wa-test-bloc p {
-  color: var(--ink-soft);
-  font-size: 0.88rem;
-  margin-bottom: 10px;
-  line-height: 1.5;
-}
-.wa-test-result {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 10px 18px;
-  margin-top: 14px;
-  padding: 14px 16px;
-  background: #f6f7f9;
-  border-radius: 10px;
-}
-.wa-test-result span { display: block; font-size: 0.76rem; color: var(--ink-soft); }
-.wa-test-result strong { font-size: 0.95rem; overflow-wrap: anywhere; }
-
-/* Guide pas à pas. */
-.wa-checklist {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 8px 18px;
-}
-.wa-checklist li {
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  font-size: 0.92rem;
-}
-.wa-check-ok { color: var(--success); flex-shrink: 0; margin-top: 2px; }
-.wa-check-ko { color: #98a2b3; flex-shrink: 0; margin-top: 2px; }
-.wa-guide label { display: block; }
-.wa-guide .field-label { margin-bottom: 8px; }
-.wa-guide .api-code { margin-top: 12px; }
-.wa-guide .api-code pre,
-.wa-journal-detail .api-code pre {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.wa-steps { display: flex; flex-direction: column; }
-.wa-steps .cfg-row { padding: 18px 0; }
-.wa-steps .cfg-row + .cfg-row { border-top: 1px solid var(--border); }
-.wa-step-num { font-weight: 800; font-size: 0.95rem; }
-.wa-step-done .cfg-row-icon { background: #e7f6ee; color: var(--success); }
-.wa-steps .cfg-row-text h3 {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.wa-steps .cfg-row-text p {
-  margin-top: 6px;
-  line-height: 1.5;
-}
-.wa-steps .cfg-row-text ul {
-  margin: 8px 0 0 18px;
-  color: var(--ink-soft);
-  font-size: 0.88rem;
-  line-height: 1.5;
-}
-.wa-steps .cfg-row-text li { margin: 5px 0; }
-.wa-steps a { color: var(--primary); text-decoration: underline; }
-.wa-vocab td { white-space: normal; vertical-align: top; }
-.wa-vocab td:first-child { font-weight: 600; white-space: nowrap; }
-.wa-astuces {
-  margin: 0;
-  padding-left: 18px;
-  color: var(--ink-soft);
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-.wa-astuces li { margin: 6px 0; }
-
-/* Journal des messages (carte pleine largeur, contrairement au reste de la page). */
-.config-page .wa-journal-card { max-width: none; }
-.wa-journal-filters {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-}
-.wa-journal-filters .btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.wa-journal-filters .spin { animation: wa-spin 0.9s linear infinite; }
-@keyframes wa-spin { to { transform: rotate(360deg); } }
-.wa-sens { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
-.wa-cell-wrap { white-space: normal; min-width: 200px; max-width: 380px; }
-.wa-row-click { cursor: pointer; }
-.wa-row-click:hover td { background: #f9fafc; }
-.wa-journal-detail td { background: #f9fafc; white-space: normal; }
-.wa-detail-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 22px;
-  font-size: 0.85rem;
-  color: var(--ink-soft);
-  margin-bottom: 8px;
-}
-.wa-journal-detail .api-code { margin-top: 0; }
-.wa-journal-detail .api-code pre { max-height: 320px; overflow: auto; }
-.badge-wa-envoye { background: #98a2b3; }
-.badge-wa-lu { background: var(--primary); }
-.badge-wa-echec { background: var(--danger); }
-.badge-wa-entrant { background: #7c3aed; }
-
-@media (max-width: 640px) {
-  .wa-etat { flex-direction: column; align-items: flex-start; }
-  .wa-etat-infos { flex-direction: column; gap: 6px; }
-  .wa-actions .btn { width: 100%; justify-content: center; }
-  .wa-readonly .btn { flex: 1; justify-content: center; }
-  .wa-journal-filters { flex-direction: column; align-items: stretch; }
-  .wa-journal-filters .btn { justify-content: center; }
-  .wa-checklist { grid-template-columns: 1fr; }
-  .wa-vocab td:first-child { white-space: normal; }
-  .wa-steps .cfg-row { padding: 15px 0; }
-  .wa-cell-wrap { min-width: 160px; }
-}
-
 /* Modale client « Modifier colis » : message sous le champ ville (verrouillé)
    quand le colis est déjà expédié — changement via réclamation. */
 .edit-city-hint { display: block; margin-top: 4px; }
-
-/* ---------- CRM WhatsApp : discussions, modèles, actions automatiques, statistiques ---------- */
-/* Pages /admin/api-liaison/whatsapp/* (pleine largeur) + modales du CRM (.wa-crm). */
-.wa-crm .badge { margin-left: 0; }
-.wa-crm .platform-card { max-width: none; }
-.wa-crm .card-head-actions .btn { display: inline-flex; align-items: center; gap: 6px; }
-.wa-intro {
-  color: var(--ink-soft);
-  font-size: 0.9rem;
-  line-height: 1.55;
-  margin: -6px 0 16px;
-}
-.wa-intro code,
-.wa-crm-card code {
-  background: #f2f4f7;
-  border-radius: 6px;
-  padding: 1px 6px;
-  font-size: 0.88em;
-}
-.wa-spin { animation: wa-spin 0.9s linear infinite; }
-.wa-cell-ellipsis {
-  max-width: 320px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.wa-block { display: block; margin-top: 6px; }
-.wa-mt { margin-top: 10px; }
-.wa-h3 { font-size: 0.95rem; margin: 14px 0 8px; }
-.wa-h3:first-child { margin-top: 0; }
-.wa-crm .wa-switch-row { margin: 10px 0; }
-.wa-crm .wa-field { display: block; margin-bottom: 10px; }
-.wa-crm .wa-field .field-label { margin-bottom: 6px; display: block; }
-.wa-crm .modal-form-grid .wa-field { margin-bottom: 0; }
-.wa-crm .modal-form-grid .cell-sub { display: block; font-weight: 400; margin-top: 4px; }
-.wa-crm .modal-form-grid input[type='text'],
-.wa-crm .modal-form-grid input[type='number'],
-.wa-crm .wa-field input[type='text'],
-.wa-crm .wa-envoi-form input[type='text'],
-.wa-crm .wa-envoi-form input[type='tel'] {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font: inherit;
-  font-size: 0.92rem;
-}
-.wa-crm input:focus,
-.wa-crm textarea:focus { border-color: var(--primary); outline: none; }
-.wa-meta {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 6px 14px;
-  margin: 14px 0 0;
-  font-size: 0.86rem;
-}
-.wa-meta dt { color: var(--ink-soft); }
-.wa-meta dd { margin: 0; overflow-wrap: anywhere; }
-
-/* Chips : type de contact, étiquettes, statuts. */
-.wa-type-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 8px;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  border: 1px solid;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.wa-type-destinataire { color: #1c428a; border-color: #c7d4ee; background: #eef2fa; }
-.wa-type-client { color: #177e4c; border-color: #bfe6d0; background: #e7f6ee; }
-.wa-type-livreur { color: #b45309; border-color: #f5d7a8; background: #fff4e0; }
-.wa-type-employe { color: #6d28d9; border-color: #ddd0f7; background: #f3eefe; }
-.wa-type-inconnu { color: #667085; border-color: #d0d5dd; background: #f2f4f7; }
-.wa-chip {
-  display: inline-block;
-  margin: 1px 4px 1px 0;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: #f2f4f7;
-  font-size: 0.76rem;
-}
-.wa-pills { flex-wrap: wrap; }
-
-/* Aperçu façon WhatsApp d'un modèle. */
-.wa-preview {
-  background: #e5ddd5;
-  padding: 14px;
-  border-radius: 12px;
-}
-.wa-preview-bubble {
-  background: #e7ffdb;
-  border-radius: 10px;
-  padding: 8px 10px 4px;
-  font-size: 0.9rem;
-  max-width: 340px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  line-height: 1.45;
-}
-.wa-preview-entete { font-weight: 700; margin-bottom: 4px; }
-.wa-preview-pied { color: #667085; font-size: 0.78rem; margin-top: 4px; }
-.wa-preview-heure { text-align: right; font-size: 0.7rem; color: #667085; margin-top: 2px; }
-.wa-preview-btns { margin: 6px -10px -4px; border-top: 1px solid rgba(0, 0, 0, 0.08); }
-.wa-preview-btns div {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px;
-  color: #027eb5;
-  font-weight: 600;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-.wa-preview-btns div:first-child { border-top: none; }
-mark.wa-var { background: #fde68a; border-radius: 4px; padding: 0 3px; }
-.wa-var-valeur { font-weight: 600; }
-
-/* Correspondance des variables (page Modèles, modale de règle). */
-.wa-mapping { display: grid; gap: 8px; }
-.wa-mapping-row {
-  display: grid;
-  grid-template-columns: 52px minmax(0, 1fr);
-  gap: 8px;
-  align-items: center;
-}
-.wa-mapping-row input[type='text'] { grid-column: 2; }
-.wa-modele-detail {
-  display: grid;
-  grid-template-columns: 340px minmax(0, 1fr);
-  gap: 22px;
-}
-
-/* Modale d'envoi d'un modèle (nouvelle discussion, fiche colis, fenêtre fermée). */
-.wa-envoi-form { display: flex; flex-direction: column; gap: 16px; }
-.wa-envoi-bloc .field-label { display: block; margin-bottom: 8px; }
-.wa-envoi-colis { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-.wa-envoi-recherche,
-.wa-lier-recherche { display: flex; gap: 8px; align-items: center; }
-.wa-envoi-recherche input,
-.wa-lier-recherche input { flex: 1; min-width: 0; }
-.wa-envoi-recherche .btn,
-.wa-lier-recherche .btn { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-.wa-envoi-colis-card {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 14px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #f9fafc;
-}
-.wa-envoi-grille,
-.wa-regle-grille {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 16px;
-  align-items: start;
-}
-.wa-params { display: grid; gap: 8px; }
-.wa-params label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; font-weight: 600; }
-.wa-params input { font-weight: 400; }
-
-/* Boîte de réception : 3 zones (liste | fil | contact). */
-.wa-inbox-page .chat-layout { height: calc(100vh - 300px); }
-.chat-layout.wa-inbox { position: relative; }
-.wa-filters .radio-pill { padding: 8px 14px; }
-.wa-contact {
-  display: none;
-  flex-direction: column;
-  min-height: 0;
-  overflow-y: auto;
-  border-left: 1px solid var(--border);
-  background: #fafbfc;
-}
-.wa-contact-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  font-weight: 700;
-  font-size: 0.92rem;
-  background: var(--card);
-}
-.wa-contact-head span { display: inline-flex; align-items: center; gap: 6px; }
-.wa-contact-sec { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
-.wa-contact-sec h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-soft); margin: 0 0 8px; }
-.wa-contact-titre { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
-.wa-contact-nom { font-weight: 700; font-size: 1rem; }
-.wa-contact-card {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  margin-top: 10px;
-  padding: 10px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--card);
-}
-.wa-contact-card svg { flex-shrink: 0; margin-top: 2px; color: var(--primary); }
-.wa-lien { display: inline-block; margin-top: 4px; color: var(--primary); text-decoration: underline; font-size: 0.82rem; }
-.wa-contact-colis { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.wa-contact-colis li { padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); }
-.wa-contact-colis li.is-lie { border-color: var(--primary); }
-.wa-colis-ligne { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.wa-colis-actions { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
-.wa-colis-actions .btn { display: inline-flex; align-items: center; gap: 5px; }
-.wa-contact .wa-meta { margin-top: 0; }
-.wa-charger-plus { display: block; width: calc(100% - 24px); margin: 10px 12px; }
-.wa-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.wa-dot-open { background: var(--success); }
-.wa-dot-closed { background: #98a2b3; }
-.wa-optout-ico { color: var(--danger); flex-shrink: 0; }
-
-/* En-tête du fil. */
-.wa-head .chat-panel-title { display: flex; align-items: center; gap: 8px; }
-.wa-head-sub { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.wa-head-sub .row-action,
-.wa-head-sub .api-copy { width: 26px; height: 26px; }
-.wa-head-colis { color: var(--primary); }
-.wa-btn-infos { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-.wa-head-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--border);
-  background: var(--card);
-}
-.wa-head-actions .btn { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-.wa-head-actions .chat-statut-btn { margin-left: 0; }
-.wa-affectation { min-width: 200px; }
-.wa-window-open { background: var(--success); }
-.wa-window-closed { background: #98a2b3; }
-.wa-lier {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  background: #f9fafc;
-}
-.wa-lier input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; font: inherit; font-size: 0.9rem; }
-
-/* Bulles. */
-.wa-day {
-  align-self: center;
-  font-size: 0.72rem;
-  color: var(--ink-soft);
-  background: #e4e8ee;
-  border-radius: 999px;
-  padding: 2px 10px;
-}
-.wa-msg-note .chat-bubble { background: #fff6d6; color: var(--ink); border: 1px solid #f1dd94; }
-.wa-tpl-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.72rem;
-  opacity: 0.9;
-  margin-bottom: 4px;
-  padding: 1px 7px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.2);
-}
-.wa-msg-note .wa-tpl-chip { background: rgba(0, 0, 0, 0.06); }
-.chat-msg-client .wa-tpl-chip { background: #eef2fa; color: var(--primary); }
-.wa-quote {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  text-align: left;
-  border: none;
-  border-left: 3px solid rgba(255, 255, 255, 0.7);
-  padding: 4px 8px;
-  margin-bottom: 6px;
-  font: inherit;
-  font-size: 0.82rem;
-  color: inherit;
-  opacity: 0.92;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-}
-.chat-msg-client .wa-quote { border-left-color: var(--primary); background: #f2f4f7; }
-.wa-reply-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: #eef2fa;
-  color: var(--primary);
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-.wa-msg-colis { font-size: 0.72rem; opacity: 0.8; margin-top: 4px; }
-.wa-media-link { display: inline-flex; align-items: center; gap: 6px; text-decoration: underline; color: inherit; }
-.wa-video { display: block; max-width: 260px; border-radius: 10px; margin: 2px 0; }
-.wa-unsupported { font-style: italic; opacity: 0.8; }
-.wa-ticks { display: inline-flex; align-items: center; gap: 3px; margin-left: 6px; color: #98a2b3; }
-.wa-ticks-lu { color: #53bdeb; }
-.wa-ticks-echec { color: var(--danger); font-weight: 600; }
-.wa-ticks-attente { color: #98a2b3; }
-.wa-new-msgs {
-  position: sticky;
-  bottom: 6px;
-  align-self: center;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 999px;
-  background: var(--primary);
-  color: #fff;
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-}
-
-/* Compositeur. */
-.wa-composer { position: relative; }
-.wa-composer-off,
-.wa-composer-ferme,
-.wa-composer-avert {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 10px 14px;
-  border-top: 1px solid var(--border);
-  font-size: 0.86rem;
-}
-.wa-composer-off { background: #fff4f2; color: var(--danger); }
-.wa-composer-ferme { background: #fff8e6; color: #92400e; }
-.wa-composer-ferme span { display: inline-flex; align-items: center; gap: 6px; }
-.wa-composer-ferme .btn { display: inline-flex; align-items: center; gap: 6px; }
-.wa-composer-avert { background: #fff8e6; color: #92400e; padding: 6px 14px; font-size: 0.8rem; }
-.chat-composer.is-note textarea { background: #fff6d6; border-color: #f1dd94; }
-.chat-composer.is-disabled textarea { background: #f4f5f7; }
-.wa-quick-menu {
-  position: absolute;
-  bottom: 58px;
-  left: 12px;
-  width: min(380px, calc(100% - 24px));
-  z-index: 20;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-  padding: 8px;
-}
-.wa-quick-menu input {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font: inherit;
-  font-size: 0.88rem;
-  margin-bottom: 6px;
-}
-.wa-quick-list { max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
-.wa-quick-list .cell-sub { padding: 8px; }
-.wa-quick-list button {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  width: 100%;
-  text-align: left;
-  border: none;
-  background: transparent;
-  border-radius: 8px;
-  padding: 7px 9px;
-  font: inherit;
-  cursor: pointer;
-}
-.wa-quick-list button:hover { background: #f2f4f7; }
-.wa-quick-list button strong { font-size: 0.86rem; }
-.wa-quick-list button span {
-  font-size: 0.8rem;
-  color: var(--ink-soft);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
-
-/* Actions automatiques. */
-.wa-regle-test { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
-.wa-regle-test h3 { display: flex; align-items: center; gap: 6px; }
-.wa-test-regle { grid-template-columns: 1fr; }
-.wa-test-apercu strong { white-space: pre-wrap; }
-.wa-col-sm-inline { display: none; }
-
-/* Statistiques. */
-.wa-stats-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
-.wa-stats-toolbar h2 { display: flex; align-items: center; gap: 8px; margin: 0; }
-.wa-legende { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
-
-/* Paramètres CRM et réponses rapides (onglet de la page Configuration). */
-.config-page .wa-crm-card { max-width: none; }
-.wa-params-list { display: flex; flex-direction: column; gap: 4px; }
-.wa-param-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-}
-.wa-param-row:last-child { border-bottom: none; }
-.wa-param-text { flex: 1; min-width: 0; }
-.wa-param-text .field-label { display: block; margin-bottom: 2px; }
-.wa-param-ctrl { flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
-.wa-param-ctrl input[type='text'],
-.wa-param-ctrl input[type='number'],
-.wa-param-ctrl input[type='time'] {
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font: inherit;
-  font-size: 0.9rem;
-}
-.wa-param-ctrl input[type='text'] { width: 260px; }
-.wa-param-ctrl input[type='number'] { width: 90px; }
-.wa-param-ctrl .cfg-switch { margin-top: 0; }
-.wa-horaires { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.wa-param-full {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font: inherit;
-  font-size: 0.9rem;
-  margin: 4px 0 8px;
-  resize: vertical;
-}
-.wa-rr-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-.wa-rr-form input,
-.wa-rr-form textarea {
-  width: 100%;
-  padding: 9px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font: inherit;
-  font-size: 0.9rem;
-}
-.wa-rr-form .modal-actions { margin-top: 0; }
-
-/* Fiche colis : section WhatsApp du détail de suivi ; journal. */
-.wa-colis-section { margin-top: 18px; }
-.wa-colis-titre { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.wa-colis-titre > span:first-child { display: inline-flex; align-items: center; gap: 6px; }
-.wa-colis-titre-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; }
-.wa-colis-titre-actions .btn { display: inline-flex; align-items: center; gap: 5px; }
-.wa-colis-timeline .suivi-label { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.wa-colis-tpl { font-size: 0.8rem; }
-.wa-colis-texte { white-space: pre-wrap; overflow-wrap: anywhere; }
-.wa-journal-actions { justify-content: flex-end; }
-
-/* Colonnes secondaires, grilles et volet contact selon la largeur. */
-@media (min-width: 1400px) {
-  .chat-layout.wa-inbox.has-conv { grid-template-columns: 300px minmax(0, 1fr) 300px; }
-  .wa-inbox.has-conv .wa-contact { display: flex; }
-  .wa-btn-infos { display: none; }
-}
-@media (max-width: 1399px) {
-  .wa-inbox.is-contact-open .wa-contact {
-    display: flex;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 320px;
-    max-width: 100%;
-    z-index: 5;
-    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
-  }
-}
-@media (max-width: 900px) {
-  .wa-modele-detail,
-  .wa-envoi-grille,
-  .wa-regle-grille { grid-template-columns: 1fr; }
-  .wa-col-md { display: none; }
-  .wa-inbox-page .chat-layout { height: calc(100vh - 240px); }
-  .wa-preview-bubble { max-width: 100%; }
-}
-@media (max-width: 640px) {
-  .wa-col-sm { display: none; }
-  .wa-col-sm-inline { display: block; }
-  .wa-head-actions { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 10px; }
-  .wa-head-actions > * { flex-shrink: 0; }
-  .wa-contact { width: 100%; }
-  .wa-inbox-page .card-head-actions .btn { width: 100%; justify-content: center; }
-  .wa-param-row { flex-direction: column; align-items: stretch; }
-  .wa-param-ctrl input[type='text'] { width: 100%; }
-  .wa-mapping-row { grid-template-columns: 44px minmax(0, 1fr); }
-  .wa-envoi-recherche,
-  .wa-lier-recherche { flex-wrap: wrap; }
-  .wa-envoi-recherche .btn,
-  .wa-lier-recherche .btn { flex: 1; justify-content: center; }
-  .wa-stats-toolbar { flex-direction: column; align-items: stretch; }
-  .wa-colis-titre-actions { width: 100%; }
-  .wa-colis-titre-actions .btn { flex: 1; justify-content: center; }
-  /* Compositeur des discussions : six outils + micro doivent tenir sur ~360 px. */
-  .wa-composer .chat-tool { width: 30px; }
-  .wa-composer .chat-tool-recording { width: auto; }
-  .wa-composer .chat-attachment-preview { flex-wrap: wrap; }
-  .wa-composer .chat-attachment-preview audio { width: 200px; }
-}

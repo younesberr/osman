@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const { getAgenceScope, parcelInAgence, agenceIdFromVille } = require('../utils/agenceScope');
 const {
   resolveClientFees,
@@ -971,7 +970,6 @@ async function createParcelReclamation(req, res, next) {
       ]
     );
 
-    emettreEvenement('RECLAMATION_CREEE', { reclamationId: recl.insertId, parcelId: parcel.parcel_id, origine: 'admin', userId: Number(req.user.id) || 0 });
     res.status(201).json({ parcel_id: parcel.parcel_id });
   } catch (err) {
     next(err);
@@ -1028,7 +1026,6 @@ async function createParcelRemboursement(req, res, next) {
       ]
     );
 
-    emettreEvenement('REMB_DEMANDE', { rembId: remb.insertId, parcelId: parcel.parcel_id, montant, origine: 'admin', userId: Number(req.user.id) || 0 });
     res.status(201).json({ parcel_id: parcel.parcel_id, remb_demande: 1 });
   } catch (err) {
     next(err);
@@ -1302,16 +1299,6 @@ async function appliquerChangementStatut(req, res, next, parcel) {
     } finally {
       conn.release();
     }
-
-    // CRM WhatsApp : actions automatiques sur le changement de statut (après commit, best-effort).
-    emettreEvenement('STATUT', {
-      parcelId: parcel.parcel_id,
-      code,
-      commentaire,
-      dateReport: req.body?.date || null,
-      livreurId: Number(parcel.parcel_livreur) || null,
-      userId: Number(req.user.id) || 0
-    });
 
     // Statut effectif affiché dans la ligne (la situation INVOICED prime).
     const effectif = parcel.parcel_situation === 'INVOICED' ? 'INVOICED' : code;
@@ -2239,7 +2226,7 @@ const COMMENTAIRE_SANS_ADRESSE = 'Colis sans adresse : en attente de confirmatio
  * POST /api/parcels/sans-adresse/scan — body { code } (parcel_code
  * ou code interne, douchette ou caméra). Le colis passe parcel_status =
  * IN_PROGRESS + parcel_status_second = WAITING_CONFIRMATION avec une ligne
- * d'historique, puis émet l'événement WhatsApp STATUT (Actions automatiques).
+ * d'historique.
  * Refusé (409, son d'erreur côté page) : colis introuvable (404), hors agence
  * (403), pas reçu en agence / en distribution (livré, retourné, ramassé…),
  * déjà en attente de confirmation, sur une facture livreur, ou en attente de
@@ -2367,17 +2354,6 @@ async function scanSansAdresse(req, res, next) {
     } finally {
       conn.release();
     }
-
-    // CRM WhatsApp : règle « Changement de statut » filtrée sur « Attente
-    // confirmation » → message automatique après le scan (après commit, best-effort).
-    emettreEvenement('STATUT', {
-      parcelId: parcel.parcel_id,
-      code: STATUT_ATTENTE_CONFIRMATION,
-      commentaire: COMMENTAIRE_SANS_ADRESSE,
-      dateReport: null,
-      livreurId: Number(parcel.parcel_livreur) || null,
-      userId: Number(req.user.id) || 0
-    });
 
     const [[row]] = await pool.query(
       `SELECT ${SANS_ADRESSE_SELECT}

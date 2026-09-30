@@ -15,6 +15,7 @@
  */
 
 import { ignorerHorsHost } from './pdfCapture';
+import { BRAND } from '../config/brand';
 
 // Étiquette rendue à 500 × 500 px (5 px / mm), capturée à l'échelle 2 (≈ 254 dpi).
 const LABEL_PX = 500;
@@ -32,8 +33,8 @@ const STYLE = `
 .etq-box { border: 2px solid #000; border-radius: 14px; padding: 6px 10px; background: #fff; overflow: hidden; }
 .etq-logo { height: 62px; display: flex; align-items: center; justify-content: center; }
 .etq-logo img { max-height: 62px; max-width: 320px; }
-.etq-logo-txt { font-size: 34px; font-weight: 800; color: #1c428a; letter-spacing: 1px; }
-.etq-logo-txt span { color: #f6db14; }
+.etq-logo-txt { font-size: 34px; font-weight: 800; color: ${BRAND.colorPrimary}; letter-spacing: 1px; }
+.etq-logo-txt span { color: ${BRAND.colorSecondary}; }
 .etq-cols { flex: 1; display: flex; gap: 10px; min-height: 0; }
 .etq-left { width: 152px; display: flex; flex-direction: column; gap: 8px; }
 .etq-left .etq-box { flex-shrink: 0; }
@@ -61,7 +62,7 @@ function esc(value) {
     .replace(/>/g, '&gt;');
 }
 
-/** "0661280962" → "06-61-28-09-62" (les autres formats sont laissés tels quels). */
+/** "0612345678" → "06-12-34-56-78" (les autres formats sont laissés tels quels). */
 function formatPhone(phone) {
   const digits = String(phone || '').replace(/\D/g, '');
   return digits.length === 10 ? digits.replace(/(\d{2})(?=\d)/g, '$1-') : String(phone || '');
@@ -106,7 +107,7 @@ function labelHtml(p, sender, logoDataUrl) {
   const phone = p.sender_phone ?? sender.phone;
   const logo = logoDataUrl
     ? `<img src="${logoDataUrl}" alt="" />`
-    : `<div class="etq-logo-txt">ORTALOG<span> LIVRAISON</span></div>`;
+    : `<div class="etq-logo-txt">${BRAND.logoText.main}<span> ${BRAND.logoText.sub}</span></div>`;
   return `
 <div class="etq">
   <div class="etq-logo">${logo}</div>
@@ -143,7 +144,7 @@ function labelHtml(p, sender, logoDataUrl) {
       <div class="etq-code">${esc(p.parcel_code || '')}</div>
     </div>
   </div>
-  <div class="etq-box etq-footer">${esc(store || 'ORTALOG')} vous remercie de votre confiance</div>
+  <div class="etq-box etq-footer">${esc(store || BRAND.name)} vous remercie de votre confiance</div>
 </div>`;
 }
 

@@ -1,11 +1,10 @@
 const pool = require('../config/db');
-const { emettreEvenement } = require('../services/whatsappRegles');
 const { getScanSonUrls } = require('../utils/scanSons');
 const { getAgenceScope, userAgenceSql } = require('../utils/agenceScope');
 
 /*
  * Bons de retour client (delevery_return_note_client + delevery_rnc_parcels,
- * tables ORTALOG — sql/2026-08-23_bons-retour-client.sql, colonnes du circuit
+ * tables de l'application — sql/2026-08-23_bons-retour-client.sql, colonnes du circuit
  * d'expédition : sql/2026-08-26_bons-retour-client-expedition.sql, REQUISE).
  * Un bon regroupe les colis d'un client à lui rendre. Même structure que les
  * bons de retour livreur (bonsRetourLivreur.controller.js), avec deux règles
@@ -1105,7 +1104,6 @@ async function scanReception(req, res, next) {
     }
 
     if (failure) return res.status(failure.status).json({ message: failure.message });
-    emettreEvenement('STATUT', { parcelId: receivedParcel.id, code: receivedParcel.from_stock ? STATUT_RETOURNE_STOCK : STATUT_RECU_CLIENT, bonId: bon.id, userId: Number(req.user.id) || 0 });
     const base = receivedParcel.from_stock
       ? `Colis « ${receivedParcel.code} » retourné au stock (produits réintégrés).`
       : `Colis « ${receivedParcel.code} » reçu par le client.`;
@@ -1183,14 +1181,6 @@ async function setReceived(req, res, next) {
           );
         }
         await conn.commit();
-        for (const p of parcels) {
-          emettreEvenement('STATUT', {
-            parcelId: p.id,
-            code: Number(p.from_stock) === 1 ? STATUT_RETOURNE_STOCK : STATUT_RECU_CLIENT,
-            bonId: bon.id,
-            userId: Number(req.user.id) || 0
-          });
-        }
         return res.json({
           id: bon.id,
           delivered: 1,
@@ -1433,11 +1423,7 @@ async function scanExpedition(req, res, next) {
             store: client.store || '',
             client_name: client.client_name || '',
             nb_colis: parcels.length,
-            ramasseur_nom: ramasseur.nom,
-            // Colis basculés RETURNED_TO_CUSTOMER à l'instant (événements CRM après commit).
-            expedies: parcels
-              .filter((p) => Number(p.received) !== 1 && p.second !== STATUT_RETOURNE)
-              .map((p) => p.id)
+            ramasseur_nom: ramasseur.nom
           };
         }
       }
@@ -1451,11 +1437,6 @@ async function scanExpedition(req, res, next) {
     }
 
     if (failure) return res.status(failure.status).json({ message: failure.message });
-    for (const pid of result.expedies || []) {
-      emettreEvenement('STATUT', { parcelId: pid, code: STATUT_RETOURNE, bonId: result.id, userId: Number(req.user.id) || 0 });
-    }
-    delete result.expedies;
-    emettreEvenement('BON_RETOUR_CLIENT_EXPEDIE', { bonId: result.id, ramasseurId: ramasseur.id, nb: result.nb_colis, userId: Number(req.user.id) || 0 });
     res.json({
       message: `Bon « ${result.ref} » expédié — affecté à ${result.ramasseur_nom}.`,
       bon: result

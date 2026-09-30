@@ -11,7 +11,7 @@ import { ADMIN_MENU } from './adminMenu';
  * Code de service → libellé du menu admin (pour les cases à cocher).
  * Un même code peut couvrir plusieurs menus (ex. FACTURATION pour
  * « Facturation livreurs » et « Facturation clients ») : libellés joints par « / ».
- * Un sous-menu qui porte son propre `service` (ex. Discussions WhatsApp) donne
+ * Un sous-menu qui porte son propre `service` donne
  * une case à part, libellée par son `serviceLabel` (sinon « Parent — Enfant »).
  */
 export const SERVICE_LABELS = {};
