@@ -982,8 +982,6 @@ async function listMaterielsUser(req, res, next) {
 }
 
 module.exports = {
-  MATERIEL_TYPES,
-  VENDABLE_TYPES,
   listArticlesVendables,
   debiterStockVente,
   tracerMouvementVente,

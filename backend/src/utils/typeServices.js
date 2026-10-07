@@ -21,29 +21,21 @@ const ALL_SERVICES = [
   'RAMASSAGE_SCAN',
   'BON_ENVOI',
   'BON_DISTRIBUTION',
-  'COLIS_SANS_ADRESSE', // Sans adresse (menu à part sous Bons de distribution) — types 1-2 (case « Colis sans adresse »), 3-4 d'office (agence)
   'FACTURATION',
   'RETOUR',
-  'SUIVI_RETOUR',
   'RAMASSAGE',
   'REMBOURSEMENT',
   'RECLAMATIONS',
   'MODIFICATIONS_COLIS',
-  'COLIS_ZERO',
-  'COLIS_ATTENTION',
   'MESSAGES',
   'NOUVEAUX_CLIENTS',
   'CLIENTS',
-  'CLIENTS_NON_VERIFIES',
   'CAISSE_AGENCE',
   'NOTIFICATIONS_EMPLOYES',
-  'TRANSPORT',
-  'TICKETS_VIDES',
   'LIVREURS',
   'UTILISATEURS',
   'LOGISTIQUES',
   'MATERIEL',
-  'COMPTABILITES',
   'STATISTIQUES',
   'CONFIGURATION'
 ];
@@ -59,16 +51,11 @@ const TYPE_RULES = {
       'RAMASSAGE_SCAN',
       'BON_ENVOI',
       'BON_DISTRIBUTION',
-      'COLIS_SANS_ADRESSE',
       'FACTURATION',
       'RETOUR',
       'RAMASSAGE',
-      'COLIS_ZERO',
       'CLIENTS',
-      'CLIENTS_NON_VERIFIES',
-      'CAISSE_AGENCE',
-      'TRANSPORT',
-      'TICKETS_VIDES'
+      'CAISSE_AGENCE'
     ],
     optional: []
   },
@@ -78,16 +65,14 @@ const TYPE_RULES = {
       'RAMASSAGE_SCAN',
       'BON_ENVOI',
       'BON_DISTRIBUTION',
-      'COLIS_SANS_ADRESSE',
-      'RAMASSAGE',
-      'TICKETS_VIDES'
+      'RAMASSAGE'
     ],
-    optional: ['STOCK', 'FACTURATION', 'RETOUR', 'COLIS_ZERO', 'CLIENTS', 'CLIENTS_NON_VERIFIES', 'TRANSPORT']
+    optional: ['STOCK', 'FACTURATION', 'RETOUR', 'CLIENTS']
   },
   5: { defaults: [], optional: [] }, // livreur : pas de dashboard admin
   6: {
     defaults: ['COLIS', 'RAMASSAGE_SCAN', 'BON_ENVOI', 'RAMASSAGE'],
-    optional: ['STOCK', 'TRANSPORT', 'TICKETS_VIDES']
+    optional: ['STOCK']
   }
 };
 

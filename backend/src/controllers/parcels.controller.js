@@ -6,17 +6,10 @@ const { attachStockProduits } = require('../utils/parcelProduits');
 const { isBlockedByClient } = require('../utils/blocageClient');
 const { createAutoDemandeRamassage } = require('./demandesRamassage.controller');
 const { statutLabel } = require('../utils/statutLabels');
-const {
-  isValidPhone,
-  normalizePhone,
-  PHONE_ERROR,
-  phoneVariants,
-  formatPhoneAffichage
-} = require('../utils/phone');
+const { isValidPhone, PHONE_ERROR, phoneVariants } = require('../utils/phone');
 const { isValidParcelCode, PARCEL_CODE_ERROR } = require('../utils/parcelCode');
 const { historyPreuveSql } = require('../utils/preuveStatut');
 const { REMB_DEMANDE_SQL, hasDemandeEnCours } = require('../utils/remboursement');
-const { STATUT_ATTENTE_CONFIRMATION } = require('../utils/sansAdresse');
 const {
   fraisMontant,
   lireOptionFraisMontant,
@@ -30,7 +23,7 @@ const MAX_PAGE_SIZE = 100;
 /*
  * Statut affiché ("statut effectif") : CASE SQL défini dans
  * utils/statutEffectif.js (partagé avec les services), ré-exporté ici pour les
- * contrôleurs existants (livreurColis, colisZero, modificationsColis…).
+ * contrôleurs existants (livreurColis, modificationsColis…).
  */
 const { STATUT_CODE_SQL, STATUT_TYPE_SQL } = require('../utils/statutEffectif');
 
@@ -2924,112 +2917,6 @@ async function scanRamassage(req, res, next) {
   }
 }
 
-/*
- * Colis « Attente confirmation » du client connecté (paramètre : customers_id)
- * — même définition que la page admin Sans adresse (SANS_ADRESSE_WHERE de
- * parcelsAdmin.controller), restreinte au client. Partagée par la page client
- * Sans adresse (listClientSansAdresse) et le badge rouge de son entrée de menu
- * (compteursSidebar.controller → compteursClient) pour que les deux nombres
- * coïncident toujours.
- */
-const CLIENT_SANS_ADRESSE_WHERE = `p.parcel_customer = ?
-          AND p.parcel_status = 'IN_PROGRESS'
-          AND p.parcel_status_second = '${STATUT_ATTENTE_CONFIRMATION}'`;
-
-/**
- * GET /api/parcels/client/sans-adresse — page « Sans adresse » du dashboard
- * client (/client/sans-adresse, tâche COLIS_CONSULTATION) : colis du client
- * connecté scannés en agence faute d'adresse exploitable, en statut second
- * « Attente confirmation » (WAITING_CONFIRMATION, posé uniquement par la page
- * admin Sans adresse — utils/sansAdresse). Liste complète sans pagination, du
- * plus récent scan au plus ancien (recherche côté frontend) ; colonnes de la
- * page : code, date du scan (parcel_last_update), destinataire, téléphone,
- * ville, adresse, statut (+ couleur) et parcel_status pour la condition de
- * l'action « Modifier colis ».
- */
-async function listClientSansAdresse(req, res, next) {
-  try {
-    const [rows] = await pool.query(
-      `SELECT p.parcel_id, p.parcel_code, p.parcel_status, p.parcel_receiver, p.parcel_phone,
-              p.parcel_address AS adresse, p.parcel_last_update,
-              '${STATUT_ATTENTE_CONFIRMATION}' AS statut, sc.color AS statut_color,
-              t.nom_ville AS ville
-         FROM delevery_parcel p
-         LEFT JOIN delevery_tarifs t ON t.ville_id = p.parcel_city
-         LEFT JOIN (SELECT MIN(parcel_statut_color) AS color
-                      FROM delevery_parcel_statut
-                     WHERE parcel_statut_code = '${STATUT_ATTENTE_CONFIRMATION}') sc
-           ON 1 = 1
-        WHERE ${CLIENT_SANS_ADRESSE_WHERE}
-        ORDER BY p.parcel_last_update DESC, p.parcel_id DESC`,
-      [Number(req.user.id)]
-    );
-    res.json({ rows });
-  } catch (err) {
-    next(err);
-  }
-}
-
-/* Modale « Autres adresses » client : nombre maximal de colis renvoyés. */
-const CLIENT_AUTRES_ADRESSES_LIMITE = 50;
-
-/**
- * GET /api/parcels/client/sans-adresse/destinataire?phone=…&exclude=<parcel_id>
- * — modale « Autres adresses » de la page client Sans adresse : colis
- * antérieurs du même destinataire retrouvés par téléphone (variantes
- * phoneVariants, index idx_parcel_phone), LIMITÉS AUX COLIS DU CLIENT CONNECTÉ
- * (jamais ceux des autres clients, contrairement à la modale admin), colis
- * courant exclu, du plus récent au plus ancien, CLIENT_AUTRES_ADRESSES_LIMITE
- * lignes au plus ; total = nombre réel. Pour chaque colis : code, date de
- * création, ville, adresse, statut effectif (+ couleur) et, pour un colis
- * livré, la date de livraison (dernière ligne d'historique DELIVERED).
- * Numéro : au moins 9 chiffres, comparé sur ses 9 derniers.
- */
-async function listClientAutresAdresses(req, res, next) {
-  try {
-    const phone = String(req.query.phone || '').trim();
-    const digits = normalizePhone(phone).replace(/^\+/, '');
-    if (!/^\d{9,}$/.test(digits)) {
-      return res.status(400).json({ message: 'Numéro de téléphone invalide.' });
-    }
-    const exclude = parseInt(req.query.exclude, 10);
-    const excludeId = Number.isInteger(exclude) && exclude > 0 ? exclude : 0;
-    const variants = phoneVariants(phone);
-    const customerId = Number(req.user.id);
-
-    const [[{ total }]] = await pool.query(
-      `SELECT COUNT(*) AS total
-         FROM delevery_parcel p
-        WHERE p.parcel_customer = ? AND p.parcel_phone IN (?) AND p.parcel_id <> ?`,
-      [customerId, variants, excludeId]
-    );
-    const [rows] = await pool.query(
-      `SELECT p.parcel_id, p.parcel_code, p.parcel_status, p.parcel_time,
-              p.parcel_receiver, p.parcel_address AS adresse,
-              (${STATUT_CODE_SQL}) AS statut, s.parcel_statut_color AS statut_color,
-              t.nom_ville AS ville,
-              CASE WHEN p.parcel_status = 'DELIVERED' THEN
-                (SELECT MAX(h.parcel_history_time)
-                   FROM delevery_parcel_history h
-                  WHERE h.parcel_history_status = 'DELIVERED'
-                    AND h.parcel_history_parcel = p.parcel_id)
-              END AS livraison_time
-         FROM delevery_parcel p
-         LEFT JOIN delevery_tarifs t ON t.ville_id = p.parcel_city
-         LEFT JOIN delevery_parcel_statut s
-           ON s.parcel_statut_code = (${STATUT_CODE_SQL})
-          AND s.parcel_statut_type = (${STATUT_TYPE_SQL})
-        WHERE p.parcel_customer = ? AND p.parcel_phone IN (?) AND p.parcel_id <> ?
-        ORDER BY p.parcel_time DESC, p.parcel_id DESC
-        LIMIT ?`,
-      [customerId, variants, excludeId, CLIENT_AUTRES_ADRESSES_LIMITE]
-    );
-    res.json({ rows, total: Number(total) || 0, phone: formatPhoneAffichage(phone) });
-  } catch (err) {
-    next(err);
-  }
-}
-
 module.exports = {
   listParcels,
   listStatuts,
@@ -3062,9 +2949,6 @@ module.exports = {
   createClientReclamation,
   setClientParcelBlock,
   deleteClientParcel,
-  listClientSansAdresse,
-  listClientAutresAdresses,
-  CLIENT_SANS_ADRESSE_WHERE,
   getRamassageSons,
   scanRamassage,
   resolveClientFees,

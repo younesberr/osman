@@ -17,13 +17,6 @@ const {
   sendAdminMessage,
   setChatStatut
 } = require('../controllers/messages.controller');
-const {
-  listFormAccueil,
-  getFormAccueil,
-  traiterFormAccueil,
-  rouvrirFormAccueil,
-  deleteFormAccueil
-} = require('../controllers/formAccueil.controller');
 
 /* Pièces jointes des messages : photos et messages vocaux (MediaRecorder -> webm). */
 const ALLOWED_EXT = [...IMAGE_EXT, ...AUDIO_EXT];
@@ -73,12 +66,5 @@ router.get('/filters', requireAuth, requireService('MESSAGES'), listAdminFilters
 router.get('/chats/:id', requireAuth, requireService('MESSAGES'), getAdminChat);
 router.post('/chats/:id/messages', requireAuth, requireService('MESSAGES'), handleUpload, sendAdminMessage);
 router.patch('/chats/:id/statut', requireAuth, requireService('MESSAGES'), setChatStatut);
-
-// Messages du formulaire de contact de la page d'accueil (delevery_home_msg).
-router.get('/form-accueil', requireAuth, requireService('MESSAGES'), listFormAccueil);
-router.get('/form-accueil/:id', requireAuth, requireService('MESSAGES'), getFormAccueil);
-router.post('/form-accueil/:id/traiter', requireAuth, requireService('MESSAGES'), traiterFormAccueil);
-router.post('/form-accueil/:id/rouvrir', requireAuth, requireService('MESSAGES'), rouvrirFormAccueil);
-router.delete('/form-accueil/:id', requireAuth, requireService('MESSAGES'), deleteFormAccueil);
 
 module.exports = router;

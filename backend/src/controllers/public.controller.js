@@ -4,8 +4,6 @@ const { hashPassword } = require('../utils/password');
 /**
  * Endpoints publics de la page d'accueil (aucune authentification) :
  *  - suivi d'un colis par code (lecture seule) ;
- *  - formulaire de contact (INSERT dans la table legacy delevery_home_msg,
- *    messages consultés depuis l'admin de l'ancien site) ;
  *  - demande de création de compte client (INSERT dans la table legacy
  *    delevery_new_customers, statut 0 = en attente — page /register).
  *
@@ -80,28 +78,6 @@ async function track(req, res, next) {
     });
 
     res.json({ success: true, code: num, history: rows });
-  } catch (err) {
-    next(err);
-  }
-}
-
-/** POST /api/public/contact — enregistre un message dans delevery_home_msg. */
-async function contact(req, res, next) {
-  try {
-    // Honeypot : champ invisible rempli uniquement par les robots → rejet silencieux.
-    if (req.body.website) {
-      return res.status(201).json({ success: true });
-    }
-
-    const { name, city, email, phone, message } = req.body;
-    await pool.query(
-      `INSERT INTO delevery_home_msg
-         (home_msg_name, home_msg_city, home_msg_email, home_msg_phone, home_msg_text, created_at)
-       VALUES (?, ?, ?, ?, ?, NOW())`,
-      [name, city || null, email, phone, message]
-    );
-
-    res.status(201).json({ success: true });
   } catch (err) {
     next(err);
   }
@@ -267,4 +243,4 @@ async function register(req, res, next) {
   }
 }
 
-module.exports = { track, contact, register, tarifsVilles, tarifs };
+module.exports = { track, register, tarifsVilles, tarifs };

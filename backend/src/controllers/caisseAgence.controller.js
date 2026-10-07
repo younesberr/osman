@@ -26,8 +26,7 @@ const {
  * l'auteur est un responsable d'agence (type 3) comptent sur la caisse de
  * son agence ; celles des autres utilisateurs sont « Sans agence » (caisse
  * à part entière, agence_id 0). Même règle pour les entrées automatiques
- * (paiement facture client / facture livreur, frais de livraison d'un colis
- * montant zéro).
+ * (paiement facture client / facture livreur).
  *
  * Arrêts de caisse (table delevery_caisse_arret, § 2 de la migration) : un
  * arrêt fige le solde d'une caisse à une date (jour inclus) :

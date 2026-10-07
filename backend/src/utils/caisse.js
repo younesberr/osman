@@ -10,9 +10,8 @@ const { userAgenceSql } = require('./agenceScope');
  * si son auteur (spent_by) est un responsable d'agence (type 3). Les entrées
  * des autres utilisateurs (admin, sous-admin, agents d'agence, ramasseurs…)
  * sont classées « Sans agence » (caisse hors agence). Même règle pour les
- * entrées automatiques : paiement d'une facture client (dépense), paiement
- * d'une facture livreur (recette) et encaissement des frais de livraison
- * d'un colis montant zéro (recette).
+ * entrées automatiques : paiement d'une facture client (dépense) et paiement
+ * d'une facture livreur (recette).
  *
  * Le rattachement est calculé à la lecture (comme le legacy spent.php, qui
  * lisait users_agence_id de l'auteur) : agence de l'auteur (ville de

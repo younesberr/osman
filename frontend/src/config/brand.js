@@ -40,8 +40,7 @@ export const BRAND = {
   colorPrimary: '#d80613',
   colorSecondary: '#111111',
 
-  /** Identifiants techniques (événements fenêtre, sessionStorage). */
-  events: { compteurs: `${SLUG}:compteurs` },
+  /** Identifiants techniques (sessionStorage). */
   storage: { preloadReload: `${SLUG}:preload-reload` },
 
   /** Messages pré-remplis des liens « cliquer pour discuter » (wa.me). */

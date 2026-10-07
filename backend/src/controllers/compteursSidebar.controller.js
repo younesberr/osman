@@ -1,8 +1,6 @@
 const pool = require('../config/db');
 const { hasAccess } = require('../utils/access');
 const { getAgenceScope, parcelInAgence, villeInAgenceSql } = require('../utils/agenceScope');
-const { ATTENTION_ALERTE, REPORT_DATE_SQL, SANS_ADRESSE_WHERE } = require('./parcelsAdmin.controller');
-const { CLIENT_SANS_ADRESSE_WHERE } = require('./parcels.controller');
 
 /*
  * Compteurs des badges rouges de la sidebar admin (GET
@@ -13,15 +11,9 @@ const { CLIENT_SANS_ADRESSE_WHERE } = require('./parcels.controller');
  *    demandes RECEIVED encore à traiter, une demande NEW n'étant jamais à lui) ;
  *  - remboursement / modificationsColis / nouveauxClients : demandes PENDING ;
  *  - reclamations : réclamations EN_COURS pas encore affectées à un employé ;
- *  - colisZero : colis montant zéro en attente d'encaissement (CRBT ni payé ni avisé) ;
- *  - colisAttention : page « Colis alerte 00H00 » (parcelsAdmin.controller) ;
- *  - sansAdresse : colis « Attente confirmation » de la page « Sans adresse »
- *    (scannés faute d'adresse, utils/sansAdresse ; service COLIS_SANS_ADRESSE) ;
- *  - messagesClients : messages clients non lus ; messagesAccueil : messages NEW
- *    du formulaire de contact ;
+ *  - messagesClients : messages clients non lus ;
  *  - clients : clients avec demande de modification de fiche PENDING (même
- *    compteur que /api/clients/demandes/en-attente) ;
- *  - clientsNonVerifies : clients non vérifiés ayant saisi au moins un colis ;
+ *    compteur que /api/clients/demandes/en-attente).
  * Un service inaccessible à l'employé renvoie 0 (le menu est masqué de toute
  * façon) ; une table / colonne de migration pas encore exécutée aussi.
  * Employés type 3/4/6 : mêmes périmètres d'agence que les pages.
@@ -50,11 +42,6 @@ async function compteursSidebar(req, res, next) {
       }
     }
 
-    // Minuit du jour courant : convention des « Colis alerte 00H00 ».
-    const minuit = new Date();
-    minuit.setHours(0, 0, 0, 0);
-    const midnight = Math.floor(minuit.getTime() / 1000);
-
     const ramassage =
       Number(user.role) === 6
         ? compte(
@@ -77,14 +64,9 @@ async function compteursSidebar(req, res, next) {
       remboursement,
       reclamations,
       modificationsColis,
-      colisZero,
-      colisAttention,
-      sansAdresse,
       messagesClients,
-      messagesAccueil,
       nouveauxClients,
-      clients,
-      clientsNonVerifies
+      clients
     ] = await Promise.all([
       compte(
         'STOCK',
@@ -109,47 +91,8 @@ async function compteursSidebar(req, res, next) {
         `SELECT COUNT(*) AS n FROM delevery_parcel_modif_demande WHERE pmd_statut = 'PENDING'`
       ),
       compte(
-        'COLIS_ZERO',
-        `SELECT COUNT(*) AS n FROM delevery_parcel p
-          LEFT JOIN delevery_customers c ON c.customers_id = p.parcel_customer
-          WHERE p.parcel_price = '0'
-            AND p.parcel_status NOT IN ('NEW_PARCEL', 'WAITING_PICKUP')
-            AND COALESCE(c.customers_colis_zero, 0) <> 1
-            AND COALESCE(p.parcel_crbt_zero, 0) NOT IN (1, 2)`
-      ),
-      compte(
-        'COLIS_ATTENTION',
-        `SELECT COUNT(*) AS n FROM delevery_parcel p
-          WHERE (
-                 (p.parcel_status = 'IN_PROGRESS' AND p.parcel_status_second IN (?)
-                    AND p.parcel_last_update > 0 AND p.parcel_last_update < ?)
-              OR (p.parcel_status = 'DISTRIBUTION'
-                    AND p.parcel_last_update > 0 AND p.parcel_last_update < ?)
-              OR (p.parcel_status = 'IN_PROGRESS' AND p.parcel_status_second IN (?)
-                    AND COALESCE(${REPORT_DATE_SQL} < CURDATE(),
-                                 (p.parcel_last_update > 0 AND p.parcel_last_update < ?)))
-                )${scopeSql}`,
-        [
-          ATTENTION_ALERTE.relance,
-          midnight,
-          midnight,
-          ATTENTION_ALERTE.programme,
-          midnight,
-          ...scopeParams
-        ]
-      ),
-      compte(
-        'COLIS_SANS_ADRESSE',
-        `SELECT COUNT(*) AS n FROM delevery_parcel p WHERE ${SANS_ADRESSE_WHERE}${scopeSql}`,
-        scopeParams
-      ),
-      compte(
         'MESSAGES',
         `SELECT COUNT(*) AS n FROM delevery_chat_msg WHERE msg_from = 'client' AND msg_read = 0`
-      ),
-      compte(
-        'MESSAGES',
-        `SELECT COUNT(*) AS n FROM delevery_home_msg WHERE home_msg_statut = 'NEW'`
       ),
       compte(
         'NOUVEAUX_CLIENTS',
@@ -161,13 +104,6 @@ async function compteursSidebar(req, res, next) {
           JOIN delevery_customers c ON c.customers_id = d.cfd_customer
           WHERE d.cfd_statut = 'PENDING'${villeSql}`,
         villeParams
-      ),
-      compte(
-        'CLIENTS_NON_VERIFIES',
-        `SELECT COUNT(*) AS n FROM delevery_customers c
-          WHERE IFNULL(c.customers_verified, 0) = 0
-            AND EXISTS (SELECT 1 FROM delevery_parcel dp WHERE dp.parcel_customer = c.customers_id)${villeSql}`,
-        villeParams
       )
     ]);
 
@@ -177,50 +113,13 @@ async function compteursSidebar(req, res, next) {
       remboursement,
       reclamations,
       modificationsColis,
-      colisZero,
-      colisAttention,
-      sansAdresse,
       messagesClients,
-      messagesAccueil,
       nouveauxClients,
-      clients,
-      clientsNonVerifies
+      clients
     });
   } catch (err) {
     next(err);
   }
 }
 
-/**
- * GET /api/dashboard/client/compteurs — badges rouges de la sidebar client
- * (ClientLayout, un seul appel rafraîchi à chaque navigation) :
- *  - sansAdresse : colis du client en « Attente confirmation » (page
- *    /client/sans-adresse), même définition que la page
- *    (CLIENT_SANS_ADRESSE_WHERE de parcels.controller) — le badge et le
- *    compteur de la page affichent donc toujours le même nombre.
- * Le propriétaire voit tout ; un membre d'équipe sans la tâche
- * COLIS_CONSULTATION reçoit 0 (son menu est masqué de toute façon ; ses tâches
- * sont relues en base par requireClientPermission() sur la route).
- */
-async function compteursClient(req, res, next) {
-  try {
-    const user = req.user;
-    const services = Array.isArray(user.services) ? user.services : [];
-    const peut = (code) => !user.memberId || services.includes(code);
-
-    let sansAdresse = 0;
-    if (peut('COLIS_CONSULTATION')) {
-      const [[row]] = await pool.query(
-        `SELECT COUNT(*) AS n FROM delevery_parcel p WHERE ${CLIENT_SANS_ADRESSE_WHERE}`,
-        [Number(user.id)]
-      );
-      sansAdresse = Number(row?.n) || 0;
-    }
-
-    res.json({ sansAdresse });
-  } catch (err) {
-    next(err);
-  }
-}
-
-module.exports = { compteursSidebar, compteursClient };
+module.exports = { compteursSidebar };

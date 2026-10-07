@@ -26,7 +26,7 @@ const ROOTS = ['/admin', '/client', '/livreur'];
 /*
  * Correspondance par segment : une page ciblée couvre aussi ses pages de
  * détail (/admin/clients → /admin/clients/5) mais pas ses voisines de préfixe
- * commun (/admin/colis ≠ /admin/colis-montant-zero). Les racines des
+ * commun (/admin/ramassage ≠ /admin/ramassage-scan). Les racines des
  * dashboards (Accueil) matchent en exact uniquement.
  */
 function pageMatch(page, pathname) {

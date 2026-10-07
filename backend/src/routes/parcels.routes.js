@@ -28,8 +28,6 @@ const {
   listClientParcels,
   listClientFilterOptions,
   listClientLabels,
-  listClientSansAdresse,
-  listClientAutresAdresses,
   getClientParcelSuivi,
   getClientParcelDetails,
   createClientRemboursement,
@@ -53,14 +51,7 @@ const {
   revertDelivered,
   listLivreursActifs,
   changerLivreur,
-  annulerRamassage,
-  listSuiviRetour,
-  listColisAttention,
-  listColisProgrammes,
-  listColisSansAdresse,
-  scanSansAdresse,
-  listAutresAdressesDestinataire,
-  marquerColisTraite
+  annulerRamassage
 } = require('../controllers/parcelsAdmin.controller');
 
 // Routes du dashboard client : un client ne voit que ses propres colis.
@@ -75,13 +66,6 @@ router.get('/client/tarif', requireAuth, requireKind('customer'), requireClientP
 router.get('/client/destinataire', requireAuth, requireKind('customer'), requireClientPermission('COLIS_SAISIE'), getClientDestinataireTaux);
 router.get('/client/filters', requireAuth, requireKind('customer'), requireClientPermission('COLIS_CONSULTATION'), listClientFilterOptions);
 router.get('/client/labels', requireAuth, requireKind('customer'), requireClientPermission('COLIS_CONSULTATION'), listClientLabels);
-// Page « Sans adresse » du dashboard client (/client/sans-adresse) : colis du
-// client en « Attente confirmation » (scannés sans adresse par l'admin) et
-// colis antérieurs d'un destinataire (par téléphone, limités aux colis du
-// client). Lecture seule, tâche COLIS_CONSULTATION ; déclarées avant
-// /client/:id/* pour ne pas être capturées par le paramètre :id.
-router.get('/client/sans-adresse', requireAuth, requireKind('customer'), requireClientPermission('COLIS_CONSULTATION'), listClientSansAdresse);
-router.get('/client/sans-adresse/destinataire', requireAuth, requireKind('customer'), requireClientPermission('COLIS_CONSULTATION'), listClientAutresAdresses);
 // Modification d'un colis : directe en attente de ramassage (WAITING_PICKUP),
 // via demande à valider par l'admin après ramassage (IN_PROGRESS).
 router.get('/client/:id/edit', requireAuth, requireKind('customer'), requireClientPermission('COLIS_MODIFICATION'), getClientParcelEditData);
@@ -125,54 +109,29 @@ router.get('/statuts', requireAuth, requireService('COLIS'), listStatuts);
 // Libellés des statuts (delevery_string) : lus par tous les dashboards
 // (admin, client, livreur) pour l'affichage — simple authentification.
 router.get('/statuts/libelles', requireAuth, listStatutLabels);
-// Statuts actifs de la modale « Changer statut » (pages Colis, Colis attention et Sans adresse).
-router.get('/statuts/actifs', requireAuth, requireService(['COLIS', 'COLIS_ATTENTION', 'COLIS_SANS_ADRESSE']), listActiveStatuts);
+// Statuts actifs de la modale « Changer statut » (page Colis).
+router.get('/statuts/actifs', requireAuth, requireService('COLIS'), listActiveStatuts);
 router.get('/filters', requireAuth, requireService('COLIS'), listFilterOptions);
 // Livreurs actifs de la modale « Changer livreur » (employés type 1 / 2).
 router.get('/livreurs/actifs', requireAuth, requireService('COLIS'), requireRole(1, 2), listLivreursActifs);
 
-// Suivi de retour (étapes 1 / 2 / 3) : colis en cours sans mise à jour récente.
-router.get('/suivi-retour', requireAuth, requireService('SUIVI_RETOUR'), listSuiviRetour);
-
-// Colis besoin d'attention : pages « Colis alerte 00H00 » et « Colis à suivre ».
-router.get('/attention', requireAuth, requireService('COLIS_ATTENTION'), listColisAttention);
-// Page « Programmé doublé » : réservée aux fonctions 1-2 (miroir : adminMenu.js, types).
-router.get('/attention/programmes', requireAuth, requireService('COLIS_ATTENTION'), requireRole(1, 2), listColisProgrammes);
-// Page « Sans adresse » (/admin/sans-adresse, menu à part) : liste des colis
-// « Attente confirmation » + scan (douchette / caméra) qui pose ce statut — seule
-// voie pour l'obtenir (utils/sansAdresse). Service propre COLIS_SANS_ADRESSE
-// (case « Colis sans adresse » pour le type 2, d'office pour les types 3-4,
-// restreints à leur agence dans le contrôleur) ; fonctions 1-4 seulement
-// (miroir : adminMenu.js, types).
-router.get('/sans-adresse', requireAuth, requireService('COLIS_SANS_ADRESSE'), requireRole(1, 2, 3, 4), listColisSansAdresse);
-router.post('/sans-adresse/scan', requireAuth, requireService('COLIS_SANS_ADRESSE'), requireRole(1, 2, 3, 4), scanSansAdresse);
-// Modale « Autres adresses » : colis antérieurs du destinataire retrouvés par
-// téléphone, tous clients confondus et sans restriction d'agence (lecture seule).
-router.get('/sans-adresse/destinataire', requireAuth, requireService('COLIS_SANS_ADRESSE'), requireRole(1, 2, 3, 4), listAutresAdressesDestinataire);
-// Marquage « traité » (page Colis à suivre) : masque le colis sans changer son statut.
-router.post('/:id/traiter', requireAuth, requireService('COLIS_ATTENTION'), marquerColisTraite);
-
 // Actions de ligne de la datatable admin Colis (suivi, info, modifier,
 // réclamation, changer statut). Employés type 3/4/6 : restreint à leur agence.
 // Suivi aussi ouvert au service RECLAMATIONS (bouton « Suivi du colis » de la
-// page Réclamations) ; suivi, modification et changement de statut au service
-// COLIS_ATTENTION (actions de ligne des pages Colis besoin d'attention) ; suivi
-// aussi ouvert au service BON_DISTRIBUTION (bouton « Détail de suivi » des
-// tableaux de la page d'un bon de distribution) et au service RETOUR (même
+// page Réclamations), au service BON_DISTRIBUTION (bouton « Détail de suivi »
+// des tableaux de la page d'un bon de distribution) et au service RETOUR (même
 // bouton sur les deux tableaux de la page d'un bon de retour livreur).
-// Suivi, information, modification et changement de statut aussi ouverts au
-// service COLIS_SANS_ADRESSE (actions de ligne de la page Sans adresse).
-router.get('/:id/suivi', requireAuth, requireService(['COLIS', 'RECLAMATIONS', 'COLIS_ATTENTION', 'COLIS_SANS_ADRESSE', 'BON_DISTRIBUTION', 'RETOUR']), getParcelSuivi);
-router.get('/:id/details', requireAuth, requireService(['COLIS', 'COLIS_ATTENTION', 'COLIS_SANS_ADRESSE']), getParcelDetails);
-router.get('/:id/edit', requireAuth, requireService(['COLIS', 'COLIS_ATTENTION', 'COLIS_SANS_ADRESSE']), getParcelEditData);
-router.get('/:id/tarif', requireAuth, requireService(['COLIS', 'COLIS_ATTENTION', 'COLIS_SANS_ADRESSE']), getParcelTarif);
-router.put('/:id', requireAuth, requireService(['COLIS', 'COLIS_ATTENTION', 'COLIS_SANS_ADRESSE']), updateParcel);
+router.get('/:id/suivi', requireAuth, requireService(['COLIS', 'RECLAMATIONS', 'BON_DISTRIBUTION', 'RETOUR']), getParcelSuivi);
+router.get('/:id/details', requireAuth, requireService('COLIS'), getParcelDetails);
+router.get('/:id/edit', requireAuth, requireService('COLIS'), getParcelEditData);
+router.get('/:id/tarif', requireAuth, requireService('COLIS'), getParcelTarif);
+router.put('/:id', requireAuth, requireService('COLIS'), updateParcel);
 router.delete('/:id', requireAuth, requireService('COLIS'), deleteParcel);
 router.post('/:id/reclamation', requireAuth, requireService('COLIS'), createParcelReclamation);
 router.post('/:id/remboursement', requireAuth, requireService('COLIS'), createParcelRemboursement);
 // Changement de statut : JSON, ou multipart/form-data avec la photo « preuve »
 // (facultative, affichée dans le détail de suivi admin / client).
-router.post('/:id/statut', requireAuth, requireService(['COLIS', 'COLIS_ATTENTION', 'COLIS_SANS_ADRESSE']), handlePreuveUpload, changeParcelStatut);
+router.post('/:id/statut', requireAuth, requireService('COLIS'), handlePreuveUpload, changeParcelStatut);
 // Annulation d'une livraison : réservée aux employés type 1 / 2 (contrôlé dans le contrôleur).
 router.post('/:id/non-livre', requireAuth, requireService('COLIS'), revertDelivered);
 // Bouton « Changer livreur » : réaffectation d'un colis déjà affecté (type 1 / 2).

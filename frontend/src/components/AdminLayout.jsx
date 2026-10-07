@@ -4,7 +4,6 @@ import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { ADMIN_MENU, DETAIL_LABELS, childService, hasAccess, hasTypeAccess } from '../config/adminMenu';
 import SidebarLayout from './SidebarLayout';
-import { BRAND } from '../config/brand';
 
 /*
  * Compteur de notification (badge rouge) de chaque entrée de la sidebar :
@@ -17,14 +16,9 @@ const BADGE_KEYS = {
   '/admin/remboursement': 'remboursement',
   '/admin/reclamations': 'reclamations',
   '/admin/modifications-colis': 'modificationsColis',
-  '/admin/colis-montant-zero': 'colisZero',
-  '/admin/colis-attention/alerte': 'colisAttention',
-  '/admin/sans-adresse': 'sansAdresse',
   '/admin/messages/clients': 'messagesClients',
-  '/admin/messages/form-accueil': 'messagesAccueil',
   '/admin/nouveaux-clients': 'nouveauxClients',
-  '/admin/clients': 'clients',
-  '/admin/clients-non-verifies': 'clientsNonVerifies'
+  '/admin/clients': 'clients'
 };
 
 /**
@@ -34,8 +28,7 @@ const BADGE_KEYS = {
  * par ce code — le parent reste visible dès qu'un sous-menu l'est.
  * Les badges rouges (éléments en attente de chaque module) viennent d'un seul
  * appel /dashboard/admin/compteurs, rafraîchi à chaque navigation — traiter un
- * élément puis changer de page met donc les compteurs à jour — et sur
- * l'événement window BRAND.events.compteurs (ex. colis scanné dans Sans adresse).
+ * élément puis changer de page met donc les compteurs à jour.
  */
 export default function AdminLayout() {
   const { user } = useAuth();
@@ -44,18 +37,14 @@ export default function AdminLayout() {
 
   useEffect(() => {
     let cancelled = false;
-    const charger = () =>
-      api
-        .get('/dashboard/admin/compteurs')
-        .then((res) => {
-          if (!cancelled) setCompteurs(res.data || {});
-        })
-        .catch(() => {});
-    charger();
-    window.addEventListener(BRAND.events.compteurs, charger);
+    api
+      .get('/dashboard/admin/compteurs')
+      .then((res) => {
+        if (!cancelled) setCompteurs(res.data || {});
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
-      window.removeEventListener(BRAND.events.compteurs, charger);
     };
   }, [user, location.pathname]);
 

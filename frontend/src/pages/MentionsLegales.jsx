@@ -97,8 +97,8 @@ export default function MentionsLegales() {
               <i className="fa fa-user-shield" /> 4. Collecte et protection des données
             </h2>
             <p>
-              {BRAND.name} s'engage à protéger les informations personnelles collectées via le
-              formulaire de contact, l'inscription clients ou le suivi des colis.
+              {BRAND.name} s'engage à protéger les informations personnelles collectées via
+              l'inscription clients ou le suivi des colis.
             </p>
             <p>Aucune donnée ne sera vendue ou partagée avec des tiers sans consentement.</p>
 

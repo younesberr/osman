@@ -10,7 +10,7 @@
  * Défini ici (et non dans un contrôleur) pour être utilisable par les services
  * et les utilitaires sans cycle de require ;
  * parcels.controller.js le ré-exporte pour les contrôleurs existants.
- * Même CASE dans colisZero.controller.js et modificationsColis.controller.js.
+ * Même CASE dans modificationsColis.controller.js.
  */
 const STATUT_CODE_SQL = `CASE
     WHEN p.parcel_situation = 'INVOICED' THEN 'INVOICED'

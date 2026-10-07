@@ -200,14 +200,6 @@ export default function DocumentationApi() {
               <code className="mono">/livreurs/me/colis/statuts/actifs</code> et ne peut pas être
               posé par un livreur.
             </li>
-            <li>
-              403 également si le colis est en statut{' '}
-              <code className="mono">WAITING_CONFIRMATION</code> (« Attente confirmation », posé par
-              l’agence au scan d’un colis sans adresse exploitable) : son statut est verrouillé
-              jusqu’à la confirmation de l’adresse par l’administration. Ce statut n’est jamais
-              renvoyé par <code className="mono">/livreurs/me/colis/statuts/actifs</code> et ne peut
-              pas être posé par un livreur.
-            </li>
           </ul>
         </Endpoint>
       </Section>

@@ -7,7 +7,6 @@ import {
   Truck,
   Warehouse,
   FileText,
-  MapPinOff,
   Undo2,
   MessagesSquare,
   Users,
@@ -24,9 +23,6 @@ import {
 export const CLIENT_MENU = [
   { label: 'Accueil', path: '/client', icon: Home },
   { label: 'Liste des colis', path: '/client/colis', icon: Package, service: 'COLIS_CONSULTATION' },
-  // Colis scannés « sans adresse » par l'agence (attente de confirmation) :
-  // pendant client de la page admin Sans adresse, sans scan.
-  { label: 'Sans adresse', path: '/client/sans-adresse', icon: MapPinOff, service: 'COLIS_CONSULTATION' },
   { label: 'Nouveau colis', path: '/client/nouveau-colis', icon: PackagePlus, service: 'COLIS_SAISIE' },
   {
     label: 'Importation colis',

@@ -44,19 +44,13 @@ const STATUT_LABELS = {
   RETURNED_TO_CUSTOMER: 'Retourné au client',
   RECU_BY_CUSTOMER: 'Reçu par le client',
   RETURNED_TO_STOCK: 'Retourné au stock',
-  WAITING_RESHIP: 'Attente réexpédition',
-  WAITING_CONFIRMATION: 'Attente confirmation'
+  WAITING_RESHIP: 'Attente réexpédition'
 };
 
 /* Statut second « Attente réexpédition » (types 1-4 uniquement) : le colis
  * reste chez son livreur, statut verrouillé pour lui, jusqu'à son ajout à un
  * bon d'envoi (backend : utils/reexpedition.js). */
 export const STATUT_ATTENTE_REEXPEDITION = 'WAITING_RESHIP';
-
-/* Statut second « Attente confirmation » : posé uniquement par le scan de la
- * page Colis besoin d'attention › Sans adresse ; verrouillé pour le livreur
- * comme l'attente de réexpédition (backend : utils/sansAdresse.js). */
-export const STATUT_ATTENTE_CONFIRMATION = 'WAITING_CONFIRMATION';
 
 /* Libellés chargés depuis la base ; prioritaires sur STATUT_LABELS. */
 let labelsBdd = {};

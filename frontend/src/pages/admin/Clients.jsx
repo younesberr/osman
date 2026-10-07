@@ -380,8 +380,7 @@ function RadioRow({ label, value, onChange, name, disabled = false }) {
 /**
  * Modale "Options" : voir n° livreur (customers_livreur), afficher le n° du
  * vendeur sur les tickets (customers_phone_show, même réglage que la page
- * /client/configuration) et vérification colis zéro (customers_colis_zero),
- * en boutons radio Activer / Désactiver ; section « Options par défaut » :
+ * /client/configuration), en boutons radio Activer / Désactiver ; section « Options par défaut » :
  * « Interdire l'ouverture du colis par défaut » (customers_default_open) et
  * « Interdire l'essayage par défaut » (customers_default_essayage, colonne
  * inversée : 1 = essayage autorisé), mêmes réglages que /client/configuration,
@@ -397,7 +396,6 @@ function RadioRow({ label, value, onChange, name, disabled = false }) {
 function OptionsModal({ client, onClose, onSaved }) {
   const [livreurShow, setLivreurShow] = useState(client.livreur_show === 1 ? 1 : 0);
   const [phoneShow, setPhoneShow] = useState(client.phone_show === 1 ? 1 : 0);
-  const [colisZero, setColisZero] = useState(client.colis_zero === 1 ? 1 : 0);
   // null = chargement ; { interdireOuverture: 0|1, interdireEssayage: 0|1 } (valeurs affichées :
   // interdireEssayage = 1 équivaut à customers_default_essayage = 0).
   const [defauts, setDefauts] = useState(null);
@@ -451,7 +449,6 @@ function OptionsModal({ client, onClose, onSaved }) {
       const res = await api.patch(`/clients/${client.customers_id}/options`, {
         livreurShow,
         phoneShow,
-        colisZero,
         // Options par défaut envoyées seulement une fois chargées (ouverture
         // interdite → essayage interdit d'office ; 1 en base = essayage autorisé).
         ...(defauts
@@ -494,12 +491,6 @@ function OptionsModal({ client, onClose, onSaved }) {
               name="phoneShow"
               value={phoneShow}
               onChange={setPhoneShow}
-            />
-            <RadioRow
-              label="Vérification colis zéro"
-              name="colisZero"
-              value={colisZero}
-              onChange={setColisZero}
             />
           </div>
 
@@ -602,7 +593,6 @@ export default function Clients() {
     verified: '',
     livreurShow: '',
     phoneShow: '',
-    colisZero: '',
     active: '1'
   });
   const [sortBy, setSortBy] = useState('');
@@ -832,7 +822,6 @@ export default function Clients() {
         <FlagSelect label="Vérifiés" value={flags.verified} onChange={(v) => setFlag('verified', v)} />
         <FlagSelect label="Voir n° livreur" value={flags.livreurShow} onChange={(v) => setFlag('livreurShow', v)} />
         <FlagSelect label="N° vendeur sur ticket" value={flags.phoneShow} onChange={(v) => setFlag('phoneShow', v)} />
-        <FlagSelect label="Colis zéro" value={flags.colisZero} onChange={(v) => setFlag('colisZero', v)} />
         <select
           className="datatable-select"
           value={flags.active}
@@ -1037,8 +1026,7 @@ export default function Clients() {
           onSaved={(data) =>
             patchRow(data.customers_id, {
               livreur_show: data.livreur_show,
-              phone_show: data.phone_show,
-              colis_zero: data.colis_zero
+              phone_show: data.phone_show
             })
           }
         />

@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
-const { track, contact, register, tarifsVilles, tarifs } = require('../controllers/public.controller');
+const { track, register, tarifsVilles, tarifs } = require('../controllers/public.controller');
 
 /* Endpoints publics (page d'accueil) : limites par IP plus strictes que la limite globale. */
 
@@ -12,30 +12,6 @@ const trackLimiter = rateLimit({
   legacyHeaders: false,
   message: { success: false, message: 'طلبات كثيرة، يرجى الانتظار قليلاً.' }
 });
-
-// L'ancien site limitait à 3 messages / heure par session ; ici par IP (non contournable).
-const contactLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  limit: 3,
-  standardHeaders: 'draft-7',
-  legacyHeaders: false,
-  message: {
-    message: 'لقد تجاوزت الحد المسموح به من الرسائل (3 رسائل/ساعة). يرجى المحاولة لاحقاً.'
-  }
-});
-
-const contactRules = [
-  body('name').trim().notEmpty().withMessage('الاسم الكامل مطلوب.').bail()
-    .isLength({ max: 100 }).withMessage('الاسم طويل جداً (100 حرف كحد أقصى).'),
-  body('city').optional({ values: 'falsy' }).trim()
-    .isLength({ max: 100 }).withMessage('اسم المدينة طويل جداً (100 حرف كحد أقصى).'),
-  body('email').trim().isEmail().withMessage('البريد الإلكتروني غير صالح.').bail()
-    .isLength({ max: 100 }).withMessage('البريد الإلكتروني طويل جداً (100 حرف كحد أقصى).'),
-  body('phone').trim().notEmpty().withMessage('رقم الهاتف مطلوب.').bail()
-    .isLength({ max: 50 }).withMessage('رقم الهاتف طويل جداً (50 حرفاً كحد أقصى).'),
-  body('message').trim().notEmpty().withMessage('الرسالة مطلوبة.').bail()
-    .isLength({ max: 5000 }).withMessage('الرسالة طويلة جداً (5000 حرف كحد أقصى).')
-];
 
 function validate(req, res, next) {
   const errors = validationResult(req);
@@ -103,7 +79,6 @@ const tarifsLimiter = rateLimit({
 });
 
 router.get('/track', trackLimiter, track);
-router.post('/contact', contactLimiter, contactRules, validate, contact);
 router.post('/register', registerLimiter, registerRules, validate, register);
 router.get('/tarifs/villes', tarifsLimiter, tarifsVilles);
 router.get('/tarifs', tarifsLimiter, tarifs);

@@ -52,16 +52,11 @@ export const TYPE_RULES = {
       'RAMASSAGE_SCAN',
       'BON_ENVOI',
       'BON_DISTRIBUTION',
-      'COLIS_SANS_ADRESSE',
       'FACTURATION',
       'RETOUR',
       'RAMASSAGE',
-      'COLIS_ZERO',
       'CLIENTS',
-      'CLIENTS_NON_VERIFIES',
-      'CAISSE_AGENCE',
-      'TRANSPORT',
-      'TICKETS_VIDES'
+      'CAISSE_AGENCE'
     ],
     optional: []
   },
@@ -71,16 +66,14 @@ export const TYPE_RULES = {
       'RAMASSAGE_SCAN',
       'BON_ENVOI',
       'BON_DISTRIBUTION',
-      'COLIS_SANS_ADRESSE',
-      'RAMASSAGE',
-      'TICKETS_VIDES'
+      'RAMASSAGE'
     ],
-    optional: ['STOCK', 'FACTURATION', 'RETOUR', 'COLIS_ZERO', 'CLIENTS', 'CLIENTS_NON_VERIFIES', 'TRANSPORT']
+    optional: ['STOCK', 'FACTURATION', 'RETOUR', 'CLIENTS']
   },
   5: { defaults: [], optional: [] },
   6: {
     defaults: ['COLIS', 'RAMASSAGE_SCAN', 'BON_ENVOI', 'RAMASSAGE'],
-    optional: ['STOCK', 'TRANSPORT', 'TICKETS_VIDES']
+    optional: ['STOCK']
   }
 };
 

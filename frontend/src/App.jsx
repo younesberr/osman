@@ -21,7 +21,6 @@ import { livreurPages } from './config/livreurMenu';
  * publique et connexion) — score mobile de la page d'accueil. Les chunks
  * périmés après un déploiement sont gérés par vite:preloadError (main.jsx).
  */
-const lazyNamed = (loader, name) => lazy(() => loader().then((m) => ({ default: m[name] })));
 
 /** Indicateur affiché le temps de télécharger le chunk d'une page. */
 const PageLoader = () => <div className="page-loader">Chargement…</div>;
@@ -34,7 +33,6 @@ const ConditionsUtilisation = lazy(() => import('./pages/ConditionsUtilisation')
 const Accueil = lazy(() => import('./pages/admin/Accueil'));
 const ClientAccueil = lazy(() => import('./pages/client/Accueil'));
 const ClientColis = lazy(() => import('./pages/client/Colis'));
-const ClientColisSansAdresse = lazy(() => import('./pages/client/ColisSansAdresse'));
 const ClientNouveauColis = lazy(() => import('./pages/client/NouveauColis'));
 const ClientProduits = lazy(() => import('./pages/client/Produits'));
 const ClientMouvementsStock = lazy(() => import('./pages/client/MouvementsStock'));
@@ -77,7 +75,6 @@ const Zones = lazy(() => import('./pages/admin/Zones'));
 const Villes = lazy(() => import('./pages/admin/Villes'));
 const Tarifs = lazy(() => import('./pages/admin/Tarifs'));
 const MessagesClients = lazy(() => import('./pages/admin/MessagesClients'));
-const FormAccueil = lazy(() => import('./pages/admin/FormAccueil'));
 const Reclamations = lazy(() => import('./pages/admin/Reclamations'));
 const RamassageScan = lazy(() => import('./pages/admin/RamassageScan'));
 const Ramassage = lazy(() => import('./pages/admin/Ramassage'));
@@ -101,33 +98,14 @@ const FactureClientEdit = lazy(() => import('./pages/admin/FactureClientEdit'));
 const ImportColisNormal = lazy(() => import('./pages/admin/ImportColisNormal'));
 const ImportColisStock = lazy(() => import('./pages/admin/ImportColisStock'));
 const Remboursements = lazy(() => import('./pages/admin/Remboursements'));
-const SuiviRetourEtape1 = lazyNamed(() => import('./pages/admin/SuiviRetour'), 'SuiviRetourEtape1');
-const SuiviRetourEtape2 = lazyNamed(() => import('./pages/admin/SuiviRetour'), 'SuiviRetourEtape2');
-const SuiviRetourEtape3 = lazyNamed(() => import('./pages/admin/SuiviRetour'), 'SuiviRetourEtape3');
-const ColisAlerte = lazyNamed(() => import('./pages/admin/ColisAttention'), 'ColisAlerte');
-const ColisASuivre = lazyNamed(() => import('./pages/admin/ColisAttention'), 'ColisASuivre');
-const ColisProgrammeDouble = lazy(() => import('./pages/admin/ColisProgrammeDouble'));
-const ColisSansAdresse = lazy(() => import('./pages/admin/ColisSansAdresse'));
 const ModificationsColis = lazy(() => import('./pages/admin/ModificationsColis'));
 const NouveauxClients = lazy(() => import('./pages/admin/NouveauxClients'));
-const ClientsNonVerifies = lazy(() => import('./pages/admin/ClientsNonVerifies'));
-const ColisMontantZero = lazy(() => import('./pages/admin/ColisMontantZero'));
-const TransportEnvoi = lazyNamed(() => import('./pages/admin/TransportScan'), 'TransportEnvoi');
-const TransportRetour = lazyNamed(() => import('./pages/admin/TransportScan'), 'TransportRetour');
-const TransportFacturation = lazy(() => import('./pages/admin/TransportFacturation'));
-const TransportBons = lazy(() => import('./pages/admin/TransportBons'));
-const TransportBonEdit = lazy(() => import('./pages/admin/TransportBonEdit'));
-const TransportFactureDetail = lazy(() => import('./pages/admin/TransportFactureDetail'));
-const TransportConfiguration = lazy(() => import('./pages/admin/TransportConfiguration'));
-const TicketsTransport = lazy(() => import('./pages/admin/TicketsTransport'));
-const TicketsClients = lazy(() => import('./pages/admin/TicketsClients'));
 const NotificationsClients = lazy(() => import('./pages/admin/NotificationsClients'));
 const NotificationsEmployes = lazy(() => import('./pages/admin/NotificationsEmployes'));
 const Logistiques = lazy(() => import('./pages/admin/Logistiques'));
 const FicheLogistique = lazy(() => import('./pages/admin/FicheLogistique'));
 const Materiel = lazy(() => import('./pages/admin/Materiel'));
 const StatistiquesGlobales = lazy(() => import('./pages/admin/StatistiquesGlobales'));
-const StatistiquesMateriels = lazy(() => import('./pages/admin/StatistiquesMateriels'));
 
 /** Pages admin développées ; les autres chemins retombent sur EmptyPage. */
 const PAGE_COMPONENTS = {
@@ -144,40 +122,22 @@ const PAGE_COMPONENTS = {
   '/admin/bons-distribution': BonsDistribution,
   '/admin/bons-retour/livreur': BonsRetourLivreur,
   '/admin/bons-retour/client': BonsRetourClient,
-  '/admin/suivi-retour/etape-1': SuiviRetourEtape1,
-  '/admin/suivi-retour/etape-2': SuiviRetourEtape2,
-  '/admin/suivi-retour/etape-3': SuiviRetourEtape3,
   '/admin/remboursement': Remboursements,
   '/admin/modifications-colis': ModificationsColis,
   '/admin/nouveaux-clients': NouveauxClients,
-  '/admin/colis-montant-zero': ColisMontantZero,
-  '/admin/colis-attention/alerte': ColisAlerte,
-  '/admin/colis-attention/a-suivre': ColisASuivre,
-  '/admin/colis-attention/programme-double': ColisProgrammeDouble,
-  '/admin/sans-adresse': ColisSansAdresse,
   '/admin/facturation-livreurs/frais-supplementaires': FraisLivreurs,
   '/admin/facturation-livreurs/factures': FacturesLivreurs,
   '/admin/facturation-clients/frais-supplementaires': FraisClients,
   '/admin/facturation-clients/factures': FacturesClients,
   '/admin/reclamations': Reclamations,
-  '/admin/transport/envoi': TransportEnvoi,
-  '/admin/transport/retour': TransportRetour,
-  '/admin/transport/bons': TransportBons,
-  '/admin/transport/facturation': TransportFacturation,
-  '/admin/transport/configuration': TransportConfiguration,
-  '/admin/tickets-vides/transport': TicketsTransport,
-  '/admin/tickets-vides/clients': TicketsClients,
   '/admin/livreurs': Livreurs,
   '/admin/clients': Clients,
-  '/admin/clients-non-verifies': ClientsNonVerifies,
   '/admin/caisse-agence': CaisseAgence,
   '/admin/utilisateurs': Utilisateurs,
   '/admin/logistiques': Logistiques,
   '/admin/materiel': Materiel,
   '/admin/statistiques/globales': StatistiquesGlobales,
-  '/admin/statistiques/materiels': StatistiquesMateriels,
   '/admin/messages/clients': MessagesClients,
-  '/admin/messages/form-accueil': FormAccueil,
   '/admin/notifications/employes': NotificationsEmployes,
   '/admin/notifications/clients': NotificationsClients,
   '/admin/configuration/agences': Agences,
@@ -208,7 +168,6 @@ const ClientApiShopify = () => <ClientApiComingSoon platform="shopify" />;
 /** Pages client développées ; les autres chemins retombent sur EmptyPage. */
 const CLIENT_PAGE_COMPONENTS = {
   '/client/colis': ClientColis,
-  '/client/sans-adresse': ClientColisSansAdresse,
   '/client/nouveau-colis': ClientNouveauColis,
   '/client/import-colis/normal': ClientImportColisNormal,
   '/client/import-colis/stock': ClientImportColisStock,
@@ -390,24 +349,6 @@ export default function App() {
               </ServiceRoute>
             }
           />
-          {/* Page hors menu : modification d'un bon de transport (tous les détenteurs du service). */}
-          <Route
-            path="transport/bons/:id"
-            element={
-              <ServiceRoute service="TRANSPORT">
-                <TransportBonEdit />
-              </ServiceRoute>
-            }
-          />
-          {/* Page hors menu : détail d'une facture transport (types 1/2). */}
-          <Route
-            path="transport/facturation/:id"
-            element={
-              <ServiceRoute service="TRANSPORT" types={[1, 2]}>
-                <TransportFactureDetail />
-              </ServiceRoute>
-            }
-          />
           {/* Page hors menu : création / modification d'un bon de sortie de stock. */}
           <Route
             path="stock/bon-de-sortie/:id"
@@ -443,16 +384,6 @@ export default function App() {
                 <FicheProduit />
               </ServiceRoute>
             }
-          />
-          {/* Ancien chemin unique de Colis besoin d'attention → première sous-page. */}
-          <Route
-            path="colis-attention"
-            element={<Navigate to="/admin/colis-attention/alerte" replace />}
-          />
-          {/* Ancienne sous-page « Sans adresse » de Colis besoin d'attention → menu à part. */}
-          <Route
-            path="colis-attention/sans-adresse"
-            element={<Navigate to="/admin/sans-adresse" replace />}
           />
           {/* Ancien chemin unique de Notifications employés → sous-page Employés. */}
           <Route

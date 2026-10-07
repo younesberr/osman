@@ -57,7 +57,6 @@ const FLAG_FILTERS = {
   verified: 'IFNULL(c.customers_verified, 0)',
   livreurShow: 'IFNULL(c.customers_livreur, 0)',
   phoneShow: 'IFNULL(c.customers_phone_show, 0)',
-  colisZero: 'IFNULL(c.customers_colis_zero, 0)',
   active: 'IFNULL(c.customers_active, 0)'
 };
 
@@ -66,7 +65,7 @@ const FLAG_FILTERS = {
  * Query : page, pageSize, search (magasin, nom, CIN, tél personnel, tél magasin),
  * ville (ville_id de ramassage), agence (agence_id via zone de la ville), forme
  * (configs_id de la forme juridique), customTarif / verified / livreurShow /
- * phoneShow / colisZero / active (1|0), sortBy (voir SORTS) et sortDir (asc|desc).
+ * phoneShow / active (1|0), sortBy (voir SORTS) et sortDir (asc|desc).
  */
 async function listClients(req, res, next) {
   try {
@@ -128,7 +127,6 @@ async function listClients(req, res, next) {
               IFNULL(c.customers_verified, 0)     AS verified,
               IFNULL(c.customers_livreur, 0)      AS livreur_show,
               IFNULL(c.customers_phone_show, 0)   AS phone_show,
-              IFNULL(c.customers_colis_zero, 0)   AS colis_zero,
               t.nom_ville     AS ville_ramassage,
               z.zone_name     AS zone,
               ag.agence_name  AS agence,
@@ -166,7 +164,6 @@ async function listClients(req, res, next) {
         verified: Number(r.verified),
         livreur_show: Number(r.livreur_show),
         phone_show: Number(r.phone_show),
-        colis_zero: Number(r.colis_zero),
         active: Number(r.customers_active),
         colis_total: Number(r.colis_total),
         colis_livres: Number(r.colis_livres),
@@ -360,7 +357,6 @@ async function lireOptions(id) {
   const [[row]] = await pool.query(
     `SELECT IFNULL(customers_livreur, 0)          AS livreur_show,
             IFNULL(customers_phone_show, 0)       AS phone_show,
-            IFNULL(customers_colis_zero, 0)       AS colis_zero,
             IFNULL(customers_default_open, 0)     AS default_open,
             IFNULL(customers_default_essayage, 0) AS default_essayage
        FROM delevery_customers WHERE customers_id = ?`,
@@ -371,7 +367,6 @@ async function lireOptions(id) {
     customers_id: id,
     livreur_show: Number(row.livreur_show),
     phone_show: Number(row.phone_show),
-    colis_zero: Number(row.colis_zero),
     // Options par défaut des nouveaux colis (mêmes colonnes que /client/configuration) :
     // default_open = 1 → ouverture interdite par défaut ; default_essayage = 1 → essayage autorisé.
     default_open: Number(row.default_open),
@@ -410,13 +405,12 @@ async function getOptions(req, res, next) {
 
 /**
  * PATCH /api/clients/:id/options — modale "Options" :
- * body { livreurShow?: 0|1, phoneShow?: 0|1, colisZero?: 0|1,
- *        defaultOpen?: 0|1, defaultEssayage?: 0|1 } (au moins un champ).
+ * body { livreurShow?: 0|1, phoneShow?: 0|1, defaultOpen?: 0|1,
+ *        defaultEssayage?: 0|1 } (au moins un champ).
  *  - livreurShow → customers_livreur (voir n° livreur) ;
  *  - phoneShow → customers_phone_show (afficher le n° du vendeur sur les
  *    tickets ; même colonne que « Afficher mon numéro de téléphone sur les
  *    tickets » de /client/configuration, cf. updateMyConfig) ;
- *  - colisZero → customers_colis_zero (vérification colis zéro) ;
  *  - defaultOpen / defaultEssayage → customers_default_open /
  *    customers_default_essayage (section « Options par défaut » : valeurs par
  *    défaut des cases « interdire l'ouverture » / « interdire l'essayage »
@@ -442,7 +436,6 @@ async function setOptions(req, res, next) {
     for (const [field, column] of [
       ['livreurShow', 'customers_livreur'],
       ['phoneShow', 'customers_phone_show'],
-      ['colisZero', 'customers_colis_zero'],
       ['defaultOpen', 'customers_default_open'],
       ['defaultEssayage', 'customers_default_essayage']
     ]) {

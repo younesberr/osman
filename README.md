@@ -1,6 +1,6 @@
 # OSMAN EXPRESS — plateforme de gestion de livraison
 
-Application web de gestion de colis (agences, livreurs, clients e-commerce, bons, factures, stock, transport).
+Application web de gestion de colis (agences, livreurs, clients e-commerce, bons, factures, stock).
 
 - `backend/` : API Node.js (Express 4, MySQL via `mysql2`), sert aussi le frontend compilé.
 - `frontend/` : interface React 18 (Vite 5) : espaces admin, client et livreur + site public en arabe.

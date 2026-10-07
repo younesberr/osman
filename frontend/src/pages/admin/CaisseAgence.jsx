@@ -48,8 +48,7 @@ import DateRangeSelect, { defaultRange } from '../../components/DateRangeSelect'
  * Rattachement (règle serveur, utils/caisse) : seules les entrées saisies
  * par un responsable d'agence (type 3) comptent sur la caisse de son
  * agence ; celles des autres utilisateurs — y compris leurs paiements de
- * factures clients / livreurs et frais de colis montant zéro — sont
- * « Sans agence » (caisse à part entière).
+ * factures clients / livreurs — sont « Sans agence » (caisse à part entière).
  */
 
 /** Timestamp unix (secondes) → "JJ/MM/AAAA". */
@@ -908,9 +907,8 @@ export default function CaisseAgence() {
         {canManage && (
           <p className="caisse-hint">
             Seules les entrées saisies par un responsable d'agence (type 3) sont comptées sur la
-            caisse de son agence — y compris les paiements de factures clients / livreurs et les
-            frais des colis montant zéro. Celles des autres utilisateurs sont classées « Sans
-            agence ».
+            caisse de son agence — y compris les paiements de factures clients / livreurs. Celles
+            des autres utilisateurs sont classées « Sans agence ».
           </p>
         )}
 

@@ -8,17 +8,16 @@ import SearchableSelect from './SearchableSelect';
 import FraisMontantNotice from './FraisMontantNotice';
 
 /*
- * Modales partagées des colis côté CLIENT (pages Liste des colis et Sans
- * adresse) : squelette commun (ParcelModal), détail de suivi (SuiviModal),
- * information colis (InfoModal) et modification du colis (EditModal — même
- * verrou sur les deux pages : modification directe en attente de ramassage,
- * demande à valider par l'administration ensuite). Miroir de
+ * Modales des colis côté CLIENT (page Liste des colis) : squelette commun
+ * (ParcelModal), détail de suivi (SuiviModal), information colis (InfoModal)
+ * et modification du colis (EditModal — modification directe en attente de
+ * ramassage, demande à valider par l'administration ensuite). Miroir de
  * components/ParcelModals.jsx (admin), sur les endpoints /parcels/client/*.
  */
 
 /**
- * Condition d'affichage de l'action « Modifier colis » (pages Liste des colis
- * et Sans adresse) : tout statut sauf livré / retourné ; le serveur décide
+ * Condition d'affichage de l'action « Modifier colis » (page Liste des colis) :
+ * tout statut sauf livré / retourné ; le serveur décide
  * ensuite entre modification directe et demande de validation.
  */
 export function editVisible(p) {

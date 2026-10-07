@@ -1,10 +1,6 @@
 import { Banknote, Lock, MapPin, MessageSquare, Phone, PhoneCall, RefreshCw, Route, User } from 'lucide-react';
 import { BRAND } from '../config/brand';
-import {
-  statutLabel,
-  STATUT_ATTENTE_REEXPEDITION,
-  STATUT_ATTENTE_CONFIRMATION
-} from '../utils/statuts';
+import { statutLabel, STATUT_ATTENTE_REEXPEDITION } from '../utils/statuts';
 
 /*
  * Carte d'un colis du dashboard livreur : vue mobile de la liste des colis
@@ -57,19 +53,14 @@ export function waCallUrl(parcel) {
 const STATUTS_AVEC_DATE = ['POSTPONED', 'PROGRAMMER'];
 
 /** Vrai si le statut du colis est verrouillé pour le livreur : « Attente
- * réexpédition » (colis à réexpédier par un bon d'envoi) ou « Attente
- * confirmation » (colis scanné sans adresse en agence), posés par
+ * réexpédition » (colis à réexpédier par un bon d'envoi), posé par
  * l'administration — le colis reste dans sa tournée (visible), mais le bouton
  * « Changer statut » est désactivé (le serveur refuse aussi, 403). */
 export function statutVerrouille(parcel) {
-  return (
-    parcel?.statut === STATUT_ATTENTE_REEXPEDITION ||
-    parcel?.statut === STATUT_ATTENTE_CONFIRMATION
-  );
+  return parcel?.statut === STATUT_ATTENTE_REEXPEDITION;
 }
 
-export const VERROU_TITRE =
-  "Statut verrouillé par l'administration (attente réexpédition / attente confirmation)";
+export const VERROU_TITRE = "Statut verrouillé par l'administration (attente réexpédition)";
 
 /** parcel_report_time est stocké en "JJ/MM/AAAA" ou "AAAA-MM-JJ" → affichage "JJ/MM/AAAA". */
 function formatReportDate(value) {

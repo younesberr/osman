@@ -9,10 +9,10 @@ import FraisMontantNotice from './FraisMontantNotice';
 import { fraisMontant } from '../utils/fraisMontant';
 
 /*
- * Modales partagées des colis côté admin (pages Colis, Suivi de retour et
- * Colis besoin d'attention) : squelette commun (ParcelModal), détail de suivi
- * (SuiviModal), information colis (InfoModal), modification du colis
- * (EditModal) et changement de statut (StatutModal).
+ * Modales partagées des colis (page admin Colis ; détail de suivi aussi sur
+ * les bons et les réclamations ; dashboard livreur) : squelette commun
+ * (ParcelModal), détail de suivi (SuiviModal), information colis (InfoModal),
+ * modification du colis (EditModal) et changement de statut (StatutModal).
  */
 
 /** Timestamp unix (secondes) → "lundi 3 août 2026, à 21:45". */
@@ -337,8 +337,6 @@ export function EditModal({ parcel, onClose, onSaved }) {
         parcel_phone: res.data.parcel_phone,
         parcel_price: res.data.parcel_price,
         ville: res.data.ville,
-        // Adresse : affichée sous la ville sur la page « Sans adresse ».
-        ...(res.data.parcel_address !== undefined ? { adresse: res.data.parcel_address } : {}),
         ...(nouveauCode ? { parcel_code: res.data.parcel_code } : {})
       });
       if (nouveauCode) {
@@ -768,7 +766,7 @@ export function StatutModal({ parcel, onClose, onSaved, basePath = '/parcels' })
 }
 
 /**
- * Modale "Information colis" (pages Colis et Sans adresse) : mêmes détails que
+ * Modale "Information colis" (page Colis) : mêmes détails que
  * la version client, avec en plus une section à gauche présentant le client
  * expéditeur (magasin, nom, téléphone, ville de ramassage, adresse).
  */

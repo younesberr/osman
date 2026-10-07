@@ -29,8 +29,8 @@ import { usePlatform } from '../../context/PlatformContext';
 import { statutLabel } from '../../utils/statuts';
 import SearchSelect from '../../components/SearchSelect';
 import DateRangeSelect, { defaultRange } from '../../components/DateRangeSelect';
-// Modales partagées avec la page Sans adresse (squelette, suivi, information,
-// modification) et condition d'affichage de « Modifier colis ».
+// Modales de la liste (squelette, suivi, information, modification) et
+// condition d'affichage de « Modifier colis ».
 import {
   ParcelModal,
   SuiviModal,

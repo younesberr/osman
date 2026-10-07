@@ -3,7 +3,7 @@ const { requireAuth, requireKind, requireRole, refreshEmployeeAccess } = require
 const { requireClientPermission } = require('../middleware/clientAccess');
 const { adminStats, livreurStats, clientStats } = require('../controllers/dashboard.controller');
 const { clientStatistiques } = require('../controllers/statistiquesClient.controller');
-const { compteursSidebar, compteursClient } = require('../controllers/compteursSidebar.controller');
+const { compteursSidebar } = require('../controllers/compteursSidebar.controller');
 const { ADMIN_TYPES, LIVREUR_TYPE } = require('../controllers/auth.controller');
 
 router.get('/admin', requireAuth, requireRole(...ADMIN_TYPES), adminStats);
@@ -12,9 +12,6 @@ router.get('/admin', requireAuth, requireRole(...ADMIN_TYPES), adminStats);
 router.get('/admin/compteurs', requireAuth, requireRole(...ADMIN_TYPES), refreshEmployeeAccess, compteursSidebar);
 router.get('/livreur', requireAuth, requireRole(LIVREUR_TYPE), livreurStats);
 router.get('/client', requireAuth, requireKind('customer'), clientStats);
-// Badges rouges de la sidebar client (Sans adresse) ; requireClientPermission()
-// sans code relit les tâches d'un membre d'équipe pour filtrer les compteurs.
-router.get('/client/compteurs', requireAuth, requireKind('customer'), requireClientPermission(), compteursClient);
 // Page Statistiques du dashboard client (tâche membre STATISTIQUES).
 router.get(
   '/client/statistiques',

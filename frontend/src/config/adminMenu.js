@@ -6,30 +6,22 @@ import {
   ScanLine,
   Send,
   Truck,
-  MapPinOff,
   FileText,
   ReceiptText,
   Undo2,
-  Route,
   PackageOpen,
   HandCoins,
   MessageSquareWarning,
   PencilLine,
-  Tag,
-  Hourglass,
   MessagesSquare,
   UserPlus,
   Users,
-  UserX,
   Landmark,
   BellRing,
-  Bus,
-  Ticket,
   Bike,
   UserCog,
   Boxes,
   Wrench,
-  Calculator,
   BarChart3,
   Settings
 } from 'lucide-react';
@@ -77,20 +69,6 @@ export const ADMIN_MENU = [
   { label: 'Ramassage par scan', path: '/admin/ramassage-scan', icon: ScanLine, service: 'RAMASSAGE_SCAN' },
   { label: "Bons d'envoi", path: '/admin/bons-envoi', icon: Send, service: 'BON_ENVOI' },
   { label: 'Bons de distribution', path: '/admin/bons-distribution', icon: Truck, service: 'BON_DISTRIBUTION' },
-  // Sans adresse : scan des colis sans adresse exploitable → statut « Attente
-  // confirmation ». Menu à part (ex-sous-page de Colis besoin d'attention) :
-  // service propre COLIS_SANS_ADRESSE = case « Colis sans adresse » de
-  // Utilisateurs › Comptes pour le type 2 ; acquis d'office par les types 3-4,
-  // restreints aux colis de leur agence (typeServices.js) ; `types` verrouille
-  // en plus la page (miroir backend : parcels.routes.js, requireRole).
-  {
-    label: 'Sans adresse',
-    path: '/admin/sans-adresse',
-    icon: MapPinOff,
-    service: 'COLIS_SANS_ADRESSE',
-    serviceLabel: 'Colis sans adresse',
-    types: [1, 2, 3, 4]
-  },
   {
     label: 'Facturation livreurs',
     icon: FileText,
@@ -118,44 +96,20 @@ export const ADMIN_MENU = [
       { label: 'Client', path: '/admin/bons-retour/client' }
     ]
   },
-  {
-    label: 'Suivi de retour',
-    icon: Route,
-    service: 'SUIVI_RETOUR',
-    children: [
-      { label: '1ère étape', path: '/admin/suivi-retour/etape-1' },
-      { label: '2ème étape', path: '/admin/suivi-retour/etape-2' },
-      { label: '3ème étape', path: '/admin/suivi-retour/etape-3' }
-    ]
-  },
   { label: 'Ramassage', path: '/admin/ramassage', icon: PackageOpen, service: 'RAMASSAGE' },
   { label: 'Remboursement', path: '/admin/remboursement', icon: HandCoins, service: 'REMBOURSEMENT' },
   { label: 'Réclamations', path: '/admin/reclamations', icon: MessageSquareWarning, service: 'RECLAMATIONS' },
   { label: 'Modifications Colis', path: '/admin/modifications-colis', icon: PencilLine, service: 'MODIFICATIONS_COLIS' },
-  { label: 'Colis montant zéro', path: '/admin/colis-montant-zero', icon: Tag, service: 'COLIS_ZERO' },
-  {
-    label: "Colis besoin d'attention",
-    icon: Hourglass,
-    service: 'COLIS_ATTENTION',
-    children: [
-      { label: 'Colis alerte 00H00', path: '/admin/colis-attention/alerte' },
-      { label: 'Colis à suivre', path: '/admin/colis-attention/a-suivre' },
-      // Réservé aux fonctions 1-2 (miroir backend : parcels.routes.js, requireRole).
-      { label: 'Programmé doublé', path: '/admin/colis-attention/programme-double', types: [1, 2] }
-    ]
-  },
   {
     label: 'Messages',
     icon: MessagesSquare,
     service: 'MESSAGES',
     children: [
-      { label: 'Clients', path: '/admin/messages/clients' },
-      { label: "Form d'accueil", path: '/admin/messages/form-accueil' }
+      { label: 'Clients', path: '/admin/messages/clients' }
     ]
   },
   { label: 'Nouveaux clients', path: '/admin/nouveaux-clients', icon: UserPlus, service: 'NOUVEAUX_CLIENTS' },
   { label: 'Clients', path: '/admin/clients', icon: Users, service: 'CLIENTS' },
-  { label: 'Clients non vérifiés', path: '/admin/clients-non-verifies', icon: UserX, service: 'CLIENTS_NON_VERIFIES' },
   { label: 'Caisse Agence', path: '/admin/caisse-agence', icon: Landmark, service: 'CAISSE_AGENCE' },
   {
     label: 'Notifications',
@@ -167,43 +121,16 @@ export const ADMIN_MENU = [
       { label: 'Clients', path: '/admin/notifications/clients', types: [1, 2] }
     ]
   },
-  {
-    label: 'Transport',
-    icon: Bus,
-    service: 'TRANSPORT',
-    children: [
-      { label: 'Envoi', path: '/admin/transport/envoi' },
-      { label: 'Retour', path: '/admin/transport/retour' },
-      { label: 'Bons de transport', path: '/admin/transport/bons' },
-      { label: 'Facturation', path: '/admin/transport/facturation', types: [1, 2] },
-      { label: 'Configuration', path: '/admin/transport/configuration', types: [1, 2] }
-    ]
-  },
-  {
-    label: 'Tickets vides',
-    icon: Ticket,
-    service: 'TICKETS_VIDES',
-    children: [
-      { label: 'Tickets transport', path: '/admin/tickets-vides/transport' },
-      { label: 'Tickets clients', path: '/admin/tickets-vides/clients' }
-    ]
-  },
   { label: 'Livreurs', path: '/admin/livreurs', icon: Bike, service: 'LIVREURS' },
   { label: 'Utilisateurs', path: '/admin/utilisateurs', icon: UserCog, service: 'UTILISATEURS' },
   { label: 'Logistiques', path: '/admin/logistiques', icon: Boxes, service: 'LOGISTIQUES' },
   { label: 'Matériel', path: '/admin/materiel', icon: Wrench, service: 'MATERIEL' },
-  { label: 'Comptabilités', path: '/admin/comptabilites', icon: Calculator, service: 'COMPTABILITES' },
   {
     label: 'Statistiques',
     icon: BarChart3,
     service: 'STATISTIQUES',
     children: [
-      { label: 'Globales', path: '/admin/statistiques/globales' },
-      { label: 'RH', path: '/admin/statistiques/rh' },
-      { label: 'Livreurs', path: '/admin/statistiques/livreurs' },
-      { label: 'Clients', path: '/admin/statistiques/clients' },
-      { label: 'Logistiques', path: '/admin/statistiques/logistiques' },
-      { label: 'Matériels', path: '/admin/statistiques/materiels' }
+      { label: 'Globales', path: '/admin/statistiques/globales' }
     ]
   },
   {
@@ -239,9 +166,7 @@ export const DETAIL_LABELS = {
   '/admin/livreurs': 'Fiche livreur',
   '/admin/clients': 'Fiche client',
   '/admin/stock/inventaire': { nouveau: 'Nouveau produit', '*': 'Fiche produit' },
-  '/admin/stock/bon-de-sortie': 'Création bon de sortie',
-  '/admin/transport/facturation': 'Facture transport',
-  '/admin/transport/bons': 'Bon de transport'
+  '/admin/stock/bon-de-sortie': 'Création bon de sortie'
 };
 
 /** Résout un libellé de DETAIL_LABELS pour le chemin courant. */

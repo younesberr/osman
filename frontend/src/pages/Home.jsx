@@ -9,8 +9,8 @@ import PublicLogo from '../components/PublicLogo';
 /**
  * Page d'accueil publique — reproduction fidèle de la page d'accueil de
  * l'ancien site PHP (ancien site PHP) : arabe RTL, police Cairo,
- * rouge #d80613 / noir #111111. Le suivi de colis et le formulaire de
- * contact appellent les endpoints publics /api/public/*.
+ * rouge #d80613 / noir #111111. Le suivi de colis appelle l'endpoint public
+ * /api/public/track.
  */
 
 const NAV_LINKS = [
@@ -160,8 +160,6 @@ const PRICING = [
   }
 ];
 
-const EMPTY_CONTACT = { name: '', city: '', email: '', phone: '', message: '', website: '' };
-
 /** Carte de résultat du suivi (même rendu que l'ancien site). */
 function TrackResult({ code, history }) {
   const latest = history.length ? history[history.length - 1] : null;
@@ -213,9 +211,6 @@ export default function Home() {
   const [trackNum, setTrackNum] = useState('');
   const [tracking, setTracking] = useState({ status: 'idle' });
 
-  const [form, setForm] = useState(EMPTY_CONTACT);
-  const [contact, setContact] = useState({ status: 'idle', errors: [] });
-
   // Scrollspy : le lien de navigation de la section visible devient actif.
   useEffect(() => {
     const spy = new IntersectionObserver(
@@ -254,34 +249,6 @@ export default function Home() {
       setTracking({
         status: 'error',
         message: err.response?.data?.message || 'خطأ في الاتصال بالخادم.'
-      });
-    }
-  }
-
-  const setField = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
-
-  async function submitContact(e) {
-    e.preventDefault();
-    // Mêmes règles de validation que l'ancien site (messages identiques).
-    const errors = [];
-    if (!form.name.trim()) errors.push('الاسم الكامل مطلوب.');
-    if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email.trim()))
-      errors.push('البريد الإلكتروني غير صالح.');
-    if (!form.phone.trim()) errors.push('رقم الهاتف مطلوب.');
-    if (!form.message.trim()) errors.push('الرسالة مطلوبة.');
-    if (errors.length) {
-      setContact({ status: 'error', errors });
-      return;
-    }
-    setContact({ status: 'sending', errors: [] });
-    try {
-      await api.post('/public/contact', form);
-      setContact({ status: 'success', errors: [] });
-      setForm(EMPTY_CONTACT);
-    } catch (err) {
-      setContact({
-        status: 'error',
-        errors: [err.response?.data?.message || 'خطأ في الخادم: تعذّر حفظ الرسالة.']
       });
     }
   }
@@ -578,184 +545,85 @@ export default function Home() {
             <p>نحن هنا للإجابة على جميع استفساراتك — تواصل معنا بأي طريقة تناسبك</p>
           </div>
 
-          <div className="contact-grid">
-            <div>
-              {contact.status === 'success' && (
-                <div className="alert alert-success" role="alert">
-                  <i className="fa fa-circle-check fa-lg" />
-                  <div>شكراً! تم تسجيل رسالتك بنجاح. سنتواصل معك في أقرب وقت.</div>
-                </div>
-              )}
-              {contact.status === 'error' && (
-                <div className="alert alert-danger" role="alert">
-                  <ul>
-                    {contact.errors.map((err) => (
-                      <li key={err}>{err}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+          <div className="contact-info">
+            <h5 className="form-title">
+              <i className="fa fa-address-card icon-accent" />
+              معلومات التواصل
+            </h5>
 
-              <div className="contact-form-wrap">
-                <h5 className="form-title">
-                  <i className="fa fa-paper-plane icon-accent" />
-                  أرسل لنا رسالة
-                </h5>
-                <form onSubmit={submitContact} noValidate>
-                  {/* Honeypot : invisible aux humains, les robots le remplissent. */}
-                  <div className="hp-field" aria-hidden="true">
-                    <label htmlFor="hp_website">Website</label>
-                    <input
-                      type="text"
-                      id="hp_website"
-                      autoComplete="off"
-                      tabIndex={-1}
-                      value={form.website}
-                      onChange={setField('website')}
-                    />
-                  </div>
-                  <div className="form-grid">
-                    <div>
-                      <label className="form-label">الاسم الكامل *</label>
-                      <input
-                        className="form-control"
-                        placeholder="اكتب اسمك هنا"
-                        value={form.name}
-                        onChange={setField('name')}
-                      />
-                    </div>
-                    <div>
-                      <label className="form-label">المدينة</label>
-                      <input
-                        className="form-control"
-                        placeholder="مدينتك"
-                        value={form.city}
-                        onChange={setField('city')}
-                      />
-                    </div>
-                    <div>
-                      <label className="form-label">البريد الإلكتروني *</label>
-                      <input
-                        className="form-control"
-                        type="email"
-                        placeholder="example@email.com"
-                        dir="ltr"
-                        value={form.email}
-                        onChange={setField('email')}
-                      />
-                    </div>
-                    <div>
-                      <label className="form-label">رقم الهاتف *</label>
-                      <input
-                        className="form-control"
-                        type="tel"
-                        placeholder="+212 6XX XXX XXX"
-                        dir="ltr"
-                        value={form.phone}
-                        onChange={setField('phone')}
-                      />
-                    </div>
-                    <div className="form-full">
-                      <label className="form-label">الرسالة *</label>
-                      <textarea
-                        className="form-control"
-                        rows={5}
-                        placeholder="اكتب رسالتك هنا..."
-                        value={form.message}
-                        onChange={setField('message')}
-                      />
-                    </div>
-                    <div className="form-full">
-                      <button type="submit" className="btn-submit" disabled={contact.status === 'sending'}>
-                        <i className="fa fa-paper-plane" />
-                        {contact.status === 'sending' ? 'جاري الإرسال...' : 'إرسال الرسالة'}
-                      </button>
-                    </div>
-                  </div>
-                </form>
+            <div className="contact-info-item">
+              <div className="ci-icon">
+                <i className="fa fa-map-marker-alt" />
+              </div>
+              <div>
+                <span className="ci-label">العنوان</span>
+                <span className="ci-value">{HOME_INFO.adresse}</span>
               </div>
             </div>
 
-            <div>
-              <h5 className="form-title">
-                <i className="fa fa-address-card icon-accent" />
-                معلومات التواصل
-              </h5>
-
-              <div className="contact-info-item">
-                <div className="ci-icon">
-                  <i className="fa fa-map-marker-alt" />
-                </div>
-                <div>
-                  <span className="ci-label">العنوان</span>
-                  <span className="ci-value">{HOME_INFO.adresse}</span>
-                </div>
+            <div className="contact-info-item">
+              <div className="ci-icon">
+                <i className="fa fa-phone" />
               </div>
-
-              <div className="contact-info-item">
-                <div className="ci-icon">
-                  <i className="fa fa-phone" />
-                </div>
-                <div>
-                  <span className="ci-label">الهاتف</span>
-                  <a href={`tel:${HOME_INFO.phone}`} className="ci-value" dir="ltr">
-                    {HOME_INFO.phone}
-                  </a>
-                </div>
-              </div>
-
-              <div className="contact-info-item">
-                <div className="ci-icon green">
-                  <i className="fab fa-whatsapp" />
-                </div>
-                <div>
-                  <span className="ci-label">واتساب</span>
-                  <a
-                    href={`https://wa.me/${HOME_INFO.whatsapp}`}
-                    className="ci-value"
-                    dir="ltr"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {HOME_INFO.whatsapp}
-                  </a>
-                </div>
-              </div>
-
-              <div className="contact-info-item">
-                <div className="ci-icon yellow">
-                  <i className="fa fa-envelope" />
-                </div>
-                <div>
-                  <span className="ci-label">البريد الإلكتروني</span>
-                  <a href={`mailto:${HOME_INFO.email}`} className="ci-value" dir="ltr">
-                    {HOME_INFO.email}
-                  </a>
-                </div>
-              </div>
-
-              <div className="contact-info-item">
-                <div className="ci-icon">
-                  <i className="fa fa-clock" />
-                </div>
-                <div>
-                  <span className="ci-label">أوقات العمل</span>
-                  <span className="ci-value">{HOME_INFO.horaires}</span>
-                </div>
-              </div>
-
-              <p className="follow-label">تابعونا على:</p>
-              <div className="social-links">
-                <a href={HOME_INFO.fb} className="social-btn fb" target="_blank" rel="noopener noreferrer" title="Facebook">
-                  <i className="fab fa-facebook-f" />
-                </a>
-                <a href={HOME_INFO.insta} className="social-btn ig" target="_blank" rel="noopener noreferrer" title="Instagram">
-                  <i className="fab fa-instagram" />
-                </a>
-                <a href={HOME_INFO.yt} className="social-btn yt" target="_blank" rel="noopener noreferrer" title="YouTube">
-                  <i className="fab fa-youtube" />
+              <div>
+                <span className="ci-label">الهاتف</span>
+                <a href={`tel:${HOME_INFO.phone}`} className="ci-value" dir="ltr">
+                  {HOME_INFO.phone}
                 </a>
               </div>
+            </div>
+
+            <div className="contact-info-item">
+              <div className="ci-icon green">
+                <i className="fab fa-whatsapp" />
+              </div>
+              <div>
+                <span className="ci-label">واتساب</span>
+                <a
+                  href={`https://wa.me/${HOME_INFO.whatsapp}`}
+                  className="ci-value"
+                  dir="ltr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {HOME_INFO.whatsapp}
+                </a>
+              </div>
+            </div>
+
+            <div className="contact-info-item">
+              <div className="ci-icon yellow">
+                <i className="fa fa-envelope" />
+              </div>
+              <div>
+                <span className="ci-label">البريد الإلكتروني</span>
+                <a href={`mailto:${HOME_INFO.email}`} className="ci-value" dir="ltr">
+                  {HOME_INFO.email}
+                </a>
+              </div>
+            </div>
+
+            <div className="contact-info-item">
+              <div className="ci-icon">
+                <i className="fa fa-clock" />
+              </div>
+              <div>
+                <span className="ci-label">أوقات العمل</span>
+                <span className="ci-value">{HOME_INFO.horaires}</span>
+              </div>
+            </div>
+
+            <p className="follow-label">تابعونا على:</p>
+            <div className="social-links">
+              <a href={HOME_INFO.fb} className="social-btn fb" target="_blank" rel="noopener noreferrer" title="Facebook">
+                <i className="fab fa-facebook-f" />
+              </a>
+              <a href={HOME_INFO.insta} className="social-btn ig" target="_blank" rel="noopener noreferrer" title="Instagram">
+                <i className="fab fa-instagram" />
+              </a>
+              <a href={HOME_INFO.yt} className="social-btn yt" target="_blank" rel="noopener noreferrer" title="YouTube">
+                <i className="fab fa-youtube" />
+              </a>
             </div>
           </div>
         </div>
