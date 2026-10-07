@@ -2,6 +2,10 @@
 .claude
 node_modules/
 frontend/dist/
+.gitignore
+
+/sql
+*.sql
 
 # Fichiers envoyes par les utilisateurs : hors depot, sauf les visuels de la marque.
 backend/uploads/**

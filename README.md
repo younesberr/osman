@@ -16,7 +16,7 @@ Application web de gestion de colis (agences, livreurs, clients e-commerce, bons
    - accès MySQL (`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`) ;
    - `JWT_SECRET` (48 octets aléatoires, commande indiquée dans le fichier) ;
    - `CLIENT_ORIGIN` (URL du site) et, en production, `UPLOADS_DIR` (dossier des fichiers envoyés, hors du code).
-2. Importer la base de données (structure `delevery_*` et données) dans la base indiquée par `DB_NAME`, puis exécuter le script d'adaptation :
+2. Importer la base de données (structure `delevery_*` et données) dans la base indiquée par `DB_NAME`, créer les tables et colonnes propres à l'application (fichiers `sql/01` à `sql/04`, voir `sql/LISEZMOI.md`), puis exécuter le script d'adaptation :
 
    ```bash
    mysql -u <utilisateur> -p <base> < backend/sql/apres-import.sql
