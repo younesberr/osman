@@ -2,15 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import api from '../api/client';
 import HomeFooter from '../components/HomeFooter';
-import { BRAND, HOME_INFO } from '../config/brand';
-import '../home.css';
 import PublicLogo from '../components/PublicLogo';
+import { BRAND, HOME_INFO } from '../config/brand';
+import '../accueil.css';
 
 /**
- * Page d'accueil publique — reproduction fidèle de la page d'accueil de
- * l'ancien site PHP (ancien site PHP) : arabe RTL, police Cairo,
- * rouge #d80613 / noir #111111. Le suivi de colis appelle l'endpoint public
- * /api/public/track.
+ * Page d'accueil publique (arabe RTL) : design propre à la marque, styles dans
+ * src/accueil.css (police Alexandria, classes oe-). Le suivi de colis appelle
+ * l'endpoint public /api/public/track.
  */
 
 const NAV_LINKS = [
@@ -23,59 +22,52 @@ const NAV_LINKS = [
   { id: 'contact', label: 'اتصل بنا' }
 ];
 
+/** Le premier service occupe la grande tuile de la grille. */
 const SERVICES = [
   {
     title: 'توصيل سريع في كل المغرب',
     icon: 'fa-truck-fast',
-    accent: false,
     text: `بفضل شبكتنا الوطنية المحسّنة، تضمن ${BRAND.nameAr} آجال تسليم قصيرة وموثوقة. أينما كان عملاؤك، نضمن توزيعاً فعّالاً وفي الوقت المحدد.`
   },
   {
     title: 'استلام من طرد واحد',
-    icon: 'fa-truck-loading',
-    accent: true,
+    icon: 'fa-truck-ramp-box',
     text: 'خدمة استلام مرنة تناسب الأفراد والمحترفين. حتى لطرد واحد، نضمن استلاماً سريعاً وعملياً بدون قيود.'
   },
   {
     title: 'تتبع فوري ولحظي',
-    icon: 'fa-location-dot',
-    accent: false,
+    icon: 'fa-location-crosshairs',
     text: 'تتبّع طرودك في أي وقت عبر نظام تتبع دقيق في كل مرحلة لتبقى على علم دائم بحالة شحنتك.'
   },
   {
     title: 'حماية وأمان البضائع',
     icon: 'fa-shield-halved',
-    accent: true,
     text: 'طرودك محمية من الاستلام حتى التسليم النهائي. معالجة بعناية وتعبئة مطابقة لتجنب أي ضرر.'
   },
   {
     title: 'إرجاع مجاني وسريع',
     icon: 'fa-rotate-left',
-    accent: false,
     text: 'خدمة إرجاع بسيطة ومجانية مع تتبع متكامل لشفافية كاملة حتى استلام الإرجاع.'
   },
   {
     title: 'خدمة عملاء احترافية',
     icon: 'fa-headset',
-    accent: true,
     text: 'دعم مخصص متاح للإجابة على جميع أسئلتك بكفاءة، قبل وأثناء وبعد التسليم.'
   },
   {
     title: 'حلول التجارة الإلكترونية',
     icon: 'fa-cart-shopping',
-    accent: false,
-    text: 'واجهات برمجية (WooCommerce, Shopify...) جاهزة لربط متجرك مع مزامنة تلقائية للطلبات والحالات.'
+    // Pas de parenthèses autour des noms latins : elles s'inversent au retour à la ligne (bidi).
+    text: 'واجهات برمجية جاهزة لربط متجرك على WooCommerce أو Shopify وغيرها، مع مزامنة تلقائية للطلبات والحالات.'
   },
   {
     title: 'خدمة تغليف احترافية',
     icon: 'fa-boxes-stacked',
-    accent: true,
     text: 'حلول تغليف قوية ومتكيفة مع كل نوع من البضائع لضمان حماية مثلى وتقليل مخاطر التلف.'
   },
   {
     title: 'تخزين البضائع في المستودع',
     icon: 'fa-warehouse',
-    accent: false,
     text: 'فضاء تخزين آمن لحماية منتجاتك بكل ثقة. حلول قصيرة أو متوسطة الأمد حسب احتياجاتك.'
   }
 ];
@@ -84,59 +76,54 @@ const STEPS = [
   {
     icon: 'fa-file-pen',
     title: 'سجّل شحنتك',
-    text: 'أنشئ حسابك وسجّل طلبات التوصيل عبر لوحة التحكم بسهولة تامة في دقائق'
+    text: 'أنشئ حسابك وسجّل طلبات التوصيل عبر لوحة التحكم بسهولة تامة في دقائق.'
   },
   {
     icon: 'fa-box',
     title: 'نستلم البضاعة',
-    text: 'يتوجه سائقنا إليك ويستلم الطرود بعناية وينقلها إلى مستودعاتنا بأمان'
+    text: 'يتوجه سائقنا إليك ويستلم الطرود بعناية وينقلها إلى مستودعاتنا بأمان.'
   },
   {
     icon: 'fa-house-user',
-    title: 'نوصّل للعميل',
-    text: 'يصل الطرد إلى وجهته في أسرع وقت مع إشعار للعميل وتأكيد التسليم فوراً'
+    title: 'نوصّل للزبون',
+    text: 'يصل الطرد إلى وجهته في أسرع وقت مع إشعار للزبون وتأكيد التسليم فوراً.'
   },
   {
     icon: 'fa-money-bill-wave',
     title: 'تستلم أموالك',
-    text: 'تحصيل مبالغ الدفع عند الاستلام وتحويلها إليك في أقصر الآجال بشفافية كاملة'
+    text: 'تحصيل مبالغ الدفع عند الاستلام وتحويلها إليك في أقصر الآجال بشفافية كاملة.'
   }
 ];
 
 const RULES = [
   {
     icon: 'fa-hand-holding-dollar',
-    variant: 'primary',
     title: 'تعويض سريع وشفاف',
     text: 'تتم معالجة التعويضات بسرعة بعد التحقق من الضياع أو التلف أو الخطأ — دون تعقيدات أو إجراءات مطوّلة.'
   },
   {
     icon: 'fa-file-lines',
-    variant: 'ghost',
     title: 'الوثائق المحاسبية',
     text: 'توفير الوثائق والمستندات التبريرية عند الطلب لضمان التتبع الكامل والمطابقة الإدارية.'
   },
   {
     icon: 'fa-file-contract',
-    variant: 'primary',
     title: 'عقد الخدمة',
     text: 'يُقترح عقد واضح على كل عميل يُحدّد المسؤوليات والضمانات وشروط الخدمة بالكامل.'
   },
   {
     icon: 'fa-ban',
-    variant: 'accent',
+    alert: true,
     title: 'المنتجات الممنوعة',
     text: `يُحظر إرسال المواد المحظورة قانوناً. تتبرأ ${BRAND.nameAr} من أي مسؤولية عن هذه الشحنات.`
   },
   {
     icon: 'fa-box-open',
-    variant: 'ghost',
     title: 'تعبئة جيدة وسليمة',
     text: 'يجب تعبئة كل طرد بشكل صحيح لضمان الحماية والسلامة التامة أثناء النقل.'
   },
   {
     icon: 'fa-comments',
-    variant: 'primary',
     title: 'تواصل فوري وسريع',
     text: `أبلغوا ${BRAND.nameAr} فوراً عند أي تغيير أو مشكلة لتحسين عملية التسليم وتجنب التأخير.`
   }
@@ -160,38 +147,123 @@ const PRICING = [
   }
 ];
 
-/** Carte de résultat du suivi (même rendu que l'ancien site). */
+/** Villes du bandeau défilant (illustration de la couverture nationale). */
+const CITIES = [
+  'الدار البيضاء',
+  'الرباط',
+  'مراكش',
+  'فاس',
+  'طنجة',
+  'أكادير',
+  'مكناس',
+  'وجدة',
+  'القنيطرة',
+  'تطوان',
+  'الجديدة',
+  'آسفي',
+  'بني ملال',
+  'الناظور',
+  'العيون',
+  'الداخلة'
+];
+
+/** Exemple de numéro de suivi (même forme que les codes générés : 3 lettres, mois, année, id, 2 lettres). */
+const TRACK_EXAMPLE = 'ABC1026512WX';
+
+/** Résultat du suivi : historique du plus récent au plus ancien. */
 function TrackResult({ code, history }) {
-  const latest = history.length ? history[history.length - 1] : null;
+  const events = [...history].reverse();
+  const latest = events[0];
   return (
-    <div className="track-result-wrap">
-      <div className="track-result-hd">
-        <span className="track-result-num">
-          <i className="fa fa-box-open" /> {code}
+    <div className="oe-result">
+      <div className="oe-result-hd">
+        <span className="oe-result-code">
+          <i className="fa fa-box" /> {code}
         </span>
         {latest && (
-          <span className="trk-badge" style={{ background: latest.color }}>
+          <span className="oe-status" style={{ background: latest.color }}>
             {latest.name}
           </span>
         )}
       </div>
-      {history.length ? (
-        <div className="track-history">
-          {history.map((row, idx) => (
-            <div key={idx} className={`trk-row${idx === history.length - 1 ? ' trk-row-last' : ''}`}>
-              <div className="trk-row-start">
-                <span className="trk-idx">{idx + 1}</span>
-                <span className="trk-badge" style={{ background: row.color }}>
-                  {row.name}
-                </span>
-              </div>
-              <span className="trk-date">{row.date}</span>
-            </div>
+      {events.length ? (
+        <ol className="oe-timeline">
+          {events.map((row, idx) => (
+            <li key={idx} className={idx === 0 ? 'is-latest' : undefined}>
+              <span className="oe-dot" style={{ background: row.color }} />
+              <span className="oe-tl-name">{row.name}</span>
+              <span className="oe-tl-date">{row.date}</span>
+            </li>
           ))}
-        </div>
+        </ol>
       ) : (
-        <p className="trk-empty">لا يوجد سجل متاح لهذا الطرد.</p>
+        <p className="oe-result-empty">لا يوجد سجل متاح لهذا الطرد.</p>
       )}
+    </div>
+  );
+}
+
+/** Illustration du héro : étiquette d'expédition stylisée (purement décorative). */
+function HeroArt() {
+  return (
+    <div className="oe-art" aria-hidden="true">
+      <div className="oe-art-slab is-red" />
+      <div className="oe-art-slab is-ink" />
+      <div className="oe-art-speed">
+        <span />
+        <span />
+        <span />
+      </div>
+
+      <div className="oe-label">
+        <div className="oe-label-top">
+          <span className="oe-label-brand">
+            {BRAND.logoText.main}
+            <b>{BRAND.logoText.sub}</b>
+          </span>
+          <span className="oe-label-chev">
+            <span />
+            <span />
+          </span>
+        </div>
+        <div className="oe-label-body">
+          <div className="oe-label-route">
+            <div>
+              <small>من</small>
+              <strong>الدار البيضاء</strong>
+            </div>
+            <i className="fa fa-arrow-left" />
+            <div>
+              <small>إلى</small>
+              <strong>طنجة</strong>
+            </div>
+          </div>
+          <div className="oe-label-meta">
+            <div>
+              <small>الدفع</small>
+              <strong>عند الاستلام</strong>
+            </div>
+            <div>
+              <small>الطرود</small>
+              <strong>1 / 1</strong>
+            </div>
+            {/* 3e colonne laissée libre : le tampon « مستعجل » s'y pose. */}
+          </div>
+          <div className="oe-label-bars" />
+          <div className="oe-label-code">{TRACK_EXAMPLE}</div>
+          <span className="oe-label-stamp">مستعجل</span>
+        </div>
+      </div>
+
+      <div className="oe-art-chip">
+        <span className="oe-art-chip-icon">
+          <i className="fa fa-check" />
+        </span>
+        <span>
+          <strong>تم تسليم الطرد</strong>
+          <small>إشعار فوري للزبون</small>
+        </span>
+      </div>
     </div>
   );
 }
@@ -200,6 +272,9 @@ export default function Home() {
   const { hash } = useLocation();
   const [navOpen, setNavOpen] = useState(false);
   const [activeId, setActiveId] = useState('hero');
+  const [scrolled, setScrolled] = useState(false);
+  const [trackNum, setTrackNum] = useState('');
+  const [tracking, setTracking] = useState({ status: 'idle' });
 
   // Arrivée avec une ancre (ex. /#contact depuis la page tarifs) : défiler vers la section.
   useEffect(() => {
@@ -208,8 +283,13 @@ export default function Home() {
     return () => clearTimeout(t);
   }, [hash]);
 
-  const [trackNum, setTrackNum] = useState('');
-  const [tracking, setTracking] = useState({ status: 'idle' });
+  // En-tête : filet et ombre dès que la page défile.
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Scrollspy : le lien de navigation de la section visible devient actif.
   useEffect(() => {
@@ -221,7 +301,7 @@ export default function Home() {
       },
       { rootMargin: '-40% 0px -50% 0px' }
     );
-    document.querySelectorAll('.home-ar section[id]').forEach((s) => spy.observe(s));
+    document.querySelectorAll('.oe section[id]').forEach((s) => spy.observe(s));
     return () => spy.disconnect();
   }, []);
 
@@ -231,7 +311,8 @@ export default function Home() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  async function doTrack() {
+  async function doTrack(e) {
+    e.preventDefault();
     const num = trackNum.trim();
     if (!num) {
       setTracking({ status: 'warning', message: 'يرجى إدخال رقم التتبع.' });
@@ -253,383 +334,375 @@ export default function Home() {
     }
   }
 
+  const whatsappUrl = `https://wa.me/${HOME_INFO.whatsapp}`;
+
   return (
-    <div className="home-ar" dir="rtl" lang="ar">
-      {/* ██ Barre d'informations ██ */}
-      <div className="topline">
-        <div className="container topline-inner">
-          <div className="topline-contacts">
-            <a href={`tel:${HOME_INFO.phone}`}>
-              <i className="fa fa-phone icon-accent" />
-              <span>{HOME_INFO.phone}</span>
-            </a>
-            <a href={`https://wa.me/${HOME_INFO.whatsapp}`} target="_blank" rel="noopener noreferrer">
-              <i className="fab fa-whatsapp ic-green" />
-              <span>{HOME_INFO.whatsapp}</span>
-            </a>
-            <a href={`mailto:${HOME_INFO.email}`} className="topline-mail">
-              <i className="fa fa-envelope icon-accent" />
-              <span>{HOME_INFO.email}</span>
-            </a>
+    <div className="oe" dir="rtl" lang="ar">
+      {/* ██ En-tête ██ */}
+      <header className={`oe-header${scrolled ? ' is-scrolled' : ''}`}>
+        <div className="oe-wrap oe-header-in">
+          <Link to="/" className="oe-brand">
+            <PublicLogo className="oe-logo" />
+          </Link>
+          <button
+            type="button"
+            className="oe-burger"
+            aria-label="قائمة التنقل"
+            aria-expanded={navOpen}
+            aria-controls="oe-nav"
+            onClick={() => setNavOpen((o) => !o)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+          <nav id="oe-nav" className={`oe-nav${navOpen ? ' is-open' : ''}`} aria-label="التنقل الرئيسي">
+            <ul className="oe-nav-links">
+              {NAV_LINKS.map((link) => {
+                const cls = `oe-nav-link${activeId === link.id ? ' is-active' : ''}`;
+                return (
+                  <li key={link.id}>
+                    {link.to ? (
+                      <Link to={link.to} className={cls} onClick={() => setNavOpen(false)}>
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <a href={`#${link.id}`} className={cls} onClick={scrollTo(link.id)}>
+                        {link.label}
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="oe-nav-actions">
+              <Link to="/login" className="oe-login">
+                <i className="fa fa-user" /> دخول
+              </Link>
+              <Link to="/register" className="oe-btn oe-btn-red oe-btn-sm">
+                أنشئ حسابك
+              </Link>
+            </div>
+          </nav>
+        </div>
+      </header>
+
+      {/* ██ Héro + suivi de colis ██ */}
+      <section id="hero" className="oe-hero">
+        <div className="oe-wrap oe-hero-grid">
+          <div>
+            <p className="oe-eyebrow">خدمة التوصيل لتجارتك الإلكترونية في المغرب</p>
+            <h1>
+              من متجرك
+              <br />
+              إلى باب زبونك،
+              <br />
+              <em>في كل المغرب</em>
+            </h1>
+            <p className="oe-hero-lead">
+              {BRAND.nameAr} تستلم طرودك، توصلها وتحصّل ثمنها عند التسليم، مع تتبّع لحظي لكل شحنة وفريق دعم
+              يرافقك في كل خطوة.
+            </p>
+
+            <form className="oe-track" onSubmit={doTrack} noValidate>
+              <label htmlFor="oe-track-num" className="oe-track-label">
+                <span>
+                  <i className="fa fa-location-crosshairs" />
+                  تتبّع طردك
+                </span>
+                <small>رقم التتبع مكتوب على ملصق الطرد</small>
+              </label>
+              <div className="oe-track-bar">
+                <i className="fa fa-barcode" aria-hidden="true" />
+                <input
+                  id="oe-track-num"
+                  type="text"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder={`مثال: ${TRACK_EXAMPLE}`}
+                  value={trackNum}
+                  onChange={(e) => setTrackNum(e.target.value)}
+                />
+                <button type="submit" className="oe-btn oe-btn-ink" disabled={tracking.status === 'loading'}>
+                  تتبّع <i className="fa fa-arrow-left" />
+                </button>
+              </div>
+              <div className="oe-track-out" aria-live="polite">
+                {tracking.status === 'loading' && (
+                  <div className="oe-loading">
+                    <span className="oe-spinner" /> جاري البحث...
+                  </div>
+                )}
+                {tracking.status === 'warning' && (
+                  <div className="oe-alert is-warning">
+                    <i className="fa fa-circle-exclamation" /> {tracking.message}
+                  </div>
+                )}
+                {tracking.status === 'error' && (
+                  <div className="oe-alert is-error">
+                    <i className="fa fa-circle-xmark" /> {tracking.message}
+                  </div>
+                )}
+                {tracking.status === 'done' && <TrackResult code={tracking.code} history={tracking.history} />}
+              </div>
+            </form>
+
+            <div className="oe-hero-ctas">
+              <Link to="/register" className="oe-btn oe-btn-red">
+                انضم كعميل <i className="fa fa-arrow-left" />
+              </Link>
+              <a href={whatsappUrl} className="oe-btn oe-btn-line" target="_blank" rel="noopener noreferrer">
+                <i className="fab fa-whatsapp" /> تواصل عبر واتساب
+              </a>
+            </div>
           </div>
-          <div className="topline-hours">
-            <i className="fa fa-clock icon-accent" />
-            أوقات العمل: {HOME_INFO.horaires}
+
+          <HeroArt />
+        </div>
+      </section>
+
+      {/* ██ Bandeau des villes ██ */}
+      <div className="oe-ticker" aria-hidden="true">
+        <div className="oe-ticker-tag">
+          <i className="fa fa-route" /> نوصّل إلى
+        </div>
+        <div className="oe-ticker-viewport">
+          <div className="oe-ticker-track">
+            {[...CITIES, ...CITIES].map((city, idx) => (
+              <span key={idx} className="oe-ticker-item">
+                {city}
+                <i className="fa fa-angles-left" />
+              </span>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* ██ Barre de navigation ██ */}
-      <nav className="navbar-custom">
-        <div className="container navbar-inner">
-          <Link to="/" className="navbar-brand">
-            <PublicLogo className="logo-header" />
-          </Link>
-          <button
-            type="button"
-            className="navbar-burger"
-            aria-label="قائمة التنقل"
-            aria-expanded={navOpen}
-            onClick={() => setNavOpen((o) => !o)}
-          >
-            <i className="fa fa-bars" />
-          </button>
-          <div className={`navbar-menu${navOpen ? ' open' : ''}`}>
-            <ul className="navbar-links">
-              {NAV_LINKS.map((link) => (
-                <li key={link.id}>
-                  {link.to ? (
-                    <Link
-                      to={link.to}
-                      className={`nav-link${activeId === link.id ? ' active' : ''}`}
-                      onClick={() => setNavOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                  ) : (
-                    <a
-                      href={`#${link.id}`}
-                      className={`nav-link${activeId === link.id ? ' active' : ''}`}
-                      onClick={scrollTo(link.id)}
-                    >
-                      {link.label}
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-            <div className="navbar-actions">
-              <Link to="/register" className="btn-nav-outline">
-                أنشئ حسابك
-              </Link>
-              <Link to="/login" className="btn-nav-solid">
-                <i className="fa fa-user" /> دخول
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* ██ Héro + suivi de colis ██ */}
-      <section id="hero" className="hero-section">
-        <div className="hero-bg-circle c1" />
-        <div className="hero-bg-circle c2" />
-        <div className="hero-bg-circle c3" />
-
-        <div className="container hero-inner">
-          <div className="hero-grid">
-            <div>
-              <div className="hero-badge">
-                <i className="fa fa-truck-fast" />
-                شريك تجارتك الإلكترونية في المغرب
-              </div>
-              <h1 className="hero-title">
-                توصيل سريع <span>وموثوق</span>
-                <br />
-                في كل مكان بالمغرب
-              </h1>
-              <p className="hero-subtitle">
-                {BRAND.nameAr} — الحل الأمثل لإدارة شحناتك. من الاستلام حتى التسليم بتتبع لحظي وخدمة عملاء
-                احترافية تُعلي من قيمة تجارتك.
-              </p>
-              <div className="hero-cta">
-                <Link to="/register" className="btn-hero-primary">
-                  <i className="fa fa-user-plus" />
-                  انضم كعميل
-                </Link>
-                <a href="#contact" className="btn-hero-outline" onClick={scrollTo('contact')}>
-                  <i className="fa fa-headset" />
-                  تواصل معنا
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <div className="tracking-box">
-                <h5>
-                  <i className="fa fa-magnifying-glass icon-accent" />
-                  تتبع طردك الآن
-                </h5>
-                <p className="track-label">أدخل رقم التتبع لمعرفة حالة شحنتك بشكل فوري</p>
-                <div className="track-form">
-                  <input
-                    className="form-control"
-                    type="text"
-                    placeholder="مثال: ORT123456789"
-                    dir="ltr"
-                    autoComplete="off"
-                    value={trackNum}
-                    onChange={(e) => setTrackNum(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') doTrack();
-                    }}
-                  />
-                  <button type="button" className="btn-track" onClick={doTrack}>
-                    <i className="fa fa-search" /> بحث
-                  </button>
-                </div>
-                <div className="track-result">
-                  {tracking.status === 'loading' && (
-                    <div className="track-spinner">
-                      <div className="spinner-border" role="status" aria-label="جاري البحث..." />
-                    </div>
-                  )}
-                  {tracking.status === 'warning' && (
-                    <div className="alert alert-warning">{tracking.message}</div>
-                  )}
-                  {tracking.status === 'error' && (
-                    <div className="alert alert-danger">{tracking.message}</div>
-                  )}
-                  {tracking.status === 'done' && (
-                    <TrackResult code={tracking.code} history={tracking.history} />
-                  )}
-                </div>
-              </div>
-
-              <div className="quick-contact-bar">
-                <a href={`tel:${HOME_INFO.phone}`} className="quick-contact-btn phone">
-                  <i className="fa fa-phone icon-accent" />
-                  <span>{HOME_INFO.phone}</span>
-                </a>
-                <a
-                  href={`https://wa.me/${HOME_INFO.whatsapp}`}
-                  className="quick-contact-btn whatsapp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <i className="fab fa-whatsapp ic-green" />
-                  <span>واتساب</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ██ Services ██ */}
-      <section id="services" className="services-section">
-        <div className="container">
-          <div className="section-title">
-            <h2>خدماتنا ومميزاتنا</h2>
-            <p>نقدم مجموعة متكاملة من حلول الشحن والتوصيل المُصمَّمة لتلبية احتياجات تجارتك</p>
+      <section id="services" className="oe-services">
+        <div className="oe-wrap">
+          <div className="oe-head">
+            <div>
+              <p className="oe-eyebrow">
+                <b>01</b> خدماتنا
+              </p>
+              <h2>كل ما تحتاجه تجارتك الإلكترونية، تحت سقف واحد</h2>
+            </div>
+            <p>من الاستلام والتخزين إلى التوصيل والتحصيل والإرجاع: حلول متكاملة مصمَّمة لتلبية احتياجات متجرك.</p>
           </div>
-          <div className="cards-grid-3">
-            {SERVICES.map((s) => (
-              <div key={s.title} className="service-card">
-                <div className={`service-icon${s.accent ? ' accent' : ''}`}>
-                  <i className={`fa ${s.icon}`} />
-                </div>
-                <h5>{s.title}</h5>
-                <p>{s.text}</p>
-              </div>
-            ))}
+
+          <div className="oe-bento">
+            {SERVICES.map((s, idx) =>
+              idx === 0 ? (
+                <article key={s.title} className="oe-tile is-feature">
+                  <div className="oe-feature-deco" aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  <span className="oe-tile-icon">
+                    <i className={`fa ${s.icon}`} />
+                  </span>
+                  <h3>{s.title}</h3>
+                  <p>{s.text}</p>
+                  <Link to="/register" className="oe-btn oe-btn-white oe-btn-sm">
+                    ابدأ الشحن معنا <i className="fa fa-arrow-left" />
+                  </Link>
+                </article>
+              ) : (
+                <article key={s.title} className="oe-tile">
+                  <div className="oe-tile-top">
+                    <i className={`fa ${s.icon} oe-tile-icon`} />
+                    <span className="oe-tile-num">{String(idx + 1).padStart(2, '0')}</span>
+                  </div>
+                  <h3>{s.title}</h3>
+                  <p>{s.text}</p>
+                </article>
+              )
+            )}
           </div>
         </div>
       </section>
 
       {/* ██ Comment ça marche ██ */}
-      <section id="how-it-works" className="how-section">
-        <div className="container">
-          <div className="section-title">
-            <h2>كيف تعمل {BRAND.nameAr}؟</h2>
-            <p>أربع خطوات بسيطة لإيصال طردك وتحصيل ثمنه في أسرع وقت</p>
+      <section id="how-it-works" className="oe-how">
+        <div className="oe-wrap">
+          <div className="oe-head is-light">
+            <div>
+              <p className="oe-eyebrow">
+                <b>02</b> كيف يعمل
+              </p>
+              <h2>أربع خطوات، من طلبك إلى أموالك</h2>
+            </div>
+            <p>سجّل شحنتك ونتكفّل بالباقي: الاستلام، التوصيل، تحصيل المبلغ وتحويله إليك.</p>
           </div>
-          <div className="steps-grid">
+
+          <ol className="oe-steps">
             {STEPS.map((step, idx) => (
-              <div key={step.title} className="step-item">
-                <div className="step-number">{idx + 1}</div>
-                {idx < STEPS.length - 1 && <div className="step-connector" />}
-                <div className="step-icon-wrap">
+              <li key={step.title} className="oe-step">
+                <span className="oe-step-num">{String(idx + 1).padStart(2, '0')}</span>
+                <h3>
                   <i className={`fa ${step.icon}`} />
-                </div>
-                <h5>{step.title}</h5>
+                  {step.title}
+                </h3>
                 <p>{step.text}</p>
-              </div>
+              </li>
             ))}
-          </div>
-          <div className="how-cta">
-            <Link to="/register" className="btn-cta-big">
-              <i className="fa fa-rocket" /> ابدأ الآن
+          </ol>
+
+          <div className="oe-how-cta">
+            <p>
+              جاهز للانطلاق مع {BRAND.nameAr}؟ <span>أنشئ حسابك وسجّل أول شحنة في دقائق.</span>
+            </p>
+            <Link to="/register" className="oe-btn oe-btn-red">
+              ابدأ الآن <i className="fa fa-arrow-left" />
             </Link>
           </div>
         </div>
       </section>
 
       {/* ██ Engagements ██ */}
-      <section id="rules" className="rules-section">
-        <div className="container">
-          <div className="section-title">
-            <h2>التزاماتنا ومسؤولياتنا</h2>
-            <p>نلتزم بمعايير عالية لضمان تجربة شحن آمنة وشفافة لكل عميل</p>
+      <section id="rules" className="oe-commit">
+        <div className="oe-wrap oe-commit-grid">
+          <div className="oe-commit-intro">
+            <p className="oe-eyebrow">
+              <b>03</b> التزاماتنا
+            </p>
+            <h2 className="oe-h2">التزامات واضحة لعلاقة مبنية على الثقة</h2>
+            <p>
+              نلتزم بمعايير عالية لضمان تجربة شحن آمنة وشفافة لكل عميل، ونعتمد على بعض القواعد البسيطة لحماية
+              طرودك وطرود الجميع.
+            </p>
+            <Link to="/contrat" className="oe-btn oe-btn-line">
+              اطّلع على عقد الخدمة <i className="fa fa-arrow-left" />
+            </Link>
           </div>
-          <div className="cards-grid-3">
+          <ul className="oe-commit-list">
             {RULES.map((rule) => (
-              <article key={rule.title} className="rule-card">
-                <div className={`rule-icon ${rule.variant}`}>
+              <li key={rule.title} className={`oe-commit-item${rule.alert ? ' is-alert' : ''}`}>
+                <span className="oe-commit-icon">
                   <i className={`fa ${rule.icon}`} />
+                </span>
+                <div>
+                  <h3>{rule.title}</h3>
+                  <p>{rule.text}</p>
                 </div>
-                <h5>{rule.title}</h5>
-                <p>{rule.text}</p>
-              </article>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
 
       {/* ██ Tarifs ██ */}
-      <section id="tarifs" className="pricing-section">
-        <div className="container pricing-inner">
-          <div className="section-title light">
-            <h2>الأسعار والتعريفات</h2>
-            <p>تعريفات مرنة تتكيف مع احتياجات كل عميل وحجم شحنته</p>
-          </div>
-
-          <div className="pricing-grid">
-            {PRICING.map((p) => (
-              <div key={p.title} className="pricing-card">
-                <div className="p-icon">
-                  <i className={`fa ${p.icon}`} />
-                </div>
-                <h4>{p.title}</h4>
-                <p>{p.text}</p>
+      <section id="tarifs" className="oe-pricing">
+        <div className="oe-wrap">
+          <div className="oe-price">
+            <div>
+              <p className="oe-eyebrow">
+                <b>04</b> الأسعار
+              </p>
+              <h2 className="oe-h2">أسعار تناسب حجم شحناتك</h2>
+              <p className="oe-price-lead">
+                تختلف التعريفة حسب مدينة الاستلام والوجهة. اطّلع على جدول الأسعار الكامل أو اطلب عرضاً مخصصاً لحجم
+                أعمالك.
+              </p>
+              <div className="oe-price-ctas">
+                <Link to="/tarifs" className="oe-btn oe-btn-white">
+                  <i className="fa fa-table" /> جدول الأسعار الكامل
+                </Link>
+                <a href="#contact" className="oe-btn oe-btn-ghost" onClick={scrollTo('contact')}>
+                  اطلب عرض سعر
+                </a>
               </div>
-            ))}
-          </div>
-
-          <div className="pricing-cta-box">
-            <h4>تحتاج سعراً دقيقاً؟</h4>
-            <p>اتصل بنا أو أرسل طلبك — سنعود إليك بأسرع وقت بعرض مخصص لاحتياجاتك</p>
-            <div className="pricing-cta-btns">
-              <a href={`tel:${HOME_INFO.phone}`} className="btn-hero-primary">
-                <i className="fa fa-phone" /> {HOME_INFO.phone}
-              </a>
-              <a href="#contact" className="btn-hero-outline" onClick={scrollTo('contact')}>
-                <i className="fa fa-envelope" /> راسلنا
-              </a>
             </div>
-          </div>
-
-          <div className="pricing-full-link">
-            <Link to="/tarifs" className="btn-pricing-full">
-              <i className="fa fa-table" /> عرض جدول الاسعار الكامل
-            </Link>
+            <ul className="oe-price-list">
+              {PRICING.map((p) => (
+                <li key={p.title} className="oe-price-item">
+                  <i className={`fa ${p.icon}`} />
+                  <div>
+                    <h3>{p.title}</h3>
+                    <p>{p.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
 
       {/* ██ Contact ██ */}
-      <section id="contact" className="contact-section">
-        <div className="container">
-          <div className="section-title">
-            <h2>تواصل معنا</h2>
-            <p>نحن هنا للإجابة على جميع استفساراتك — تواصل معنا بأي طريقة تناسبك</p>
-          </div>
-
-          <div className="contact-info">
-            <h5 className="form-title">
-              <i className="fa fa-address-card icon-accent" />
-              معلومات التواصل
-            </h5>
-
-            <div className="contact-info-item">
-              <div className="ci-icon">
-                <i className="fa fa-map-marker-alt" />
-              </div>
+      <section id="contact" className="oe-contact">
+        <div className="oe-wrap oe-contact-grid">
+          <div className="oe-contact-intro">
+            <p className="oe-eyebrow">
+              <b>05</b> تواصل معنا
+            </p>
+            <h2 className="oe-h2">لنتحدّث عن شحناتك</h2>
+            <p>فريقنا هنا للإجابة على جميع استفساراتك واقتراح الحل الأنسب لتجارتك — تواصل معنا بالطريقة التي تناسبك.</p>
+            <div className="oe-hours">
+              <i className="fa fa-clock" />
               <div>
-                <span className="ci-label">العنوان</span>
-                <span className="ci-value">{HOME_INFO.adresse}</span>
+                <small>أوقات العمل</small>
+                <strong>{HOME_INFO.horaires}</strong>
               </div>
             </div>
-
-            <div className="contact-info-item">
-              <div className="ci-icon">
-                <i className="fa fa-phone" />
-              </div>
-              <div>
-                <span className="ci-label">الهاتف</span>
-                <a href={`tel:${HOME_INFO.phone}`} className="ci-value" dir="ltr">
-                  {HOME_INFO.phone}
-                </a>
-              </div>
-            </div>
-
-            <div className="contact-info-item">
-              <div className="ci-icon green">
-                <i className="fab fa-whatsapp" />
-              </div>
-              <div>
-                <span className="ci-label">واتساب</span>
-                <a
-                  href={`https://wa.me/${HOME_INFO.whatsapp}`}
-                  className="ci-value"
-                  dir="ltr"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {HOME_INFO.whatsapp}
-                </a>
-              </div>
-            </div>
-
-            <div className="contact-info-item">
-              <div className="ci-icon yellow">
-                <i className="fa fa-envelope" />
-              </div>
-              <div>
-                <span className="ci-label">البريد الإلكتروني</span>
-                <a href={`mailto:${HOME_INFO.email}`} className="ci-value" dir="ltr">
-                  {HOME_INFO.email}
-                </a>
-              </div>
-            </div>
-
-            <div className="contact-info-item">
-              <div className="ci-icon">
-                <i className="fa fa-clock" />
-              </div>
-              <div>
-                <span className="ci-label">أوقات العمل</span>
-                <span className="ci-value">{HOME_INFO.horaires}</span>
-              </div>
-            </div>
-
-            <p className="follow-label">تابعونا على:</p>
-            <div className="social-links">
-              <a href={HOME_INFO.fb} className="social-btn fb" target="_blank" rel="noopener noreferrer" title="Facebook">
+            <div className="oe-social">
+              <span className="oe-social-label">تابعونا</span>
+              <a href={HOME_INFO.fb} target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">
                 <i className="fab fa-facebook-f" />
               </a>
-              <a href={HOME_INFO.insta} className="social-btn ig" target="_blank" rel="noopener noreferrer" title="Instagram">
+              <a href={HOME_INFO.insta} target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
                 <i className="fab fa-instagram" />
               </a>
-              <a href={HOME_INFO.yt} className="social-btn yt" target="_blank" rel="noopener noreferrer" title="YouTube">
+              <a href={HOME_INFO.yt} target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube">
                 <i className="fab fa-youtube" />
               </a>
+            </div>
+          </div>
+
+          <div className="oe-contact-cards">
+            <a href={`tel:${HOME_INFO.phone}`} className="oe-ccard">
+              <span className="oe-ccard-icon">
+                <i className="fa fa-phone" />
+              </span>
+              <i className="fa fa-arrow-left oe-ccard-go" />
+              <small>الهاتف</small>
+              <strong>
+                <bdi dir="ltr">{HOME_INFO.phone}</bdi>
+              </strong>
+            </a>
+            <a href={whatsappUrl} className="oe-ccard is-wa" target="_blank" rel="noopener noreferrer">
+              <span className="oe-ccard-icon">
+                <i className="fab fa-whatsapp" />
+              </span>
+              <i className="fa fa-arrow-left oe-ccard-go" />
+              <small>واتساب</small>
+              <strong>
+                <bdi dir="ltr">{HOME_INFO.whatsapp}</bdi>
+              </strong>
+            </a>
+            <a href={`mailto:${HOME_INFO.email}`} className="oe-ccard">
+              <span className="oe-ccard-icon">
+                <i className="fa fa-envelope" />
+              </span>
+              <i className="fa fa-arrow-left oe-ccard-go" />
+              <small>البريد الإلكتروني</small>
+              <strong>
+                <bdi dir="ltr">{HOME_INFO.email}</bdi>
+              </strong>
+            </a>
+            <div className="oe-ccard">
+              <span className="oe-ccard-icon">
+                <i className="fa fa-location-dot" />
+              </span>
+              <small>العنوان</small>
+              <strong>{HOME_INFO.adresse}</strong>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ██ Footer ██ */}
+      {/* ██ Pied de page ██ */}
       <HomeFooter scrollTo={scrollTo} />
     </div>
   );
