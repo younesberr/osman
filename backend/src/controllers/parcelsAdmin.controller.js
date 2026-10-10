@@ -7,7 +7,6 @@ const {
 } = require('./parcels.controller');
 const { isValidPhone, PHONE_ERROR } = require('../utils/phone');
 const { hasDemandeEnCours } = require('../utils/remboursement');
-const { lireOptionFraisMontant, infoFraisMontant } = require('../utils/fraisMontant');
 const {
   STATUT_ATTENTE_REEXPEDITION,
   peutReexpedier,
@@ -492,9 +491,6 @@ async function getParcelEditData(req, res, next) {
     const blocage = await motifModificationBloquee(parcel);
     if (blocage) return res.status(409).json({ message: blocage });
     const lock = await verrouillageModification(parcel);
-    // Frais supp automatiques au-delà de 2 500 DH (option du client du colis) :
-    // la modale réajuste le champ « Frais supplémentaires » quand le prix change.
-    const optionFrais = await lireOptionFraisMontant(Number(parcel.parcel_customer) || 0);
 
     const [[cities], [pickupCities]] = await Promise.all([
       pool.query(
@@ -526,7 +522,6 @@ async function getParcelEditData(req, res, next) {
       replace: Number(parcel.parcel_replace) === 1 ? 1 : 0,
       pickupCity: Number(parcel.parcel_ramassage_city) || 0,
       code_editable: parcel.parcel_status === 'WAITING_PICKUP' && lock.mode === 'full' ? 1 : 0,
-      frais_montant: infoFraisMontant(optionFrais.actif),
       cities,
       pickupCities,
       lock

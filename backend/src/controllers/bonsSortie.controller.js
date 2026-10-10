@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { getServicePhone } = require('./clients.controller');
 const { getAgenceScope, parcelInAgence } = require('../utils/agenceScope');
 const { getProduitsByParcel, attachStockProduits } = require('../utils/parcelProduits');
 const { isBlockedByClient } = require('../utils/blocageClient');
@@ -562,8 +561,8 @@ async function deleteBon(req, res, next) {
  * du bon (mêmes champs que GET /parcels/labels, réutilisés par
  * utils/etiquettes côté front), avec les produits de stock de chaque colis
  * (stock_produits : nom, quantité, position — affichés sur le ticket à la
- * place de la ligne « Marchandise »). customers_phone_show = 0 : le numéro du
- * client est remplacé par le numéro de mobile de la société.
+ * place de la ligne « Marchandise »). Le téléphone affiché est toujours celui
+ * du magasin (customers_phone), jamais celui du service client.
  */
 async function listLabels(req, res, next) {
   try {
@@ -576,8 +575,7 @@ async function listLabels(req, res, next) {
               p.parcel_product_name, p.parcel_product_qty, p.parcel_from_stock,
               p.parcel_open, p.parcel_essayage, p.parcel_replace, p.parcel_crbt_zero,
               t.nom_ville AS ville, z.zone_name AS zone,
-              c.customers_store AS sender_store, c.customers_phone AS sender_phone,
-              IFNULL(c.customers_phone_show, 0) AS sender_phone_show
+              c.customers_store AS sender_store, c.customers_phone AS sender_phone
          FROM delevery_dns_parcels sp
          JOIN delevery_parcel p ON p.parcel_id = sp.dns_parcels_parcel
          LEFT JOIN delevery_customers c ON c.customers_id = p.parcel_customer
@@ -591,16 +589,6 @@ async function listLabels(req, res, next) {
       return res.status(404).json({ message: 'Aucun colis dans ce bon.' });
     }
     await attachStockProduits(labels);
-
-    // customers_phone_show = 0 : le client masque son numéro sur les tickets,
-    // on affiche à la place le numéro de mobile de la société.
-    if (labels.some((l) => Number(l.sender_phone_show) !== 1)) {
-      const servicePhone = await getServicePhone();
-      for (const l of labels) {
-        if (Number(l.sender_phone_show) !== 1) l.sender_phone = servicePhone || l.sender_phone;
-        delete l.sender_phone_show;
-      }
-    }
 
     res.json({ sender: { store: '', phone: '' }, labels });
   } catch (err) {

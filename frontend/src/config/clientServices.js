@@ -26,14 +26,21 @@ export const CLIENT_SERVICES = [
 /** Code → libellé (badges de la liste des membres). */
 export const SERVICE_LABELS = Object.fromEntries(CLIENT_SERVICES.map((s) => [s.code, s.label]));
 
+/** Tâches de la « Gestion stock » : réservées aux comptes dont l'option « Stock » est activée. */
+const STOCK_SERVICES = ['STOCK_PRODUITS', 'STOCK_MOUVEMENTS'];
+
 /**
  * Accès d'un compte client à une page / entrée du menu client :
  * le propriétaire (pas de memberId) voit tout ; un membre d'équipe doit avoir
  * la tâche dans ses services (relus par /auth/me à chaque chargement).
  * EQUIPE n'étant jamais attribuable, un membre n'y accède jamais.
+ * Gestion stock : masquée pour tous (propriétaire et membres) tant que
+ * l'option « Stock » du compte est désactivée (user.stock, customers_stock,
+ * modale Options de /admin/clients).
  */
 export function hasClientAccess(user, service) {
   if (!user || user.kind !== 'customer') return false;
+  if (STOCK_SERVICES.includes(service) && Number(user.stock) !== 1) return false;
   if (!user.memberId) return true;
   if (!service) return true;
   const granted = Array.isArray(user.services) ? user.services : [];

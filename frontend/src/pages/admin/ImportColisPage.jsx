@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  AlertTriangle,
   Download,
   FileSpreadsheet,
   PackagePlus,
@@ -13,7 +12,6 @@ import {
 import api from '../../api/client';
 import SearchableSelect from '../../components/SearchableSelect';
 import { autoFixPhone, isValidPhone } from '../../utils/phone';
-import { fraisMontant, formatDh } from '../../utils/fraisMontant';
 
 const MAX_ROWS = 500;
 
@@ -168,51 +166,21 @@ export default function ImportColisPage({ fromStock = false, forClient = false }
   const [success, setSuccess] = useState('');
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef(null);
-  // Frais supp automatiques au-delà de 2 500 DH : règle { seuil, montant } +
-  // état de l'option (client connecté, ou par magasin côté admin).
-  const [regleFrais, setRegleFrais] = useState(null);
-  const [fraisParMagasin, setFraisParMagasin] = useState({});
 
   useEffect(() => {
     const request = forClient
       ? // Dashboard client : villes actives du formulaire "Nouveau colis".
         api.get('/parcels/client/new').then((res) => {
           setCities(res.data.cities.map((c) => ({ value: c.id, label: c.label })));
-          setRegleFrais(res.data.frais_montant || null);
         })
       : api.get('/parcels/import/data').then((res) => {
           setMagasins(res.data.magasins.map((m) => ({ value: m.id, label: m.label })));
           setCities(res.data.cities.map((c) => ({ value: c.id, label: c.label })));
-          setRegleFrais(res.data.frais_montant || null);
-          setFraisParMagasin(
-            Object.fromEntries(res.data.magasins.map((m) => [String(m.id), Number(m.frais_montant) === 0 ? 0 : 1]))
-          );
         });
     request
       .catch((err) => setLoadError(err.response?.data?.message || 'Erreur de chargement.'))
       .finally(() => setLoading(false));
   }, [forClient]);
-
-  /* Règle appliquée aux lignes affichées : option du client connecté, ou du
-     magasin choisi (admin) ; null tant qu'aucun magasin n'est choisi. */
-  const regleActive = useMemo(() => {
-    if (!regleFrais) return null;
-    if (forClient) return regleFrais;
-    if (!customer) return null;
-    return { ...regleFrais, actif: fraisParMagasin[String(customer)] === 0 ? 0 : 1 };
-  }, [regleFrais, forClient, customer, fraisParMagasin]);
-
-  /* Lignes dont le montant dépasse le seuil : { nb, total } pour la notification. */
-  const fraisImport = useMemo(() => {
-    if (!regleActive || Number(regleActive.actif) !== 1) return { nb: 0, total: 0 };
-    return rows.reduce(
-      (acc, row) => {
-        const f = fraisMontant(row.price, regleActive);
-        return f > 0 ? { nb: acc.nb + 1, total: acc.total + f } : acc;
-      },
-      { nb: 0, total: 0 }
-    );
-  }, [rows, regleActive]);
 
   /* Mode stock : produits actifs pour valider les réfs saisies — ceux du
      client choisi (admin) ou du client connecté (dashboard client). */
@@ -612,13 +580,7 @@ export default function ImportColisPage({ fromStock = false, forClient = false }
       setRows([]);
       setFileName('');
       setFieldErrors({});
-      // extra_fees_count : colis ayant reçu des frais supp automatiques (montant > 2 500 DH).
-      const nbFrais = Number(res.data.extra_fees_count) || 0;
-      setSuccess(
-        `${res.data.count} colis importé(s) avec succès${
-          nbFrais > 0 ? ` (frais supplémentaires ajoutés sur ${nbFrais} colis au montant supérieur à 2 500 DH)` : ''
-        }.`
-      );
+      setSuccess(`${res.data.count} colis importé(s) avec succès.`);
     } catch (err) {
       setSubmitError(err.response?.data?.message || "Erreur lors de l'importation des colis.");
     } finally {
@@ -735,21 +697,6 @@ export default function ImportColisPage({ fromStock = false, forClient = false }
 
         {error && <div className="form-error">{error}</div>}
         {success && <div className="form-success">{success}</div>}
-
-        {/* Lignes au montant > 2 500 DH : frais supp automatiques (option du client active). */}
-        {fraisImport.nb > 0 && regleActive && (
-          <div className="frais-montant-notice" role="status">
-            <AlertTriangle size={15} />
-            <span>
-              <strong>
-                Frais supplémentaires ajoutés sur {fraisImport.nb} colis : +{formatDh(fraisImport.total)} DH au
-                total.
-              </strong>{' '}
-              Colis avec un montant supérieur à {formatDh(regleActive.seuil)} DH ({formatDh(regleActive.montant)} DH
-              par tranche de {formatDh(regleActive.seuil)} DH), appliqués automatiquement à l'import.
-            </span>
-          </div>
-        )}
 
         {rows.length === 0 ? (
           <div className="ic-empty">

@@ -659,7 +659,7 @@ a.breadcrumb-parent:hover { color: var(--primary); }
 }
 
 .welcome-banner {
-  background: linear-gradient(100deg, #1146a0 0%, #1e63d0 100%);
+  background: linear-gradient(100deg, var(--primary-dark) 0%, var(--primary) 100%);
   color: #fff;
   border-radius: var(--radius);
   padding: 30px 34px;
@@ -3101,26 +3101,6 @@ form textarea:focus {
   font-size: 0.88rem;
   color: var(--ink-soft);
 }
-
-/* Notification « frais supplémentaires ajoutés » (formulaires colis, imports et
-   modales de modification) : montant du colis supérieur à 2 500 DH. */
-.frais-montant-notice {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-top: 14px;
-  padding: 10px 12px;
-  background: #fdf3e3;
-  border: 1px solid #f3d9a8;
-  border-radius: 10px;
-  color: #9a6210;
-  font-size: 0.86rem;
-  line-height: 1.45;
-}
-.frais-montant-notice svg { flex-shrink: 0; margin-top: 2px; }
-.frais-montant-notice strong { color: #7a4c08; }
-.modal-form-grid .frais-montant-notice { margin-top: 0; }
-.ic-card .frais-montant-notice { margin: 0 0 14px; }
 
 /* Options Oui / Non du colis (échange, ouverture, essayage). */
 .np-flags {

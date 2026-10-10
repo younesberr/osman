@@ -1,6 +1,5 @@
 const pool = require('../config/db');
 const { resolveClientFees, CLIENT_EDIT_FIELDS } = require('./parcels.controller');
-const { lireOptionFraisMontant, ajusterFraisMontant } = require('../utils/fraisMontant');
 
 /*
  * Page admin "Modifications Colis" (/admin/modifications-colis, service
@@ -260,14 +259,6 @@ async function accepterDemande(req, res, next) {
         }
       }
 
-      // Changement de montant → frais supp automatiques réajustés (même règle
-      // que la modification directe côté client : utils/fraisMontant).
-      let extraFees = null;
-      if (ancien.price !== price) {
-        const optionFrais = await lireOptionFraisMontant(customerId, conn);
-        extraFees = ajusterFraisMontant(parcel.parcel_extra_fees, ancien.price, price, optionFrais.actif);
-      }
-
       // Instantané legacy des anciennes valeurs (delevery_parcel_edit).
       await conn.query(
         `INSERT INTO delevery_parcel_edit
@@ -312,9 +303,7 @@ async function accepterDemande(req, res, next) {
                 parcel_note = ?, parcel_price = ?, parcel_product_name = ?,
                 parcel_product_qty = ?, parcel_open = ?, parcel_essayage = ?,
                 parcel_replace = ?${fees ? `, parcel_delivered_fees = ?,
-                parcel_returned_fees = ?, parcel_refused_fees = ?` : ''}${
-                  extraFees !== null ? ', parcel_extra_fees = ?' : ''
-                },
+                parcel_returned_fees = ?, parcel_refused_fees = ?` : ''},
                 parcel_edited = 1, parcel_last_update = ?
           WHERE parcel_id = ?`,
         [
@@ -330,7 +319,6 @@ async function accepterDemande(req, res, next) {
           essayage,
           replace,
           ...(fees ? [fees.livraison, fees.retour, fees.refuse] : []),
-          ...(extraFees !== null ? [extraFees] : []),
           now,
           parcel.parcel_id
         ]

@@ -151,7 +151,7 @@ export default function DocumentationApi() {
         <Endpoint
           method="GET"
           path="/parcels/client/new"
-          desc="Villes de destination actives, options par défaut de votre compte (ouverture / essayage) et règle des frais supplémentaires selon le montant. Tâche : COLIS_SAISIE."
+          desc="Villes de destination actives, options par défaut de votre compte (ouverture / essayage). Tâche : COLIS_SAISIE."
         >
           <Code label="Réponse 200">{`{
   "cities": [
@@ -160,21 +160,8 @@ export default function DocumentationApi() {
     { "id": 45, "label": "Tanger" }
   ],
   "default_open": 1,
-  "default_essayage": 0,
-  "frais_montant": { "actif": 1, "seuil": 2500, "montant": 20 }
+  "default_essayage": 0
 }`}</Code>
-          <ul className="api-list">
-            <li>
-              <code className="mono">frais_montant</code> : si <code className="mono">actif</code>{' '}
-              vaut 1, des frais supplémentaires de <code className="mono">montant</code> DH sont
-              ajoutés automatiquement à chaque colis pour chaque tranche de{' '}
-              <code className="mono">seuil</code> DH au-delà de <code className="mono">seuil</code> DH
-              de montant (<code className="mono">price</code>) : de 2 501 à 5 000 DH → +20 DH, de 5 001
-              à 7 500 DH → +40 DH, etc. Ils s’ajoutent aux frais de livraison de la ville et
-              apparaissent dans la colonne « Frais supp » de vos factures. Option réglable par
-              l’administration sur votre compte.
-            </li>
-          </ul>
           <p className="api-hint">
             Mettez la liste en cache et rafraîchissez-la régulièrement : les villes évoluent rarement.
           </p>
@@ -288,8 +275,7 @@ export default function DocumentationApi() {
   }'`}</Code>
           <Code label="Réponse 201">{`{
   "parcel_id": 4512,
-  "parcel_code": "CMD-2026-1045",
-  "extra_fees": 0
+  "parcel_code": "CMD-2026-1045"
 }`}</Code>
           <Code label="Exemple de requête (colis de stock)">{`curl -X POST ${BASE_URL}/parcels/client \\
   -H "Authorization: Bearer <votre jeton>" \\
@@ -310,13 +296,6 @@ export default function DocumentationApi() {
               <code className="mono">code</code>, le code généré (ex.{' '}
               <code className="mono">DRG0926264512TO</code>) est renvoyé dans{' '}
               <code className="mono">parcel_code</code>.
-            </li>
-            <li>
-              <code className="mono">extra_fees</code> : frais supplémentaires (DH) ajoutés
-              automatiquement au colis lorsque <code className="mono">price</code> dépasse 2 500 DH
-              (règle <code className="mono">frais_montant</code> de{' '}
-              <code className="mono">/parcels/client/new</code>), 0 sinon ou si l’option est
-              désactivée sur votre compte.
             </li>
             <li>
               Colis normal : une demande de ramassage est ouverte automatiquement chez vous (une
@@ -571,7 +550,6 @@ export default function DocumentationApi() {
   "open": 1,
   "essayage": 0,
   "replace": 0,
-  "frais_montant": { "actif": 1, "seuil": 2500, "montant": 20 },
   "cities": [ { "id": 12, "label": "Casablanca" }, { "id": 27, "label": "Rabat" } ]
 }`}</Code>
           <ul className="api-list">
@@ -579,10 +557,6 @@ export default function DocumentationApi() {
               <code className="mono">requires_validation</code> = 1 dès que le colis n’est plus en
               attente de ramassage ; <code className="mono">pending_demande</code> = 1 si une demande
               de modification est déjà en attente (nouvelle demande refusée).
-            </li>
-            <li>
-              <code className="mono">frais_montant</code> : règle des frais supplémentaires selon le
-              montant (voir <code className="mono">/parcels/client/new</code>).
             </li>
             <li>409 si le colis est livré ou retourné (plus modifiable).</li>
           </ul>
@@ -599,7 +573,7 @@ export default function DocumentationApi() {
               ['phone', 'corps', 'Téléphone du destinataire (10 chiffres commençant par 0).', true],
               ['city', 'corps', 'Identifiant de la ville de destination. Un changement de ville recalcule les frais.', true],
               ['address', 'corps', 'Adresse de livraison.', true],
-              ['price', 'corps', 'Montant CRBT en DH (≥ 0). Un changement de montant réajuste les frais supplémentaires automatiques (règle frais_montant : 20 DH par tranche de 2 500 DH au-delà de 2 500 DH).', true],
+              ['price', 'corps', 'Montant CRBT en DH (≥ 0).', true],
               ['note', 'corps', 'Commentaire.'],
               ['product', 'corps', 'Marchandise (ignoré pour un colis de stock).'],
               ['qty', 'corps', 'Quantité (ignoré pour un colis de stock).'],

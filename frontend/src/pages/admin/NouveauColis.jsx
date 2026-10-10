@@ -4,7 +4,6 @@ import { Package, PackagePlus, Warehouse, Eraser, Save, Coins, Plus, Minus, Sear
 import api from '../../api/client';
 import SearchableSelect from '../../components/SearchableSelect';
 import TauxLivraisonDestinataire from '../../components/TauxLivraisonDestinataire';
-import FraisMontantNotice from '../../components/FraisMontantNotice';
 import { isValidPhone, PHONE_ERROR } from '../../utils/phone';
 import { isValidParcelCode, PARCEL_CODE_ERROR } from '../../utils/parcelCode';
 
@@ -244,9 +243,6 @@ export default function NouveauColis() {
   // résolus pour le client choisi (tarif personnalisé / ligne « Autre » / matrice / ville).
   const [tarif, setTarif] = useState(null);
   const [tarifError, setTarifError] = useState('');
-  // Frais supp automatiques au-delà de 2 500 DH ({ actif, seuil, montant },
-  // option du client choisi) : notification affichée dès que le montant dépasse le seuil.
-  const [fraisMontant, setFraisMontant] = useState(null);
 
   useEffect(() => {
     api
@@ -264,7 +260,6 @@ export default function NouveauColis() {
   // remise à zéro de la sélection de stock (le stock appartient au client).
   useEffect(() => {
     setStockProduits([]);
-    setFraisMontant(null);
     if (!clientId) {
       setDefaults({ open: false, essayage: false });
       setInterdireOuverture(false);
@@ -283,7 +278,6 @@ export default function NouveauColis() {
         setDefaults(def);
         setInterdireOuverture(def.open);
         setInterdireEssayage(def.open ? true : def.essayage);
-        setFraisMontant(res.data.frais_montant || null);
       })
       .catch(() => {});
     return () => {
@@ -402,13 +396,9 @@ export default function NouveauColis() {
         essayage: interdireEssayage ? 0 : 1
       });
       const magasin = magasins.find((m) => String(m.value) === String(clientId));
-      // extra_fees : frais supp automatiques appliqués par le serveur (montant > 2 500 DH).
-      const fraisSupp = Number(res.data.extra_fees) || 0;
       resetForm();
       setSuccess(
-        `Colis « ${res.data.parcel_code} » enregistré avec succès${magasin ? ` pour « ${magasin.label} »` : ''}${
-          fraisSupp > 0 ? ` (frais supplémentaires : +${fraisSupp} DH)` : ''
-        }.`
+        `Colis « ${res.data.parcel_code} » enregistré avec succès${magasin ? ` pour « ${magasin.label} »` : ''}.`
       );
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors de l'enregistrement du colis.");
@@ -626,9 +616,6 @@ export default function NouveauColis() {
             </div>
           )}
         </div>
-
-        {/* Montant > 2 500 DH : frais supp automatiques (option du client choisi active). */}
-        <FraisMontantNotice price={form.price} regle={fraisMontant} livraison={tarif?.livraison ?? null} />
 
         <div className="np-tarifs">
           <div className="np-tarifs-head">

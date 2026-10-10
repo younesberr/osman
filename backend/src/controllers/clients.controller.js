@@ -1,8 +1,6 @@
 const pool = require('../config/db');
-const { cfgKey } = require('../config/brand');
 const { getAgenceScope, clientDansAgence } = require('../utils/agenceScope');
 const { hashPassword } = require('../utils/password');
-const fraisMontant = require('../utils/fraisMontant');
 
 const MAX_PAGE_SIZE = 100;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -56,7 +54,6 @@ const FLAG_FILTERS = {
   customTarif: 'IFNULL(c.customers_custom_tarif, 0)',
   verified: 'IFNULL(c.customers_verified, 0)',
   livreurShow: 'IFNULL(c.customers_livreur, 0)',
-  phoneShow: 'IFNULL(c.customers_phone_show, 0)',
   active: 'IFNULL(c.customers_active, 0)'
 };
 
@@ -65,7 +62,7 @@ const FLAG_FILTERS = {
  * Query : page, pageSize, search (magasin, nom, CIN, tél personnel, tél magasin),
  * ville (ville_id de ramassage), agence (agence_id via zone de la ville), forme
  * (configs_id de la forme juridique), customTarif / verified / livreurShow /
- * phoneShow / active (1|0), sortBy (voir SORTS) et sortDir (asc|desc).
+ * active (1|0), sortBy (voir SORTS) et sortDir (asc|desc).
  */
 async function listClients(req, res, next) {
   try {
@@ -126,7 +123,7 @@ async function listClients(req, res, next) {
               IFNULL(c.customers_custom_tarif, 0) AS custom_tarif,
               IFNULL(c.customers_verified, 0)     AS verified,
               IFNULL(c.customers_livreur, 0)      AS livreur_show,
-              IFNULL(c.customers_phone_show, 0)   AS phone_show,
+              IFNULL(c.customers_stock, 0)        AS stock,
               t.nom_ville     AS ville_ramassage,
               z.zone_name     AS zone,
               ag.agence_name  AS agence,
@@ -163,7 +160,7 @@ async function listClients(req, res, next) {
         custom_tarif: Number(r.custom_tarif) === 1 ? 1 : 0,
         verified: Number(r.verified),
         livreur_show: Number(r.livreur_show),
-        phone_show: Number(r.phone_show),
+        stock: Number(r.stock) === 1 ? 1 : 0,
         active: Number(r.customers_active),
         colis_total: Number(r.colis_total),
         colis_livres: Number(r.colis_livres),
@@ -356,7 +353,7 @@ async function setVerified(req, res, next) {
 async function lireOptions(id) {
   const [[row]] = await pool.query(
     `SELECT IFNULL(customers_livreur, 0)          AS livreur_show,
-            IFNULL(customers_phone_show, 0)       AS phone_show,
+            IFNULL(customers_stock, 0)            AS stock,
             IFNULL(customers_default_open, 0)     AS default_open,
             IFNULL(customers_default_essayage, 0) AS default_essayage
        FROM delevery_customers WHERE customers_id = ?`,
@@ -366,27 +363,18 @@ async function lireOptions(id) {
   return {
     customers_id: id,
     livreur_show: Number(row.livreur_show),
-    phone_show: Number(row.phone_show),
+    // customers_stock (varchar '0'/'1') : 1 = Gestion stock dans le menu client.
+    stock: Number(row.stock) === 1 ? 1 : 0,
     // Options par défaut des nouveaux colis (mêmes colonnes que /client/configuration) :
     // default_open = 1 → ouverture interdite par défaut ; default_essayage = 1 → essayage autorisé.
     default_open: Number(row.default_open),
-    default_essayage: Number(row.default_essayage),
-    // Frais supp automatiques selon le montant du colis (customers_frais_montant,
-    // utils/fraisMontant) : { disponible, actif: 0|1, seuil, montant } —
-    // disponible = false tant que sql/2026-09-28_frais-montant-colis.sql n'est pas passée.
-    frais_montant: await lireFraisMontant(id)
+    default_essayage: Number(row.default_essayage)
   };
 }
 
-/** Bloc frais_montant de la modale Options (option + règle affichée). */
-async function lireFraisMontant(id) {
-  const option = await fraisMontant.lireOptionFraisMontant(id);
-  return { disponible: option.disponible, ...fraisMontant.infoFraisMontant(option.actif) };
-}
-
 /**
- * GET /api/clients/:id/options — état de la modale "Options" (flags du compte
- * + option « frais selon le montant du colis », cf. setOptions).
+ * GET /api/clients/:id/options — état de la modale "Options" (flags du
+ * compte, cf. setOptions).
  */
 async function getOptions(req, res, next) {
   try {
@@ -405,23 +393,17 @@ async function getOptions(req, res, next) {
 
 /**
  * PATCH /api/clients/:id/options — modale "Options" :
- * body { livreurShow?: 0|1, phoneShow?: 0|1, defaultOpen?: 0|1,
+ * body { livreurShow?: 0|1, stock?: 0|1, defaultOpen?: 0|1,
  *        defaultEssayage?: 0|1 } (au moins un champ).
  *  - livreurShow → customers_livreur (voir n° livreur) ;
- *  - phoneShow → customers_phone_show (afficher le n° du vendeur sur les
- *    tickets ; même colonne que « Afficher mon numéro de téléphone sur les
- *    tickets » de /client/configuration, cf. updateMyConfig) ;
+ *  - stock → customers_stock (stock autorisé : sans lui, pas de menu
+ *    « Gestion stock » côté client, cf. hasClientAccess ; désactivé par défaut) ;
  *  - defaultOpen / defaultEssayage → customers_default_open /
  *    customers_default_essayage (section « Options par défaut » : valeurs par
  *    défaut des cases « interdire l'ouverture » / « interdire l'essayage »
  *    d'un nouveau colis, mêmes colonnes que /client/configuration ;
  *    default_essayage = 1 signifie essayage autorisé ; ouverture interdite par
- *    défaut → essayage interdit d'office, comme updateMyConfig) ;
- *  - fraisMontant → customers_frais_montant (section « Frais selon le montant
- *    du colis » : 1 = 20 DH ajoutés automatiquement par tranche de 2 500 DH
- *    au-delà de 2 500 DH de montant, 0 = aucun frais automatique pour ce
- *    client ; réglage admin uniquement, utils/fraisMontant ; 503 si la
- *    migration sql/2026-09-28_frais-montant-colis.sql manque).
+ *    défaut → essayage interdit d'office, comme updateMyConfig).
  */
 async function setOptions(req, res, next) {
   try {
@@ -435,7 +417,7 @@ async function setOptions(req, res, next) {
     const params = [];
     for (const [field, column] of [
       ['livreurShow', 'customers_livreur'],
-      ['phoneShow', 'customers_phone_show'],
+      ['stock', 'customers_stock'],
       ['defaultOpen', 'customers_default_open'],
       ['defaultEssayage', 'customers_default_essayage']
     ]) {
@@ -447,51 +429,24 @@ async function setOptions(req, res, next) {
       sets.push(`${column} = ?`);
       params.push(value);
     }
-    // Frais selon le montant : colonne ajoutée par migration, mise à jour à
-    // part pour ne pas faire échouer les autres options si elle manque.
-    let optionFrais = null;
-    if (req.body?.fraisMontant !== undefined) {
-      optionFrais = Number(req.body.fraisMontant);
-      if (![0, 1].includes(optionFrais)) {
-        return res.status(400).json({ message: 'Requête invalide.' });
-      }
-    }
-    if (sets.length === 0 && optionFrais === null) {
+    if (sets.length === 0) {
       return res.status(400).json({ message: 'Aucune modification envoyée.' });
     }
 
-    if (sets.length) {
-      const [result] = await pool.query(
-        `UPDATE delevery_customers SET ${sets.join(', ')} WHERE customers_id = ?`,
-        [...params, id]
-      );
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: 'Client introuvable.' });
-      }
-      // Ouverture interdite par défaut → essayage interdit par défaut aussi
-      // (customers_default_essayage = 0), quelle que soit la valeur envoyée.
-      await pool.query(
-        `UPDATE delevery_customers SET customers_default_essayage = 0
-          WHERE customers_id = ? AND IFNULL(customers_default_open, 0) = 1`,
-        [id]
-      );
+    const [result] = await pool.query(
+      `UPDATE delevery_customers SET ${sets.join(', ')} WHERE customers_id = ?`,
+      [...params, id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Client introuvable.' });
     }
-    if (optionFrais !== null) {
-      try {
-        const [result] = await pool.query(
-          `UPDATE delevery_customers SET customers_frais_montant = ? WHERE customers_id = ?`,
-          [optionFrais, id]
-        );
-        if (result.affectedRows === 0) {
-          return res.status(404).json({ message: 'Client introuvable.' });
-        }
-      } catch (err) {
-        if (err.code === 'ER_BAD_FIELD_ERROR') {
-          return res.status(503).json({ message: fraisMontant.MESSAGE_OPTION_ABSENTE });
-        }
-        throw err;
-      }
-    }
+    // Ouverture interdite par défaut → essayage interdit par défaut aussi
+    // (customers_default_essayage = 0), quelle que soit la valeur envoyée.
+    await pool.query(
+      `UPDATE delevery_customers SET customers_default_essayage = 0
+        WHERE customers_id = ? AND IFNULL(customers_default_open, 0) = 1`,
+      [id]
+    );
 
     const etat = await lireOptions(id);
     if (!etat) return res.status(404).json({ message: 'Client introuvable.' });
@@ -501,62 +456,22 @@ async function setOptions(req, res, next) {
   }
 }
 
-/*
- * Numéro affiché sur les tickets quand le client masque le sien
- * (customers_phone_show = 0) : le « Numéro de mobile » de l'information
- * société (/admin/configuration/plateforme, configs_var =
- * app_company_tel_mobile). Repli si non renseigné : clé legacy
- * 'ws_config_company_phone', dont configs_val contient parfois une référence
- * de traduction « lang_db_… » à résoudre dans delevery_lang
- * (lang_ref ↔ lang_name) ; si introuvable, on renvoie ''.
- */
-async function getServicePhone() {
-  const [[mobile]] = await pool.query(
-    `SELECT configs_val FROM delevery_configs
-      WHERE configs_var = ?
-      ORDER BY configs_id LIMIT 1`,
-    [cfgKey('company_tel_mobile')]
-  );
-  const telMobile = String(mobile?.configs_val || '').trim();
-  if (telMobile) return telMobile;
-
-  const [[row]] = await pool.query(
-    `SELECT configs_val FROM delevery_configs
-      WHERE configs_var = 'ws_config_company_phone' AND configs_active = 1
-      ORDER BY configs_id LIMIT 1`
-  );
-  let val = String(row?.configs_val || '').trim();
-  if (/^lang_/.test(val)) {
-    const [[lang]] = await pool.query(
-      `SELECT lang_name, lang_ref FROM delevery_lang
-        WHERE lang_ref = ? OR lang_name = ? LIMIT 1`,
-      [val, val]
-    );
-    val = lang ? String((lang.lang_ref === val ? lang.lang_name : lang.lang_ref) || '').trim() : '';
-  }
-  return val;
-}
-
 /**
  * GET /api/clients/me/config — préférences du client connecté (page
- * /client/configuration) : phone_show, default_open, default_essayage et
- * le numéro du service client affiché à titre indicatif.
+ * /client/configuration) : default_open et default_essayage.
  */
 async function getMyConfig(req, res, next) {
   try {
     const [[row]] = await pool.query(
-      `SELECT IFNULL(customers_phone_show, 0)        AS phone_show,
-              IFNULL(customers_default_open, 0)      AS default_open,
+      `SELECT IFNULL(customers_default_open, 0)      AS default_open,
               IFNULL(customers_default_essayage, 0)  AS default_essayage
          FROM delevery_customers WHERE customers_id = ?`,
       [Number(req.user.id)]
     );
     if (!row) return res.status(404).json({ message: 'Compte introuvable.' });
     res.json({
-      phone_show: Number(row.phone_show),
       default_open: Number(row.default_open),
-      default_essayage: Number(row.default_essayage),
-      service_phone: await getServicePhone()
+      default_essayage: Number(row.default_essayage)
     });
   } catch (err) {
     next(err);
@@ -564,8 +479,8 @@ async function getMyConfig(req, res, next) {
 }
 
 /**
- * PATCH /api/clients/me/config — body { phoneShow?, defaultOpen?,
- * defaultEssayage? } (0|1, au moins un champ). Renvoie l'état à jour.
+ * PATCH /api/clients/me/config — body { defaultOpen?, defaultEssayage? }
+ * (0|1, au moins un champ). Renvoie l'état à jour.
  */
 async function updateMyConfig(req, res, next) {
   try {
@@ -573,7 +488,6 @@ async function updateMyConfig(req, res, next) {
     const sets = [];
     const params = [];
     for (const [field, column] of [
-      ['phoneShow', 'customers_phone_show'],
       ['defaultOpen', 'customers_default_open'],
       ['defaultEssayage', 'customers_default_essayage']
     ]) {
@@ -620,6 +534,5 @@ module.exports = {
   setOptions,
   getOptions,
   getMyConfig,
-  updateMyConfig,
-  getServicePhone
+  updateMyConfig
 };

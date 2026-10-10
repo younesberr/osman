@@ -1,5 +1,4 @@
 const pool = require('../config/db');
-const { getServicePhone } = require('./clients.controller');
 const { getAgenceScope, parcelInAgence, userAgenceSql, agenceIdFromVille } = require('../utils/agenceScope');
 const { getScanSonUrls } = require('../utils/scanSons');
 const { attachStockProduits } = require('../utils/parcelProduits');
@@ -10,13 +9,6 @@ const { isValidPhone, PHONE_ERROR, phoneVariants } = require('../utils/phone');
 const { isValidParcelCode, PARCEL_CODE_ERROR } = require('../utils/parcelCode');
 const { historyPreuveSql } = require('../utils/preuveStatut');
 const { REMB_DEMANDE_SQL, hasDemandeEnCours } = require('../utils/remboursement');
-const {
-  fraisMontant,
-  lireOptionFraisMontant,
-  fraisMontantClient,
-  ajusterFraisMontant,
-  infoFraisMontant
-} = require('../utils/fraisMontant');
 
 const MAX_PAGE_SIZE = 100;
 
@@ -339,7 +331,8 @@ async function getLastPrintPrice(parcelId) {
  * GET /api/parcels/labels?ids=1,2,3 — données d'impression des étiquettes des
  * colis sélectionnés (500 max) pour la datatable admin. Les colis pouvant
  * appartenir à des clients différents, chaque étiquette porte son propre
- * expéditeur (sender_store / sender_phone). Employés type 3/4/6 : restreint aux
+ * expéditeur (sender_store / sender_phone : toujours le téléphone du magasin,
+ * jamais celui du service client). Employés type 3/4/6 : restreint aux
  * colis de leur agence (voir utils/agenceScope).
  */
 async function listAdminLabels(req, res, next) {
@@ -369,8 +362,7 @@ async function listAdminLabels(req, res, next) {
               p.parcel_product_name, p.parcel_product_qty, p.parcel_from_stock,
               p.parcel_open, p.parcel_essayage, p.parcel_replace, p.parcel_crbt_zero,
               t.nom_ville AS ville, z.zone_name AS zone,
-              c.customers_store AS sender_store, c.customers_phone AS sender_phone,
-              IFNULL(c.customers_phone_show, 0) AS sender_phone_show
+              c.customers_store AS sender_store, c.customers_phone AS sender_phone
          FROM delevery_parcel p
          LEFT JOIN delevery_customers c ON c.customers_id = p.parcel_customer
          LEFT JOIN delevery_tarifs t ON t.ville_id = p.parcel_city
@@ -381,16 +373,6 @@ async function listAdminLabels(req, res, next) {
     );
     if (!labels.length) {
       return res.status(404).json({ message: 'Colis introuvables.' });
-    }
-
-    // customers_phone_show = 0 : le client masque son numéro sur les tickets,
-    // on affiche à la place le numéro de mobile de la société.
-    if (labels.some((l) => Number(l.sender_phone_show) !== 1)) {
-      const servicePhone = await getServicePhone();
-      for (const l of labels) {
-        if (Number(l.sender_phone_show) !== 1) l.sender_phone = servicePhone || l.sender_phone;
-        delete l.sender_phone_show;
-      }
     }
 
     // Colis de stock : produits (nom, quantité, position) sur le ticket.
@@ -631,7 +613,8 @@ async function listClientFilterOptions(req, res, next) {
 /**
  * GET /api/parcels/client/labels?ids=1,2,3 — données d'impression des étiquettes
  * des colis sélectionnés (500 max), restreintes aux colis du client connecté.
- * Renvoie l'expéditeur (magasin + téléphone) et les colis triés par date de création.
+ * Renvoie l'expéditeur (magasin + téléphone du magasin, jamais celui du service
+ * client) et les colis triés par date de création.
  */
 async function listClientLabels(req, res, next) {
   try {
@@ -645,18 +628,12 @@ async function listClientLabels(req, res, next) {
       return res.status(400).json({ message: 'Aucun colis sélectionné.' });
     }
 
-    // customers_phone_show = 0 : le client masque son numéro sur les tickets,
-    // on affiche à la place le numéro de mobile de la société.
     const [[sender]] = await pool.query(
-      `SELECT customers_store AS store, customers_phone AS phone,
-              IFNULL(customers_phone_show, 0) AS phone_show
+      `SELECT customers_store AS store, customers_phone AS phone
          FROM delevery_customers
         WHERE customers_id = ? LIMIT 1`,
       [Number(req.user.id)]
     );
-    if (sender && Number(sender.phone_show) !== 1) {
-      sender.phone = (await getServicePhone()) || sender.phone;
-    }
 
     const [labels] = await pool.query(
       `SELECT p.parcel_id, p.parcel_code, p.parcel_receiver, p.parcel_phone,
@@ -689,14 +666,11 @@ async function listClientLabels(req, res, next) {
 /**
  * GET /api/parcels/client/new — données du formulaire "Nouveau colis" :
  * villes de destination actives (delevery_tarifs.statut = 1) + valeurs par
- * défaut du client pour les cases « ouverture » et « essayage » +
- * `frais_montant` ({ actif, seuil, montant } : frais supp automatiques au-delà
- * de 2 500 DH de montant, utils/fraisMontant — le formulaire affiche la
- * notification « frais supp ajoutés » dès que le montant saisi dépasse le seuil).
+ * défaut du client pour les cases « ouverture » et « essayage ».
  */
 async function getClientNewParcelData(req, res, next) {
   try {
-    const [[cities], [[customer]], optionFrais] = await Promise.all([
+    const [[cities], [[customer]]] = await Promise.all([
       pool.query(
         `SELECT ville_id AS id, nom_ville AS label
            FROM delevery_tarifs
@@ -708,15 +682,13 @@ async function getClientNewParcelData(req, res, next) {
                 IFNULL(customers_default_essayage, 0) AS default_essayage
            FROM delevery_customers WHERE customers_id = ? LIMIT 1`,
         [Number(req.user.id)]
-      ),
-      lireOptionFraisMontant(Number(req.user.id))
+      )
     ]);
     if (!customer) return res.status(404).json({ message: 'Compte introuvable.' });
     res.json({
       cities,
       default_open: Number(customer.default_open),
-      default_essayage: Number(customer.default_essayage),
-      frais_montant: infoFraisMontant(optionFrais.actif)
+      default_essayage: Number(customer.default_essayage)
     });
   } catch (err) {
     next(err);
@@ -725,8 +697,7 @@ async function getClientNewParcelData(req, res, next) {
 
 /**
  * GET /api/parcels/new/client?customer=ID — valeurs par défaut du client choisi
- * sur la page admin "Nouveau colis" (cases « ouverture » / « essayage ») +
- * `frais_montant` (mêmes données que /parcels/client/new).
+ * sur la page admin "Nouveau colis" (cases « ouverture » / « essayage »).
  */
 async function getAdminClientDefaults(req, res, next) {
   try {
@@ -741,11 +712,9 @@ async function getAdminClientDefaults(req, res, next) {
       [customerId]
     );
     if (!customer) return res.status(404).json({ message: 'Client introuvable.' });
-    const optionFrais = await lireOptionFraisMontant(customerId);
     res.json({
       default_open: Number(customer.default_open),
-      default_essayage: Number(customer.default_essayage),
-      frais_montant: infoFraisMontant(optionFrais.actif)
+      default_essayage: Number(customer.default_essayage)
     });
   } catch (err) {
     next(err);
@@ -1105,10 +1074,6 @@ async function doCreateParcel(customerId, body, res, next, memberId = 0, userId 
     if (!fees) {
       return res.status(400).json({ message: 'Aucun tarif trouvé pour cette ville de destination.' });
     }
-    // Frais supp automatiques selon le montant (20 DH par tranche de 2 500 DH
-    // au-delà de 2 500 DH, sauf option désactivée sur le client) → parcel_extra_fees.
-    const extraFees = await fraisMontantClient(customerId, price);
-
     // Agence du colis dérivée de la ville de ramassage du client (ville → zone → agence).
     const agenceId = await agenceIdFromVille(Number(customer.pickup_city) || 0);
 
@@ -1136,7 +1101,7 @@ async function doCreateParcel(customerId, body, res, next, memberId = 0, userId 
           String(price),
           note,
           fees.livraison,
-          extraFees,
+          0,
           fees.retour,
           fees.refuse,
           customerId,
@@ -1238,8 +1203,7 @@ async function doCreateParcel(customerId, body, res, next, memberId = 0, userId 
       // colis normal uniquement : la marchandise d'un colis de stock est déjà
       // en agence, rien à ramasser chez le client.
       if (!fromStock) await createAutoDemandeRamassage(customerId, memberId);
-      // extra_fees : frais supp automatiques appliqués (0 si aucun), champ additif.
-      res.status(201).json({ parcel_id: parcelId, parcel_code: parcelCode, extra_fees: extraFees });
+      res.status(201).json({ parcel_id: parcelId, parcel_code: parcelCode });
     } catch (err) {
       await conn.rollback();
       throw err;
@@ -1396,15 +1360,11 @@ async function getClientParcelEditData(req, res, next) {
         ORDER BY nom_ville`
     );
 
-    const optionFrais = await lireOptionFraisMontant(Number(req.user.id));
     res.json({
       requires_validation: parcel.parcel_status === 'WAITING_PICKUP' ? 0 : 1,
       pending_demande: await hasPendingModifDemande(parcel.parcel_id),
       code_editable: parcel.parcel_status === 'WAITING_PICKUP' ? 1 : 0,
       city_editable: CLIENT_CITY_EDITABLE_STATUSES.includes(parcel.parcel_status) ? 1 : 0,
-      // Frais supp automatiques au-delà de 2 500 DH : la modale affiche la
-      // notification quand le nouveau montant dépasse le seuil (option du client).
-      frais_montant: infoFraisMontant(optionFrais.actif),
       parcel_code: parcel.parcel_code,
       receiver: parcel.parcel_receiver || '',
       phone: parcel.parcel_phone || '',
@@ -1611,15 +1571,6 @@ async function updateClientParcel(req, res, next) {
       }
     }
 
-    // Changement de montant → frais supp automatiques réajustés (part de
-    // l'ancien montant retirée, part du nouveau ajoutée, frais posés à la main
-    // conservés — utils/fraisMontant), selon l'option du client.
-    let extraFees = null;
-    if (ancien.price !== price) {
-      const optionFrais = await lireOptionFraisMontant(customerId);
-      extraFees = ajusterFraisMontant(parcel.parcel_extra_fees, ancien.price, price, optionFrais.actif);
-    }
-
     const now = Math.floor(Date.now() / 1000);
     const conn = await pool.getConnection();
     try {
@@ -1671,9 +1622,7 @@ async function updateClientParcel(req, res, next) {
                 parcel_note = ?, parcel_price = ?, parcel_product_name = ?,
                 parcel_product_qty = ?, parcel_open = ?, parcel_essayage = ?,
                 parcel_replace = ?${fees ? `, parcel_delivered_fees = ?,
-                parcel_returned_fees = ?, parcel_refused_fees = ?` : ''}${
-                  extraFees !== null ? ', parcel_extra_fees = ?' : ''
-                },
+                parcel_returned_fees = ?, parcel_refused_fees = ?` : ''},
                 parcel_edited = 1, parcel_last_update = ?
           WHERE parcel_id = ? AND parcel_status = 'WAITING_PICKUP'`,
         [
@@ -1690,7 +1639,6 @@ async function updateClientParcel(req, res, next) {
           essayage,
           replace,
           ...(fees ? [fees.livraison, fees.retour, fees.refuse] : []),
-          ...(extraFees !== null ? [extraFees] : []),
           now,
           parcel.parcel_id
         ]
@@ -1745,36 +1693,19 @@ const MAX_IMPORT_ROWS = 500;
  */
 async function getImportData(req, res, next) {
   try {
-    // Magasins avec leur option « frais selon le montant » (frais_montant :
-    // 1 = frais supp automatiques au-delà de 2 500 DH ; colonne absente tant
-    // que sql/2026-09-28_frais-montant-colis.sql n'est pas passée → 1).
-    let magasins;
-    try {
-      [magasins] = await pool.query(
-        `SELECT customers_id AS id, customers_store AS label,
-                IFNULL(customers_frais_montant, 1) AS frais_montant
-           FROM delevery_customers
-          WHERE COALESCE(customers_store, '') <> ''
-          ORDER BY customers_store`
-      );
-    } catch (err) {
-      if (err.code !== 'ER_BAD_FIELD_ERROR') throw err;
-      [magasins] = await pool.query(
-        `SELECT customers_id AS id, customers_store AS label, 1 AS frais_montant
-           FROM delevery_customers
-          WHERE COALESCE(customers_store, '') <> ''
-          ORDER BY customers_store`
-      );
-    }
+    const [magasins] = await pool.query(
+      `SELECT customers_id AS id, customers_store AS label
+         FROM delevery_customers
+        WHERE COALESCE(customers_store, '') <> ''
+        ORDER BY customers_store`
+    );
     const [cities] = await pool.query(
       `SELECT ville_id AS id, nom_ville AS label
          FROM delevery_tarifs
         WHERE statut = 1
         ORDER BY nom_ville`
     );
-    // frais_montant : règle (seuil / montant par tranche) ; l'état actif est
-    // celui du magasin choisi (magasins[].frais_montant).
-    res.json({ magasins, cities, frais_montant: infoFraisMontant(1) });
+    res.json({ magasins, cities });
   } catch (err) {
     next(err);
   }
@@ -1914,9 +1845,6 @@ async function doImportParcels(customerId, rawParcels, res, next, memberId = 0, 
 
     // Agence du colis dérivée de la ville de ramassage du client (ville → zone → agence).
     const agenceId = await agenceIdFromVille(Number(customer.pickup_city) || 0);
-    // Frais supp automatiques selon le montant (option du client, lue une fois).
-    const optionFrais = await lireOptionFraisMontant(customerId);
-    let nbFraisMontant = 0;
 
     const now = Math.floor(Date.now() / 1000);
     const d = new Date(now * 1000);
@@ -1930,8 +1858,6 @@ async function doImportParcels(customerId, rawParcels, res, next, memberId = 0, 
       const created = [];
       for (const row of rows) {
         const fees = feesByCity.get(row.city);
-        const extraFees = optionFrais.actif ? fraisMontant(row.price) : 0;
-        if (extraFees > 0) nbFraisMontant += 1;
         const [result] = await conn.query(
           `INSERT INTO delevery_parcel
              (parcel_code, parcel_receiver, parcel_phone, parcel_city, parcel_address,
@@ -1951,7 +1877,7 @@ async function doImportParcels(customerId, rawParcels, res, next, memberId = 0, 
             String(row.price),
             row.note,
             fees.livraison,
-            extraFees,
+            0,
             fees.retour,
             fees.refuse,
             customerId,
@@ -1990,8 +1916,7 @@ async function doImportParcels(customerId, rawParcels, res, next, memberId = 0, 
       await conn.commit();
       // Demande de ramassage automatique : une seule par lot (hors transaction).
       if (created.length) await createAutoDemandeRamassage(customerId, memberId);
-      // extra_fees_count : colis ayant reçu des frais supp automatiques (champ additif).
-      res.status(201).json({ count: created.length, parcels: created, extra_fees_count: nbFraisMontant });
+      res.status(201).json({ count: created.length, parcels: created });
     } catch (err) {
       await conn.rollback();
       throw err;
@@ -2182,9 +2107,6 @@ async function doImportStockParcels(customerId, rawParcels, res, next, memberId 
 
     // Agence du colis dérivée de la ville de ramassage du client (ville → zone → agence).
     const agenceId = await agenceIdFromVille(Number(customer.pickup_city) || 0);
-    // Frais supp automatiques selon le montant (option du client, lue une fois).
-    const optionFrais = await lireOptionFraisMontant(customerId);
-    let nbFraisMontant = 0;
 
     const now = Math.floor(Date.now() / 1000);
     const d = new Date(now * 1000);
@@ -2199,8 +2121,6 @@ async function doImportStockParcels(customerId, rawParcels, res, next, memberId 
       for (let i = 0; i < rows.length; i += 1) {
         const row = rows[i];
         const fees = feesByCity.get(row.city);
-        const extraFees = optionFrais.actif ? fraisMontant(row.price) : 0;
-        if (extraFees > 0) nbFraisMontant += 1;
         const [result] = await conn.query(
           `INSERT INTO delevery_parcel
              (parcel_code, parcel_receiver, parcel_phone, parcel_city, parcel_address,
@@ -2220,7 +2140,7 @@ async function doImportStockParcels(customerId, rawParcels, res, next, memberId 
             String(row.price),
             row.note,
             fees.livraison,
-            extraFees,
+            0,
             fees.retour,
             fees.refuse,
             customerId,
@@ -2309,8 +2229,7 @@ async function doImportStockParcels(customerId, rawParcels, res, next, memberId 
       await conn.commit();
       // Pas de demande de ramassage automatique : colis de stock (marchandise
       // déjà en agence), contrairement à doImportParcels.
-      // extra_fees_count : colis ayant reçu des frais supp automatiques (champ additif).
-      res.status(201).json({ count: created.length, parcels: created, extra_fees_count: nbFraisMontant });
+      res.status(201).json({ count: created.length, parcels: created });
     } catch (err) {
       await conn.rollback();
       throw err;

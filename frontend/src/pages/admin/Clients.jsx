@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   BadgeCheck,
-  Coins,
   Eye,
   Hourglass,
   PackageOpen,
@@ -378,29 +377,22 @@ function RadioRow({ label, value, onChange, name, disabled = false }) {
 }
 
 /**
- * Modale "Options" : voir n° livreur (customers_livreur), afficher le n° du
- * vendeur sur les tickets (customers_phone_show, même réglage que la page
- * /client/configuration), en boutons radio Activer / Désactiver ; section « Options par défaut » :
+ * Modale "Options" : voir n° livreur (customers_livreur), stock
+ * (customers_stock : désactivé → pas de menu « Gestion stock » côté client),
+ * en boutons radio Activer / Désactiver ; section « Options par défaut » :
  * « Interdire l'ouverture du colis par défaut » (customers_default_open) et
  * « Interdire l'essayage par défaut » (customers_default_essayage, colonne
  * inversée : 1 = essayage autorisé), mêmes réglages que /client/configuration,
- * ouverture interdite → essayage interdit et verrouillé ; section « Frais
- * selon le montant du colis » (customers_frais_montant, réglage admin
- * uniquement : 20 DH de frais supp ajoutés automatiquement par tranche de
- * 2 500 DH au-delà de 2 500 DH de montant, activé par défaut ; désactivé =
- * aucun frais automatique pour ce client). Le tout est chargé par GET
- * /clients/:id/options (default_open, default_essayage,
- * frais_montant.{disponible, actif, seuil, montant}) et enregistré avec les
- * autres options.
+ * ouverture interdite → essayage interdit et verrouillé. Le tout est chargé
+ * par GET /clients/:id/options (default_open, default_essayage) et enregistré
+ * avec les autres options.
  */
 function OptionsModal({ client, onClose, onSaved }) {
   const [livreurShow, setLivreurShow] = useState(client.livreur_show === 1 ? 1 : 0);
-  const [phoneShow, setPhoneShow] = useState(client.phone_show === 1 ? 1 : 0);
+  const [stock, setStock] = useState(client.stock === 1 ? 1 : 0);
   // null = chargement ; { interdireOuverture: 0|1, interdireEssayage: 0|1 } (valeurs affichées :
   // interdireEssayage = 1 équivaut à customers_default_essayage = 0).
   const [defauts, setDefauts] = useState(null);
-  // null = chargement ; { disponible, actif: 0|1, seuil, montant } (frais supp selon le montant).
-  const [fraisMontant, setFraisMontant] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -416,12 +408,6 @@ function OptionsModal({ client, onClose, onSaved }) {
           interdireOuverture,
           // Ouverture interdite → essayage interdit d'office.
           interdireEssayage: interdireOuverture === 1 || Number(res.data.default_essayage) !== 1 ? 1 : 0
-        });
-        setFraisMontant({
-          disponible: Boolean(res.data.frais_montant?.disponible),
-          actif: Number(res.data.frais_montant?.actif) === 0 ? 0 : 1,
-          seuil: Number(res.data.frais_montant?.seuil) || 2500,
-          montant: Number(res.data.frais_montant?.montant) || 20
         });
       })
       .catch((err) => {
@@ -448,7 +434,7 @@ function OptionsModal({ client, onClose, onSaved }) {
     try {
       const res = await api.patch(`/clients/${client.customers_id}/options`, {
         livreurShow,
-        phoneShow,
+        stock,
         // Options par défaut envoyées seulement une fois chargées (ouverture
         // interdite → essayage interdit d'office ; 1 en base = essayage autorisé).
         ...(defauts
@@ -456,9 +442,7 @@ function OptionsModal({ client, onClose, onSaved }) {
               defaultOpen: defauts.interdireOuverture,
               defaultEssayage: defauts.interdireOuverture === 1 || defauts.interdireEssayage === 1 ? 0 : 1
             }
-          : {}),
-        // Frais selon le montant : envoyé seulement si la colonne est migrée.
-        ...(fraisMontant?.disponible ? { fraisMontant: fraisMontant.actif } : {})
+          : {})
       });
       onSaved(res.data);
       onClose();
@@ -486,12 +470,7 @@ function OptionsModal({ client, onClose, onSaved }) {
         <form onSubmit={save}>
           <div className="option-rows">
             <RadioRow label="Voir n° livreur" name="livreurShow" value={livreurShow} onChange={setLivreurShow} />
-            <RadioRow
-              label="Afficher n° vendeur sur ticket"
-              name="phoneShow"
-              value={phoneShow}
-              onChange={setPhoneShow}
-            />
+            <RadioRow label="Stock" name="stock" value={stock} onChange={setStock} />
           </div>
 
           <div className="option-section-title">
@@ -525,41 +504,6 @@ function OptionsModal({ client, onClose, onSaved }) {
               )}
             </div>
           )}
-
-          <div className="option-section-title">
-            <Coins size={14} /> Frais selon le montant du colis
-          </div>
-          <p className="option-section-hint">
-            {fraisMontant ? formatCount(fraisMontant.montant) : '20'} DH de frais supplémentaires ajoutés
-            automatiquement à chaque colis pour chaque tranche de{' '}
-            {fraisMontant ? formatCount(fraisMontant.seuil) : '2 500'} DH au-delà de{' '}
-            {fraisMontant ? formatCount(fraisMontant.seuil) : '2 500'} DH de montant (ex. de 2 501 à 5 000 DH :
-            +20 DH ; de 5 001 à 7 500 DH : +40 DH ; de 7 501 à 10 000 DH : +60 DH). Activé par défaut ;
-            désactivé : aucun frais supplémentaire automatique sur les colis de ce client.
-          </p>
-          {loadError ? (
-            <div className="option-section-note">{loadError}</div>
-          ) : !fraisMontant ? (
-            <div className="cell-sub">Chargement…</div>
-          ) : (
-            <>
-              {!fraisMontant.disponible && (
-                <div className="option-section-note">
-                  Option indisponible : exécutez sql/2026-09-28_frais-montant-colis.sql dans phpMyAdmin (en
-                  attendant, les frais s'appliquent à tous les clients).
-                </div>
-              )}
-              <div className="option-rows">
-                <RadioRow
-                  label="Frais supp. colis au montant > 2 500 DH"
-                  name="fraisMontant"
-                  value={fraisMontant.actif}
-                  onChange={(v) => setFraisMontant((f) => (f ? { ...f, actif: v } : f))}
-                  disabled={!fraisMontant.disponible}
-                />
-              </div>
-            </>
-          )}
           {error && <div className="form-error">{error}</div>}
           <div className="modal-actions">
             <button type="button" className="btn btn-ghost" onClick={onClose} disabled={saving}>
@@ -592,7 +536,6 @@ export default function Clients() {
     customTarif: '',
     verified: '',
     livreurShow: '',
-    phoneShow: '',
     active: '1'
   });
   const [sortBy, setSortBy] = useState('');
@@ -821,7 +764,6 @@ export default function Clients() {
         <FlagSelect label="Tarifs personnalisés" value={flags.customTarif} onChange={(v) => setFlag('customTarif', v)} />
         <FlagSelect label="Vérifiés" value={flags.verified} onChange={(v) => setFlag('verified', v)} />
         <FlagSelect label="Voir n° livreur" value={flags.livreurShow} onChange={(v) => setFlag('livreurShow', v)} />
-        <FlagSelect label="N° vendeur sur ticket" value={flags.phoneShow} onChange={(v) => setFlag('phoneShow', v)} />
         <select
           className="datatable-select"
           value={flags.active}
@@ -1026,7 +968,7 @@ export default function Clients() {
           onSaved={(data) =>
             patchRow(data.customers_id, {
               livreur_show: data.livreur_show,
-              phone_show: data.phone_show
+              stock: data.stock
             })
           }
         />

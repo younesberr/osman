@@ -17,7 +17,6 @@ import {
 import api from '../../api/client';
 import SearchableSelect from '../../components/SearchableSelect';
 import TauxLivraisonDestinataire from '../../components/TauxLivraisonDestinataire';
-import FraisMontantNotice from '../../components/FraisMontantNotice';
 import { isValidPhone, normalizePhone, PHONE_ERROR } from '../../utils/phone';
 import { isValidParcelCode, PARCEL_CODE_ERROR } from '../../utils/parcelCode';
 
@@ -285,9 +284,6 @@ export default function NouveauColis() {
   // Tarifs de la ville sélectionnée (livraison / retour / refusé / délai).
   const [tarif, setTarif] = useState(null);
   const [tarifError, setTarifError] = useState('');
-  // Frais supp automatiques au-delà de 2 500 DH ({ actif, seuil, montant },
-  // option du client) : notification affichée dès que le montant dépasse le seuil.
-  const [fraisMontant, setFraisMontant] = useState(null);
 
   useEffect(() => {
     if (!form.city) {
@@ -329,7 +325,6 @@ export default function NouveauColis() {
         setDefaults(def);
         setInterdireOuverture(def.open);
         setInterdireEssayage(def.open ? true : def.essayage);
-        setFraisMontant(res.data.frais_montant || null);
       })
       .catch((err) => setLoadError(err.response?.data?.message || 'Erreur de chargement.'))
       .finally(() => setLoading(false));
@@ -420,13 +415,9 @@ export default function NouveauColis() {
         essayage: interdireEssayage ? 0 : 1
       });
       resetForm();
-      // extra_fees : frais supp automatiques appliqués par le serveur (montant > 2 500 DH).
-      const fraisSupp = Number(res.data.extra_fees) || 0;
       setFlash({
         type: 'success',
-        message: `Colis « ${res.data.parcel_code} » enregistré avec succès${
-          fraisSupp > 0 ? ` (frais supplémentaires : +${fraisSupp} DH)` : ''
-        }.`
+        message: `Colis « ${res.data.parcel_code} » enregistré avec succès.`
       });
     } catch (err) {
       const message = err.response?.data?.message || "Erreur lors de l'enregistrement du colis.";
@@ -626,9 +617,6 @@ export default function NouveauColis() {
             </div>
           )}
         </div>
-
-        {/* Montant > 2 500 DH : frais supp automatiques (option du client active). */}
-        <FraisMontantNotice price={form.price} regle={fraisMontant} livraison={tarif?.livraison ?? null} />
 
         <div className="np-tarifs">
           <div className="np-tarifs-head">

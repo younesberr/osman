@@ -1,18 +1,11 @@
 import { useEffect, useState } from 'react';
 import {
-  Phone,
   PackageOpen,
   Save,
   Shirt,
   Lock
 } from 'lucide-react';
 import api from '../../api/client';
-
-/** "0612345678" → "06 12 34 56 78" (autres formats laissés tels quels). */
-function formatPhone(phone) {
-  const digits = String(phone || '').replace(/\D/g, '');
-  return digits.length === 10 ? digits.replace(/(\d{2})(?=\d)/g, '$1 ') : String(phone || '');
-}
 
 /** Interrupteur accessible : case à cocher stylée en toggle. */
 function Toggle({ checked, onChange, label, disabled = false }) {
@@ -49,7 +42,6 @@ function OptionRow({ icon: Icon, title, description, checked, onChange, disabled
 /** État du formulaire à partir de la réponse de GET / PATCH /clients/me/config. */
 function toState(data) {
   return {
-    phoneShow: Number(data.phone_show) === 1,
     defaultOpen: Number(data.default_open) === 1,
     defaultEssayage: Number(data.default_essayage) === 1
   };
@@ -57,9 +49,8 @@ function toState(data) {
 
 /**
  * Page /client/configuration — préférences du compte client :
- *  - customers_phone_show : numéro affiché sur les étiquettes des colis ;
- *  - customers_default_open / customers_default_essayage : valeurs par
- *    défaut des cases « ouverture interdite » et « essayage » d'un nouveau colis.
+ * customers_default_open / customers_default_essayage, valeurs par défaut des
+ * cases « ouverture interdite » et « essayage » d'un nouveau colis.
  * En base, customers_default_essayage = 1 signifie essayage autorisé ; l'option
  * affichée est « interdire l'essayage » (inversée), et elle est liée à
  * « interdire l'ouverture » : ouverture interdite → essayage interdit, verrouillé.
@@ -67,7 +58,6 @@ function toState(data) {
 export default function Configuration() {
   const [config, setConfig] = useState(null);
   const [saved, setSaved] = useState(null);
-  const [servicePhone, setServicePhone] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -77,7 +67,6 @@ export default function Configuration() {
     const state = toState(data);
     setConfig(state);
     setSaved(state);
-    setServicePhone(data.service_phone || '');
   }
 
   useEffect(() => {
@@ -108,7 +97,6 @@ export default function Configuration() {
     setSuccess('');
     try {
       const res = await api.patch('/clients/me/config', {
-        phoneShow: config.phoneShow ? 1 : 0,
         defaultOpen: config.defaultOpen ? 1 : 0,
         // Ouverture interdite → essayage interdit d'office (0 = non autorisé).
         defaultEssayage: config.defaultOpen ? 0 : config.defaultEssayage ? 1 : 0
@@ -126,27 +114,8 @@ export default function Configuration() {
 
   if (!config) return <div className="form-error">{error}</div>;
 
-  const phoneOffText = servicePhone
-    ? `Si désactivé, le numéro de la société (${formatPhone(servicePhone)}) sera affiché à la place.`
-    : 'Si désactivé, le numéro de la société sera affiché à la place.';
-
   return (
     <div className="cfg-page">
-      <section className="platform-card cfg-card">
-        <div className="cfg-section-head">
-          <span className="cfg-section-kicker">
-            <Phone size={14} /> Numéro de téléphone sur les tickets
-          </span>
-        </div>
-        <OptionRow
-          icon={Phone}
-          title="Afficher mon numéro de téléphone sur les tickets"
-          description={phoneOffText}
-          checked={config.phoneShow}
-          onChange={(v) => setField('phoneShow', v)}
-        />
-      </section>
-
       <section className="platform-card cfg-card">
         <div className="cfg-section-head">
           <span className="cfg-section-kicker">

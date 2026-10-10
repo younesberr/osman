@@ -5,8 +5,6 @@ import { statutLabel } from '../utils/statuts';
 import { isValidPhone, PHONE_ERROR } from '../utils/phone';
 import { isValidParcelCode, PARCEL_CODE_ERROR } from '../utils/parcelCode';
 import SearchableSelect from './SearchableSelect';
-import FraisMontantNotice from './FraisMontantNotice';
-import { fraisMontant } from '../utils/fraisMontant';
 
 /*
  * Modales partagées des colis (page admin Colis ; détail de suivi aussi sur
@@ -240,23 +238,6 @@ export function EditModal({ parcel, onClose, onSaved }) {
 
   const setField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
-  // Prix modifié → frais supp automatiques (20 DH par tranche de 2 500 DH
-  // au-delà de 2 500 DH, option du client du colis) réajustés dans le champ
-  // « Frais supplémentaires » : part de l'ancien prix retirée, part du nouveau
-  // ajoutée, frais posés à la main conservés (même règle que le serveur côté client).
-  const setPriceField = (e) => {
-    const value = e.target.value;
-    setForm((f) => {
-      const regle = data?.frais_montant;
-      const delta = fraisMontant(value, regle) - fraisMontant(f.price, regle);
-      const extraFees =
-        delta !== 0 && canEdit('extraFees')
-          ? String(Math.max(0, (Number(f.extraFees) || 0) + delta))
-          : f.extraFees;
-      return { ...f, price: value, extraFees };
-    });
-  };
-
   // Recalcule les frais (livraison / retour / refus) quand la ville de
   // destination ou de ramassage change, selon la cascade tarifaire du client
   // du colis (tarif personnalisé → ligne « Autre » du client → matrice ramassage
@@ -473,16 +454,10 @@ export function EditModal({ parcel, onClose, onSaved }) {
                 step="0.01"
                 required
                 value={form.price}
-                onChange={setPriceField}
+                onChange={setField('price')}
                 disabled={!canEdit('price')}
               />
             </label>
-            {/* Nouveau prix > 2 500 DH : frais supp automatiques reportés dans « Frais supplémentaires ». */}
-            {Number(form.price) !== Number(data.price) && (
-              <div className="modal-form-full">
-                <FraisMontantNotice price={form.price} regle={data.frais_montant} />
-              </div>
-            )}
             <label>
               Frais de livraison (DH)
               <input

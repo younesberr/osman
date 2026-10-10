@@ -7,7 +7,8 @@ import SidebarLayout from './SidebarLayout';
  * Dashboard client : SidebarLayout avec le menu client. Le propriétaire voit
  * tout ; un membre d'équipe (page /client/equipe) ne voit que les entrées de
  * ses tâches attribuées — un parent dont tous les enfants sont masqués
- * disparaît aussi.
+ * disparaît aussi (ex. « Gestion stock » si l'option Stock du compte est
+ * désactivée, cf. hasClientAccess).
  */
 export default function ClientLayout() {
   const { user } = useAuth();

@@ -5,7 +5,6 @@ import { statutLabel } from '../utils/statuts';
 import { isValidPhone, PHONE_ERROR } from '../utils/phone';
 import { isValidParcelCode, PARCEL_CODE_ERROR } from '../utils/parcelCode';
 import SearchableSelect from './SearchableSelect';
-import FraisMontantNotice from './FraisMontantNotice';
 
 /*
  * Modales des colis côté CLIENT (page Liste des colis) : squelette commun
@@ -512,12 +511,6 @@ export function EditModal({ parcel, onClose, onSaved }) {
               Prix (DH)
               <input type="number" min="0" step="0.01" required value={form.price} onChange={setField('price')} />
             </label>
-            {/* Nouveau montant > 2 500 DH : frais supp automatiques réajustés par le serveur. */}
-            {Number(form.price) !== Number(data.price) && (
-              <div className="modal-form-full">
-                <FraisMontantNotice price={form.price} regle={data.frais_montant} />
-              </div>
-            )}
             <label className="modal-form-full">
               Adresse
               <textarea rows={2} required value={form.address} onChange={setField('address')} />

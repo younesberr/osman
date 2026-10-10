@@ -36,6 +36,15 @@ function dashboardFor(user) {
 
 const GENERIC_FAIL = { message: 'Identifiants incorrects.' };
 
+/*
+ * Option « Stock » du compte client (customers_stock, varchar '0'/'1', modale
+ * Options de /admin/clients) : 0 → pas de menu « Gestion stock » (front :
+ * hasClientAccess). Hors JWT, relue par /auth/me pour suivre les changements.
+ */
+function stockFlag(value) {
+  return Number(value) === 1 ? 1 : 0;
+}
+
 /**
  * POST /api/auth/login/client — table delevery_customers, sinon membre d'équipe
  * (delevery_customer_members). Le propriétaire gagne toujours : la table des
@@ -49,7 +58,7 @@ async function loginClient(req, res, next) {
     const { identifiant, password } = req.body;
     const [rows] = await pool.execute(
       `SELECT customers_id, customers_name, customers_email, customers_password,
-              customers_store, customers_active
+              customers_store, customers_active, customers_stock
          FROM delevery_customers
         WHERE customers_email = ?
         LIMIT 1`,
@@ -83,7 +92,10 @@ async function loginClient(req, res, next) {
       // Authorization: Bearer <token>) ; le dashboard web s'appuie sur le cookie.
       const token = signToken(user);
       setAuthCookie(res, token);
-      return res.json({ user: { ...user, store: customer.customers_store, dashboard: 'client' }, token });
+      return res.json({
+        user: { ...user, store: customer.customers_store, stock: stockFlag(customer.customers_stock), dashboard: 'client' },
+        token
+      });
     }
 
     // Membre d'équipe (tolère l'absence de la table tant que la migration
@@ -93,7 +105,7 @@ async function loginClient(req, res, next) {
       const [mRows] = await pool.execute(
         `SELECT m.member_id, m.member_customer, m.member_name, m.member_fonction,
                 m.member_password, m.member_services, m.member_active,
-                c.customers_store, c.customers_active
+                c.customers_store, c.customers_active, c.customers_stock
            FROM delevery_customer_members m
            JOIN delevery_customers c ON c.customers_id = m.member_customer
           WHERE m.member_email = ? AND m.member_deleted = 0
@@ -129,7 +141,13 @@ async function loginClient(req, res, next) {
     const token = signToken(user);
     setAuthCookie(res, token);
     return res.json({
-      user: { ...user, store: member.customers_store, fonction: member.member_fonction, dashboard: 'client' },
+      user: {
+        ...user,
+        store: member.customers_store,
+        fonction: member.member_fonction,
+        stock: stockFlag(member.customers_stock),
+        dashboard: 'client'
+      },
       token
     });
   } catch (err) {
@@ -195,7 +213,8 @@ async function loginEmployee(req, res, next) {
 /**
  * GET /api/auth/me — recharge les accès pour refléter les changements sans
  * re-login : users_services pour un employé (désactivé → déconnexion), la ligne
- * membre pour un membre d'équipe client (désactivé / supprimé → déconnexion).
+ * membre pour un membre d'équipe client (désactivé / supprimé → déconnexion),
+ * l'option « Stock » (customers_stock) pour tout compte client.
  */
 async function me(req, res, next) {
   try {
@@ -230,6 +249,14 @@ async function me(req, res, next) {
       user.name = member.member_name;
       user.fonction = member.member_fonction;
       user.services = parseServices(member.member_services);
+    }
+    if (user.kind === 'customer') {
+      // Option « Stock » du compte (un membre d'équipe hérite de celle du propriétaire).
+      const [rows] = await pool.execute(
+        'SELECT customers_stock FROM delevery_customers WHERE customers_id = ? LIMIT 1',
+        [user.id]
+      );
+      user.stock = stockFlag(rows[0]?.customers_stock);
     }
     return res.json({ user: { ...user, dashboard: dashboardFor(user) } });
   } catch (err) {
