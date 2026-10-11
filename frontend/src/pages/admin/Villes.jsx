@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, ArrowUpDown, MapPin, Plus, Power, Save } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, MapPin, Plus, Power, Save, Search } from 'lucide-react';
 import api from '../../api/client';
 import { usePagination, Pager } from '../../components/Pagination';
 import SearchableSelect from '../../components/SearchableSelect';
@@ -8,9 +8,17 @@ import SearchSelect from '../../components/SearchSelect';
 /*
  * Configuration > Gestion villes — page en sections.
  * Section 1 : création d'une ville (delevery_tarifs), rattachée à une zone (delevery_zone_cities).
- * Section 2 : liste des villes, filtrable par agence (via les zones), zone et status,
- * triable sur les colonnes de frais.
+ * Section 2 : liste des villes, recherche (ref / nom / zone), filtrable par agence (via les zones),
+ * zone et status, triable sur les colonnes de frais.
  */
+
+/** Minuscules sans accents, pour une recherche insensible à la casse et aux accents. */
+function normalize(str) {
+  return String(str || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '');
+}
 
 /** Options de zone pour un select : zones actives + la zone courante si désactivée. */
 function zoneOptions(zones, currentId, currentNom) {
@@ -188,6 +196,7 @@ function GestionVillesSection() {
   const [adding, setAdding] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
+  const [search, setSearch] = useState('');
   const [filtreAgence, setFiltreAgence] = useState('');
   const [filtreZone, setFiltreZone] = useState('');
   const [filtreActive, setFiltreActive] = useState('1');
@@ -213,8 +222,10 @@ function GestionVillesSection() {
 
   const villesFiltrees = useMemo(() => {
     const zoneAgence = new Map(zones.map((z) => [z.id, z.agenceId]));
+    const q = normalize(search.trim());
     const filtrees = villes.filter(
       (v) =>
+        (!q || [v.ref, v.nom, v.zone].some((val) => normalize(val).includes(q))) &&
         (filtreAgence === '' || zoneAgence.get(v.zoneId) === Number(filtreAgence)) &&
         (filtreZone === '' || v.zoneId === Number(filtreZone)) &&
         (filtreActive === '' || v.active === Number(filtreActive))
@@ -222,7 +233,7 @@ function GestionVillesSection() {
     if (!sortBy) return filtrees;
     const sens = sortDir === 'desc' ? -1 : 1;
     return [...filtrees].sort((a, b) => sens * (Number(a[sortBy] || 0) - Number(b[sortBy] || 0)));
-  }, [villes, zones, filtreAgence, filtreZone, filtreActive, sortBy, sortDir]);
+  }, [villes, zones, search, filtreAgence, filtreZone, filtreActive, sortBy, sortDir]);
 
   const pager = usePagination(villesFiltrees, 'ville');
 
@@ -405,6 +416,18 @@ function GestionVillesSection() {
         </h2>
 
         <div className="datatable-toolbar">
+          <div className="datatable-search">
+            <Search size={16} className="datatable-search-icon" />
+            <input
+              type="search"
+              placeholder="Rechercher : ref, ville, zone…"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                pager.setPage(1);
+              }}
+            />
+          </div>
           <select
             className="datatable-select"
             value={filtreAgence}
