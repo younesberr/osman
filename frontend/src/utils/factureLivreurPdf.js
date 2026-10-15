@@ -3,7 +3,7 @@
  *
  * Même construction que le bon d'envoi (utils/bonEnvoiPdf.js) : chaque page A4
  * est bâtie en DOM hors écran puis convertie en image (html2canvas) et posée
- * dans le PDF (jsPDF), avec l'image « Page en-tête » de la plateforme en
+ * dans le PDF (jsPDF), avec le papier à en-tête de la société en
  * arrière-plan et le pied de page société.
  *  - encadré des informations en haut à gauche : référence, date, ville
  *    (zone), livreur, nombre de colis, total à payer ;
@@ -14,7 +14,7 @@
  *    lettres).
  */
 
-import { pagesVersPdf } from './pdfCapture';
+import { pagesVersPdf, PAPIER_ENTETE } from './pdfCapture';
 import { BRAND } from '../config/brand';
 
 import { statutLabel } from './statuts';
@@ -55,13 +55,14 @@ const STYLE = `
 .fp-total td { background: #eef1f6; font-weight: 800; }
 .fp-empty { text-align: center; color: #4b5563; }
 .fp-lettres { margin-top: 16px; font-size: 16px; font-weight: 700; }
-.fp-footer { position: absolute; left: ${PAD_SIDE}px; right: ${PAD_SIDE}px; bottom: 18px; color: ${BLEU}; }
+/* Pied de page et numérotation entre le filet gris (1364 px) et les bandeaux du bas (1465 px) du papier à en-tête. */
+.fp-footer { position: absolute; left: ${PAD_SIDE}px; right: ${PAD_SIDE}px; bottom: 30px; color: ${BLEU}; }
 .fp-footer-nom { display: inline-block; font-size: 21px; font-weight: 800; border-bottom: 2px solid ${BLEU}; padding-bottom: 2px; margin-bottom: 6px; }
 .fp-footer-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 22px; font-size: 13px; font-weight: 700; }
 .fp-footer-item { display: inline-flex; align-items: center; gap: 6px; }
 .fp-footer-item svg { width: 15px; height: 15px; fill: ${BLEU}; flex: none; }
 .fp-footer-regs { margin-top: 5px; font-size: 12px; font-weight: 700; }
-.fp-pagenum { position: absolute; right: ${PAD_SIDE}px; bottom: 10px; font-size: 12px; color: ${BLEU}; }
+.fp-pagenum { position: absolute; right: ${PAD_SIDE}px; bottom: 26px; font-size: 12px; color: ${BLEU}; }
 `;
 
 /** Échappe le texte injecté dans le HTML des pages. */
@@ -311,7 +312,7 @@ export async function genererFactureLivreurPdf({ facture, parcels, societe, onPr
   const [{ jsPDF }, html2canvasMod] = await Promise.all([import('jspdf'), import('html2canvas')]);
   const html2canvas = html2canvasMod.default;
 
-  const entete = await preloadEntete(societe?.entetePdf || societe?.entete);
+  const entete = await preloadEntete(PAPIER_ENTETE);
   const footer = footerHtml(societe);
   // L'API renvoie les colis du plus récemment ajouté au plus ancien : la
   // facture les numérote dans l'ordre d'ajout (1 = premier colis ajouté).

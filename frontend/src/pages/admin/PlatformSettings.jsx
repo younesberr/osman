@@ -103,7 +103,6 @@ const SOCIETE_EMPTY = Object.fromEntries([...SOCIETE_FIELDS.map(([k]) => [k, '']
 /** Section « Information société » : coordonnées et identifiants légaux (delevery_configs). */
 function SocieteSection() {
   const [societe, setSociete] = useState(SOCIETE_EMPTY);
-  const [entete, setEntete] = useState(null);
   const [formes, setFormes] = useState([]);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState(null);
@@ -111,11 +110,7 @@ function SocieteSection() {
   useEffect(() => {
     api
       .get('/platform/societe')
-      .then((res) => {
-        const { entete: enteteUrl, ...fields } = res.data;
-        setSociete({ ...SOCIETE_EMPTY, ...fields });
-        setEntete(enteteUrl);
-      })
+      .then((res) => setSociete({ ...SOCIETE_EMPTY, ...res.data }))
       .catch(() => setFeedback({ type: 'error', text: 'Impossible de charger les informations société.' }));
     api
       .get('/config/listes/formes-juridiques')
@@ -188,13 +183,6 @@ function SocieteSection() {
             </label>
           ))}
         </div>
-        <UploadField
-          label="Page en-tête"
-          hint="Papier en-tête des documents imprimés (png, jpg, svg, webp — max 10 Mo)."
-          kind="entete"
-          value={entete}
-          onUploaded={setEntete}
-        />
         <div className="platform-actions">
           <button type="submit" className="btn btn-primary" disabled={saving}>
             <Save size={15} /> {saving ? 'Enregistrement…' : 'Enregistrer les informations'}

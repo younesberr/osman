@@ -5,7 +5,8 @@
  * navigateur de rendre correctement l'arabe éventuel des noms de produits —
  * puis convertie en image par html2canvas et posée dans le PDF (jsPDF),
  * comme le bon d'envoi (utils/bonEnvoiPdf.js) :
- *  - logo de la plateforme en haut de page (repli texte s'il est absent) ;
+ *  - le papier à en-tête de la société (PAPIER_ENTETE, utils/pdfCapture.js)
+ *    sert d'arrière-plan pleine page ; une marge haute réserve la place de l'en-tête ;
  *  - encadré des informations du bon (référence, date de création, affecté à,
  *    nombre de colis, nombre de produits) ;
  *  - tableau des colis (N°, code + magasin, produits « nom (qté) → position »),
@@ -15,27 +16,22 @@
  * Les librairies sont chargées à la demande.
  */
 
-import { pagesVersPdf } from './pdfCapture';
-import { BRAND } from '../config/brand';
+import { pagesVersPdf, PAPIER_ENTETE } from './pdfCapture';
 
 // Page A4 rendue à 5 px / mm (1050 × 1485 px), capturée à l'échelle ECHELLE_A4 (utils/pdfCapture.js : 1,5 ≈ 190 dpi).
 const PAGE_W = 1050;
 const PAGE_H = 1485;
-const PAD_TOP = 50; // ≈ 10 mm
+const PAD_TOP = 240; // ≈ 48 mm : le texte ne touche pas le logo de l'en-tête.
 const PAD_SIDE = 60; // ≈ 12 mm
-const PAD_BOTTOM = 60; // ≈ 12 mm
+const PAD_BOTTOM = 170; // ≈ 34 mm : réservé au pied du papier à en-tête.
 
 const STYLE = `
 .bs-page {
   position: relative; width: ${PAGE_W}px; height: ${PAGE_H}px; box-sizing: border-box;
-  padding: ${PAD_TOP}px ${PAD_SIDE}px ${PAD_BOTTOM}px; background: #fff;
+  padding: ${PAD_TOP}px ${PAD_SIDE}px ${PAD_BOTTOM}px; background: #fff no-repeat center / 100% 100%;
   color: #000; font-family: Arial, Helvetica, sans-serif; font-size: 16px; line-height: 1.4;
 }
 .bs-content { height: 100%; overflow: hidden; }
-.bs-logo { height: 90px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
-.bs-logo img { max-height: 90px; max-width: 420px; }
-.bs-logo-txt { font-size: 44px; font-weight: 800; color: ${BRAND.colorPrimary}; letter-spacing: 1px; }
-.bs-logo-txt span { color: ${BRAND.colorSecondary}; }
 .bs-title { font-size: 23px; font-weight: 800; margin-bottom: 14px; }
 .bs-info { display: flex; flex-wrap: wrap; gap: 14px; border: 2px solid #1f2937; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; background: #fff; }
 .bs-info-item { flex: 1; min-width: 150px; }
@@ -56,7 +52,8 @@ const STYLE = `
 .bs-sign-box { min-width: 300px; text-align: center; }
 .bs-sign-label { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #4b5563; margin-bottom: 6px; }
 .bs-sign-nom { font-size: 19px; font-weight: 800; border-top: 2px solid #1f2937; padding-top: 8px; }
-.bs-pagenum { position: absolute; right: ${PAD_SIDE}px; bottom: 16px; font-size: 12px; color: #4b5563; }
+/* Au-dessus des bandeaux du bas (1465 px) du papier à en-tête. */
+.bs-pagenum { position: absolute; right: ${PAD_SIDE}px; bottom: 26px; font-size: 12px; color: #4b5563; }
 `;
 
 /** Échappe le texte injecté dans le HTML des pages. */
@@ -79,8 +76,8 @@ function formatDate(unix) {
   });
 }
 
-/** Précharge le logo plateforme ; renvoie null (repli texte) s'il est absent ou en erreur. */
-function preloadLogo(url) {
+/** Précharge l'image d'en-tête ; renvoie null (page blanche) si absente ou en erreur. */
+function preloadEntete(url) {
   if (!url) return Promise.resolve(null);
   return new Promise((resolve) => {
     const img = new Image();
@@ -89,15 +86,6 @@ function preloadLogo(url) {
     img.onerror = () => resolve(null);
     img.src = url;
   });
-}
-
-/** Logo de la plateforme centré en haut de page (repli texte). */
-function logoHtml(logoUrl) {
-  return `<div class="bs-logo">${
-    logoUrl
-      ? `<img src="${logoUrl}" alt="" />`
-      : `<div class="bs-logo-txt">${BRAND.logoText.main}<span> ${BRAND.logoText.sub}</span></div>`
-  }</div>`;
 }
 
 /** Encadré des informations du bon (première page uniquement). */
@@ -159,13 +147,13 @@ function rowHtml(parcel, numero) {
 </tr>`;
 }
 
-/** Crée une page et son tableau ; renvoie { page, content, tbody }. */
-function buildPage(host, logoUrl, withInfoBox, bon, nbColis, nbProduits) {
+/** Crée une page (fond en-tête) et son tableau ; renvoie { page, content, tbody }. */
+function buildPage(host, enteteUrl, withInfoBox, bon, nbColis, nbProduits) {
   const page = document.createElement('div');
   page.className = 'bs-page';
+  if (enteteUrl) page.style.backgroundImage = `url("${enteteUrl}")`;
   page.innerHTML = `
 <div class="bs-content">
-  ${logoHtml(logoUrl)}
   ${withInfoBox ? infoBoxHtml(bon, nbColis, nbProduits) : ''}
   <table class="bs-table">${TABLE_HEAD}<tbody></tbody></table>
 </div>
@@ -187,16 +175,16 @@ function signHtml(bon) {
 
 /**
  * Génère le PDF du bon de sortie et renvoie une URL blob à ouvrir dans un onglet.
- * @param {{bon: {ref, time, affecter_name}, parcels: object[], logoUrl?: string}} options
+ * @param {{bon: {ref, time, affecter_name}, parcels: object[]}} options
  *   parcels : colis du bon (GET /bons-sortie/:id), avec leurs produits
  *   [{ nom, variante, qty, position }].
  *   onProgress : facultatif, appelé avant chaque capture de page (n° de page, total).
  */
-export async function genererBonSortiePdf({ bon, parcels, logoUrl, onProgress }) {
+export async function genererBonSortiePdf({ bon, parcels, onProgress }) {
   const [{ jsPDF }, html2canvasMod] = await Promise.all([import('jspdf'), import('html2canvas')]);
   const html2canvas = html2canvasMod.default;
 
-  const logo = await preloadLogo(logoUrl);
+  const entete = await preloadEntete(PAPIER_ENTETE);
   // L'API renvoie les colis du plus récent au plus ancien : le document les
   // numérote dans l'ordre d'ajout au bon (1 = premier colis ajouté).
   const rows = [...(parcels || [])].reverse();
@@ -215,7 +203,7 @@ export async function genererBonSortiePdf({ bon, parcels, logoUrl, onProgress })
   try {
     // Remplissage page par page : une ligne qui déborde part sur la page suivante.
     const pages = [];
-    let current = buildPage(host, logo, true, bon, rows.length, nbProduits);
+    let current = buildPage(host, entete, true, bon, rows.length, nbProduits);
     pages.push(current);
 
     if (!rows.length) {
@@ -227,7 +215,7 @@ export async function genererBonSortiePdf({ bon, parcels, logoUrl, onProgress })
       // Une ligne seule sur sa page est conservée même trop haute (cas extrême).
       if (overflow && current.tbody.children.length > 1) {
         const row = current.tbody.lastElementChild;
-        current = buildPage(host, logo, false, bon, rows.length, nbProduits);
+        current = buildPage(host, entete, false, bon, rows.length, nbProduits);
         pages.push(current);
         current.tbody.appendChild(row);
       }
@@ -237,7 +225,7 @@ export async function genererBonSortiePdf({ bon, parcels, logoUrl, onProgress })
     current.tbody.parentElement.insertAdjacentHTML('afterend', signHtml(bon));
     if (current.content.scrollHeight > current.content.clientHeight) {
       current.content.querySelector('.bs-sign').remove();
-      current = buildPage(host, logo, false, bon, rows.length, nbProduits);
+      current = buildPage(host, entete, false, bon, rows.length, nbProduits);
       pages.push(current);
       current.tbody.parentElement.remove();
       current.content.insertAdjacentHTML('beforeend', signHtml(bon));

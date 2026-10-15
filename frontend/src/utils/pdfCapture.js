@@ -1,4 +1,5 @@
 import { BRAND } from '../config/brand';
+import papierEntete from '../assets/papier-entete.jpg';
 /*
  * Outils communs aux générateurs PDF (html2canvas + jsPDF).
  *
@@ -23,6 +24,15 @@ import { BRAND } from '../config/brand';
 
 export const ECHELLE_A4 = 1.5;
 export const JPEG_QUALITE = 0.92;
+
+/*
+ * Papier à en-tête de la société (logo, adresse, téléphone, email, bandeaux
+ * haut et bas), sans filigrane : arrière-plan pleine page de tous les
+ * documents A4. Image fixe, livrée avec l'application (non configurable).
+ * Repères sur la page DOM (1050 × 1485 px) : en-tête jusqu'à 185 px, filet
+ * gris du pied à 1364 px, bandeaux du bas à partir de 1465 px.
+ */
+export const PAPIER_ENTETE = papierEntete;
 
 /**
  * Filtre `ignoreElements` de html2canvas : ne garde dans le clone que `host`

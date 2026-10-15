@@ -4,8 +4,8 @@
  * Même principe que utils/bonEnvoiPdf.js : chaque page A4 est construite en
  * DOM hors écran (rendu correct de l'arabe éventuel des adresses), convertie
  * en image par html2canvas puis posée dans le PDF (jsPDF) :
- *  - l'image « Page en-tête » (configuration / plateforme) sert d'arrière-plan
- *    pleine page ; une marge haute réserve la place du logo de l'en-tête ;
+ *  - le papier à en-tête de la société (PAPIER_ENTETE, utils/pdfCapture.js)
+ *    sert d'arrière-plan pleine page ; une marge haute réserve la place de l'en-tête ;
  *  - encadré des informations du bon (référence, date, livreur, nombre de
  *    colis) puis tableau des colis (N°, code / magasin, date de réception,
  *    ville / adresse, statut avant ajout au bon), réparti sur autant de pages
@@ -14,7 +14,7 @@
  * Les librairies sont chargées à la demande.
  */
 
-import { pagesVersPdf } from './pdfCapture';
+import { pagesVersPdf, PAPIER_ENTETE } from './pdfCapture';
 import { BRAND } from '../config/brand';
 
 import { statutLabel } from './statuts';
@@ -50,13 +50,14 @@ const STYLE = `
 .bp-num { text-align: center; }
 .bp-code { font-weight: 700; overflow-wrap: break-word; word-break: break-word; }
 .bp-empty { text-align: center; color: #4b5563; }
-.bp-footer { position: absolute; left: ${PAD_SIDE}px; right: ${PAD_SIDE}px; bottom: 18px; color: ${BLEU}; }
+/* Pied de page et numérotation entre le filet gris (1364 px) et les bandeaux du bas (1465 px) du papier à en-tête. */
+.bp-footer { position: absolute; left: ${PAD_SIDE}px; right: ${PAD_SIDE}px; bottom: 30px; color: ${BLEU}; }
 .bp-footer-nom { display: inline-block; font-size: 21px; font-weight: 800; border-bottom: 2px solid ${BLEU}; padding-bottom: 2px; margin-bottom: 6px; }
 .bp-footer-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 22px; font-size: 13px; font-weight: 700; }
 .bp-footer-item { display: inline-flex; align-items: center; gap: 6px; }
 .bp-footer-item svg { width: 15px; height: 15px; fill: ${BLEU}; flex: none; }
 .bp-footer-regs { margin-top: 5px; font-size: 12px; font-weight: 700; }
-.bp-pagenum { position: absolute; right: ${PAD_SIDE}px; bottom: 10px; font-size: 12px; color: ${BLEU}; }
+.bp-pagenum { position: absolute; right: ${PAD_SIDE}px; bottom: 26px; font-size: 12px; color: ${BLEU}; }
 `;
 
 /** Échappe le texte injecté dans le HTML des pages. */
@@ -205,14 +206,14 @@ ${footer}
  * Génère le PDF du bon de retour livreur et renvoie une URL blob à ouvrir
  * dans un onglet.
  * @param {{bon: {ref, time, livreur_name, zone}, parcels: object[], societe: object}} options
- *   societe : réponse de GET /platform/societe (champs texte + entete).
+ *   societe : réponse de GET /platform/societe (informations du pied de page).
  *   onProgress : facultatif, appelé avant chaque capture de page (n° de page, total).
  */
 export async function genererBonRetourLivreurPdf({ bon, parcels, societe, onProgress }) {
   const [{ jsPDF }, html2canvasMod] = await Promise.all([import('jspdf'), import('html2canvas')]);
   const html2canvas = html2canvasMod.default;
 
-  const entete = await preloadEntete(societe?.entetePdf || societe?.entete);
+  const entete = await preloadEntete(PAPIER_ENTETE);
   const footer = footerHtml(societe);
   // L'API renvoie les colis du plus récent au plus ancien : le document les
   // numérote dans l'ordre d'ajout au bon (1 = premier colis ajouté).

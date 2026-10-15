@@ -305,8 +305,7 @@ function BonRow({ bon, onDetail, onAffecter, onChanged, onDeleted }) {
       const url = await genererBonSortiePdf({
         onProgress: progressionOnglet(win, 'Génération du PDF…', 'page'),
         bon: res.data,
-        parcels: res.data.parcels,
-        logoUrl: config.logo
+        parcels: res.data.parcels
       });
       if (win) win.location.href = url;
       else window.open(url, '_blank');

@@ -13,16 +13,14 @@ const KEYS = {
   logo: cfgKey('platform_logo'),
   icon: cfgKey('platform_favicon'),
   colorPrimary: cfgKey('platform_color_primary'),
-  colorSecondary: cfgKey('platform_color_secondary'),
-  entete: cfgKey('company_entete')
+  colorSecondary: cfgKey('platform_color_secondary')
 };
 
 const DEFAULTS = {
   logo: null,
   icon: null,
   colorPrimary: BRAND.colorPrimary,
-  colorSecondary: BRAND.colorSecondary,
-  entete: null
+  colorSecondary: BRAND.colorSecondary
 };
 
 /* Information société : une ligne delevery_configs par champ (créée si absente). */
@@ -46,62 +44,6 @@ const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 function ensureUploadDir() {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
   return UPLOAD_DIR;
-}
-
-/*
- * Version allégée de la page en-tête pour les PDF. L'originale peut être un
- * scan de plusieurs Mo (max 10 Mo) que chaque génération de PDF téléchargeait
- * et que html2canvas redécodait à chaque page. On en dérive un JPEG de
- * 1600 px de large (la page A4 est capturée à 1575 px : voir
- * frontend/src/utils/pdfCapture.js), soit quelques centaines de Ko, produit à
- * l'upload et, pour un fichier déjà en place (prod), à la première demande.
- * `sharp` est chargé paresseusement : s'il manque (binaire natif absent sur
- * l'hébergement), l'API renvoie null et le front se replie sur l'originale.
- */
-const ENTETE_PDF_WIDTH = 1600;
-const ENTETE_PDF_QUALITY = 82;
-const enteteEnCours = new Map(); // fichier original → Promise<string|null>
-
-function entetePdfName(filename) {
-  return `${path.parse(filename).name}-pdf.jpg`;
-}
-
-/** Nom du fichier allégé (créé si besoin), ou null si indisponible. */
-function ensureEntetePdf(filename) {
-  if (!filename) return Promise.resolve(null);
-  const target = entetePdfName(filename);
-  const targetPath = path.join(UPLOAD_DIR, target);
-  if (fs.existsSync(targetPath)) return Promise.resolve(target);
-  if (enteteEnCours.has(filename)) return enteteEnCours.get(filename);
-
-  const job = (async () => {
-    let sharp;
-    try {
-      sharp = require('sharp');
-    } catch (err) {
-      console.warn('[platform] sharp indisponible, en-tête PDF non allégée :', err.message);
-      return null;
-    }
-    // Écriture dans un .tmp puis renommage : jamais de fichier partiel servi.
-    const tmp = `${targetPath}.tmp`;
-    try {
-      await sharp(path.join(UPLOAD_DIR, filename))
-        .resize({ width: ENTETE_PDF_WIDTH, withoutEnlargement: true })
-        .flatten({ background: '#ffffff' })
-        .jpeg({ quality: ENTETE_PDF_QUALITY, mozjpeg: true })
-        .toFile(tmp);
-      await fs.promises.rename(tmp, targetPath);
-      return target;
-    } catch (err) {
-      console.warn('[platform] en-tête PDF non générée :', err.message);
-      fs.promises.unlink(tmp).catch(() => {});
-      return null;
-    } finally {
-      enteteEnCours.delete(filename);
-    }
-  })();
-  enteteEnCours.set(filename, job);
-  return job;
 }
 
 async function readConfig() {
@@ -165,23 +107,21 @@ async function updateConfig(req, res, next) {
   }
 }
 
-/** GET /api/platform/societe — information société (coordonnées, identifiants légaux, en-tête). */
+/**
+ * GET /api/platform/societe — information société (coordonnées, identifiants légaux).
+ * Le papier à en-tête des PDF est une image fixe du frontend (non configurable).
+ */
 async function getSociete(req, res, next) {
   try {
-    const vars = [...Object.values(SOCIETE_KEYS), KEYS.entete];
     const [rows] = await pool.query(
       'SELECT configs_var, configs_val FROM delevery_configs WHERE configs_var IN (?)',
-      [vars]
+      [Object.values(SOCIETE_KEYS)]
     );
     const byVar = Object.fromEntries(rows.map((r) => [r.configs_var, r.configs_val]));
     const societe = {};
     for (const [field, key] of Object.entries(SOCIETE_KEYS)) {
       societe[field] = byVar[key] || '';
     }
-    const enteteFile = byVar[KEYS.entete] || null;
-    societe.entete = toPublicUrl(enteteFile);
-    // Version allégée pour les PDF ; null si indisponible (le front se replie sur l'originale).
-    societe.entetePdf = toPublicUrl(await ensureEntetePdf(enteteFile));
     res.json(societe);
   } catch (err) {
     next(err);
@@ -214,11 +154,11 @@ async function updateSociete(req, res, next) {
   }
 }
 
-/** POST /api/platform/upload/:kind (logo | icon | entete) — enregistre le fichier et lie la plateforme à celui-ci. */
+/** POST /api/platform/upload/:kind (logo | icon) — enregistre le fichier et lie la plateforme à celui-ci. */
 async function uploadBranding(req, res, next) {
   try {
     const kind = req.params.kind;
-    if (!KEYS[kind] || (kind !== 'logo' && kind !== 'icon' && kind !== 'entete')) {
+    if (kind !== 'logo' && kind !== 'icon') {
       return res.status(400).json({ message: 'Type de fichier inconnu.' });
     }
     if (!req.file) {
@@ -227,15 +167,10 @@ async function uploadBranding(req, res, next) {
 
     const previous = (await readConfig())[kind];
     await upsertConfig(KEYS[kind], req.file.filename);
-    // La version allégée pour les PDF est produite tout de suite (sinon à la première demande).
-    if (kind === 'entete') await ensureEntetePdf(req.file.filename);
 
-    // Supprime l'ancien fichier (et sa version allégée) pour ne pas accumuler d'orphelins.
+    // Supprime l'ancien fichier pour ne pas accumuler d'orphelins.
     if (previous && previous !== req.file.filename) {
       fs.promises.unlink(path.join(UPLOAD_DIR, previous)).catch(() => {});
-      if (kind === 'entete') {
-        fs.promises.unlink(path.join(UPLOAD_DIR, entetePdfName(previous))).catch(() => {});
-      }
     }
 
     res.json({ message: 'Fichier enregistré.', url: toPublicUrl(req.file.filename) });

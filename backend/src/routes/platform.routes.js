@@ -25,8 +25,8 @@ const storage = multer.diskStorage({
   }
 });
 
-/* Taille max par type de fichier : la page en-tête peut être volumineuse (scan haute résolution). */
-const MAX_MO = { logo: 2, icon: 2, entete: 10 };
+/* Taille max par type de fichier (le papier à en-tête des PDF est fixe, non chargeable). */
+const MAX_MO = { logo: 2, icon: 2 };
 
 function makeUpload(maxMo) {
   return multer({
@@ -45,9 +45,13 @@ function makeUpload(maxMo) {
 const uploads = Object.fromEntries(Object.entries(MAX_MO).map(([kind, mo]) => [kind, makeUpload(mo)]));
 
 // Gestion propre des erreurs multer (taille, format) : message lisible côté client.
+// Le type est contrôlé AVANT multer : aucun fichier écrit pour un type inconnu (ex. ancien « entete »).
 function handleUpload(req, res, next) {
-  const upload = uploads[req.params.kind] || uploads.logo;
-  const maxMo = MAX_MO[req.params.kind] || MAX_MO.logo;
+  const upload = uploads[req.params.kind];
+  if (!upload) {
+    return res.status(400).json({ message: 'Type de fichier inconnu.' });
+  }
+  const maxMo = MAX_MO[req.params.kind];
   upload.single('file')(req, res, (err) => {
     if (err) {
       const message =

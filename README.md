@@ -44,11 +44,12 @@ puis insérer la ligne dans `delevery_users` avec ce hash dans `users_password`.
 
 ## Personnalisation
 
-- **Logo, favicon, couleurs, en-tête des PDF, informations légales (ICE, RC, IF, CNSS), contrats** : Admin > Configuration > Plateforme. Ces valeurs sont enregistrées en base et priment sur les valeurs par défaut du code.
+- **Logo, favicon, couleurs, informations légales (ICE, RC, IF, CNSS), contrats** : Admin > Configuration > Plateforme. Ces valeurs sont enregistrées en base et priment sur les valeurs par défaut du code.
+- **Papier à en-tête des PDF** (bons, factures) : image fixe `frontend/src/assets/papier-entete.jpg` (logo, adresse, téléphone, email, sans filigrane), non modifiable depuis l'administration. Pour la changer, remplacer ce fichier (A4 portrait, 1600 px de large) et reconstruire le frontend.
 - **Valeurs par défaut de la marque** (nom, nom arabe, domaine, e-mail, coordonnées et mentions légales du site public, messages pré-remplis) : `frontend/src/config/brand.js` et `backend/src/config/brand.js`. Les champs marqués `À COMPLÉTER` doivent être renseignés avant la mise en ligne.
 - **Logo du site public** : `frontend/public/home/header-logo.png` (et `favicon.png`). Le script `backend/scripts/make-brand-assets.js` les régénère depuis un logo source, ainsi que les copies utilisées par l'admin dans `backend/uploads/branding/`.
 - **Message WhatsApp du livreur** : Admin > Configuration > Options. Il alimente un simple lien `wa.me` ; l'application n'utilise pas l'API WhatsApp de Meta.
 
 ## Fichiers envoyés
 
-`backend/uploads/` (ou `UPLOADS_DIR`) : `branding/` (logo, favicon, en-tête), `contrats/`, `messages/`, `preuves/`, `products/`, `users/`, `sons/`. Sauvegarder ce dossier avec la base de données.
+`backend/uploads/` (ou `UPLOADS_DIR`) : `branding/` (logo, favicon), `contrats/`, `messages/`, `preuves/`, `products/`, `users/`, `sons/`. Sauvegarder ce dossier avec la base de données.
