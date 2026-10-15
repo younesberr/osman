@@ -6,25 +6,31 @@ import api from '../../api/client';
 import { StatIconCard, formatNombre, tauxColis } from '../../components/DashboardLayout';
 import DateRangeSelect, { defaultRange } from '../../components/DateRangeSelect';
 import { useAuth } from '../../context/AuthContext';
+import { adminHomePath } from '../../config/adminMenu';
 
 export default function Accueil() {
   const { user } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [range, setRange] = useState(defaultRange());
-  const estRamasseur = user?.kind === 'employee' && Number(user.role) === 6;
+  // Le ramasseur (type 6) n'a pas de tableau de bord : il arrive sur Ramassage par scan.
+  const home = adminHomePath(user);
+  const sansAccueil = home !== '/admin';
 
   useEffect(() => {
-    if (estRamasseur) return;
+    if (sansAccueil) return;
     api
       .get('/dashboard/admin', { params: { dateFrom: range.from, dateTo: range.to } })
       .then((res) => setData(res.data))
       .catch((err) => setError(err.response?.data?.message || 'Erreur de chargement.'));
-  }, [estRamasseur, range.from, range.to]);
+  }, [sansAccueil, range.from, range.to]);
 
-  // Le ramasseur (type 6) n'a pas de tableau de bord : sa page par défaut est Ramassage.
-  if (estRamasseur) {
-    return <Navigate to="/admin/ramassage" replace />;
+  if (sansAccueil) {
+    return home ? (
+      <Navigate to={home} replace />
+    ) : (
+      <div className="form-error">Aucune page ne vous est attribuée. Contactez votre responsable.</div>
+    );
   }
 
   // Même logique que la page Statistiques globales (onglet Par période) :

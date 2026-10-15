@@ -826,7 +826,7 @@ export default function DocumentationApi() {
               </tr>
               <tr>
                 <td><span className="mono">429</span></td>
-                <td className="api-cell-wrap">Trop de tentatives de connexion (patientez 15 minutes) ou trop de requêtes de suivi public (patientez 1 minute).</td>
+                <td className="api-cell-wrap">Trop de requêtes (patientez 1 minute).</td>
               </tr>
               <tr>
                 <td><span className="mono">503</span></td>

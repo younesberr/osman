@@ -7,7 +7,7 @@ import {
   Truck,
   Undo2,
   Coins,
-  HandCoins,
+  Hourglass,
   Wallet,
   PackagePlus,
   Hand,
@@ -135,7 +135,8 @@ export default function Accueil() {
         <StatIconCard icon={Truck} label="Colis en cours" value={formatNombre(c?.en_cours)} color="#17a2b8" bg="rgba(23, 162, 184, 0.08)" />
       </div>
 
-      {/* Montants des colis facturés (factures clients enregistrées / payées). */}
+      {/* Montants des colis facturés (factures clients enregistrées / payées)
+        * + en cours de paiement (colis non payés au client − frais, toutes dates). */}
       <div className="stats-grid stats-grid-4 stats-grid-client-montants">
         <StatIconCard
           icon={Coins}
@@ -146,10 +147,9 @@ export default function Accueil() {
           bg="rgba(216, 6, 19, 0.08)"
         />
         <StatIconCard
-          icon={HandCoins}
-          label="Frais payés"
-          value={formatMontant(c?.frais_payes)}
-          sub="Frais des colis facturés"
+          icon={Hourglass}
+          label="En cours de paiement"
+          value={formatMontant(c?.en_cours_paiement)}
           color="#fd7e14"
           bg="rgba(253, 126, 20, 0.08)"
         />

@@ -200,6 +200,8 @@ async function livreurStats(req, res, next) {
  *    invoice_parcels_parcel_fees) + frais supp de livraison du colis
  *    (parcel_extra_fees, facturés avec la ligne) ;
  *  - CA net = CA encaissé − frais payés.
+ * En cours de paiement (hors filtre de dates) : montant net des colis du
+ * client pas encore payés (absents de toute facture payée) − leurs frais.
  * Graphiques : répartition par statut + top 10 villes livrées.
  */
 async function clientStats(req, res, next) {
@@ -252,6 +254,45 @@ async function clientStats(req, res, next) {
     );
     const caEncaisse = Number(factures.ca_encaisse) || 0;
     const fraisPayes = Number(factures.frais_payes) || 0;
+
+    // En cours de paiement (solde client, hors filtre de dates) : colis
+    // absents de toute facture payée — livrés, ou refusés / annulés avec frais
+    // de refus > 0 déjà dans une facture brouillon / enregistrée ou
+    // facturables (facture livreur enregistrée ou payée, comme la facturation
+    // clients : exclut les anciens annulés jamais facturés). COD si livré −
+    // frais − frais supp de livraison ; colis déjà dans une facture brouillon /
+    // enregistrée : COD et frais de la ligne (frais modifiables sur la facture).
+    const [[solde]] = await pool.query(
+      `SELECT COALESCE(SUM(
+         (CASE WHEN p.parcel_status = 'DELIVERED' THEN COALESCE(f.cod, ${CRBT_SQL}) ELSE 0 END)
+         - COALESCE(f.fees, CASE WHEN p.parcel_status = 'DELIVERED' THEN p.parcel_delivered_fees
+                                 ELSE p.parcel_refused_fees END, 0)
+         - COALESCE(p.parcel_extra_fees, 0)), 0) AS en_cours_paiement
+       FROM delevery_parcel p
+       LEFT JOIN (
+         SELECT ip.invoice_parcels_parcel AS parcel_id,
+                MAX(ip.invoice_parcels_parcel_cod) AS cod,
+                MAX(ip.invoice_parcels_parcel_fees) AS fees
+           FROM delevery_invoice_parcels ip
+           JOIN delevery_invoice i
+             ON i.invoice_id = ip.invoice_parcels_invoice AND i.invoice_statut IN (0, 1)
+          WHERE i.invoice_customer = ?
+          GROUP BY ip.invoice_parcels_parcel
+       ) f ON f.parcel_id = p.parcel_id
+       WHERE p.parcel_customer = ?
+         AND (p.parcel_status = 'DELIVERED'
+              OR (p.parcel_status IN ('IN_PROGRESS', 'RETURNED')
+                  AND p.parcel_status_second IN ('REFUSE', 'CANCELED')
+                  AND COALESCE(p.parcel_refused_fees, 0) > 0
+                  AND (f.parcel_id IS NOT NULL OR COALESCE(p.parcel_refuse_livreur, 0) = 2)))
+         AND NOT EXISTS (
+           SELECT 1
+             FROM delevery_invoice_parcels ip2
+             JOIN delevery_invoice i2 ON i2.invoice_id = ip2.invoice_parcels_invoice
+            WHERE ip2.invoice_parcels_parcel = p.parcel_id AND i2.invoice_statut = 2)`,
+      [customerId, customerId]
+    );
+
     const counts = {
       attente_ramassage: Number(row.attente_ramassage) || 0,
       total_colis: Number(row.total_colis) || 0,
@@ -260,7 +301,8 @@ async function clientStats(req, res, next) {
       en_cours: Number(row.en_cours) || 0,
       ca_encaisse: caEncaisse,
       frais_payes: fraisPayes,
-      ca_net: caEncaisse - fraisPayes
+      ca_net: caEncaisse - fraisPayes,
+      en_cours_paiement: Number(solde.en_cours_paiement) || 0
     };
 
     const [parcelsByStatus] = await pool.query(

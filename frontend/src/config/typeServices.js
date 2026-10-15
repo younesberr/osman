@@ -40,7 +40,8 @@ for (const item of ADMIN_MENU) {
  *  - 3 Responsable d'agence : liste fixe, non modifiable ;
  *  - 4 Agent d'agence       : défauts + optionnels ;
  *  - 5 Livreur              : pas de dashboard admin ;
- *  - 6 Ramasseur            : défauts + optionnels.
+ *  - 6 Ramasseur            : Ramassage par scan + Ramassage, le reste en optionnel ;
+ *                             pas d'Accueil (ACCUEIL_TYPES, adminMenu.js).
  */
 export const TYPE_RULES = {
   1: { defaults: [], optional: [] },
@@ -72,8 +73,8 @@ export const TYPE_RULES = {
   },
   5: { defaults: [], optional: [] },
   6: {
-    defaults: ['COLIS', 'RAMASSAGE_SCAN', 'BON_ENVOI', 'RAMASSAGE'],
-    optional: ['STOCK']
+    defaults: ['RAMASSAGE_SCAN', 'RAMASSAGE'],
+    optional: ['COLIS', 'STOCK', 'BON_ENVOI']
   }
 };
 

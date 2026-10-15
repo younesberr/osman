@@ -63,6 +63,24 @@ async function loadBon(id) {
   return bon || null;
 }
 
+/* Couleur du statut affiché d'un colis (alias p) : statut second s'il est
+ * « En cours » avec un statut second, sinon statut — même règle que
+ * colisStatutCode côté page du bon. Expose sc.color. */
+const STATUT_COLOR_JOIN = `LEFT JOIN (SELECT parcel_statut_code, MIN(parcel_statut_color) AS color
+                    FROM delevery_parcel_statut GROUP BY parcel_statut_code) sc
+         ON sc.parcel_statut_code = CASE
+              WHEN p.parcel_status = 'IN_PROGRESS' AND COALESCE(p.parcel_status_second, '') <> ''
+              THEN p.parcel_status_second ELSE p.parcel_status END`;
+
+/** Couleur d'un code statut (même règle que STATUT_COLOR_JOIN), null si aucune. */
+async function statutColor(db, code) {
+  const [[row]] = await db.query(
+    `SELECT MIN(parcel_statut_color) AS color FROM delevery_parcel_statut WHERE parcel_statut_code = ?`,
+    [code]
+  );
+  return row?.color || null;
+}
+
 /** Un bon est modifiable tant qu'il n'est pas enregistré. */
 function bonEditable(bon) {
   return Number(bon.save) !== 1;
@@ -101,10 +119,7 @@ async function loadBonParcels(bonId) {
        JOIN delevery_parcel p ON p.parcel_id = dp.dis_parcels_parcel
        LEFT JOIN delevery_tarifs t    ON t.ville_id = p.parcel_city
        LEFT JOIN delevery_customers c ON c.customers_id = p.parcel_customer
-       LEFT JOIN (SELECT parcel_statut_code, MIN(parcel_statut_color) AS color
-                    FROM delevery_parcel_statut GROUP BY parcel_statut_code) sc
-         ON sc.parcel_statut_code = CASE WHEN p.parcel_status = 'IN_PROGRESS'
-              THEN p.parcel_status_second ELSE p.parcel_status END
+       ${STATUT_COLOR_JOIN}
       WHERE dp.dis_parcels_dis = ?
       ORDER BY dp.dis_parcels_id DESC`,
     [bonId]
@@ -465,7 +480,9 @@ async function getBonLivreur(req, res, next) {
  * l'état « en agence », l'adresse, la date reportée / programmée
  * (parcel_report_time) et le nombre de mises en distribution passées du colis
  * (nb_distributions : lignes DISTRIBUTION de son historique — un retrait du
- * bon supprime la ligne correspondante), affichés dans le tableau.
+ * bon supprime la ligne correspondante), affichés dans le tableau, la couleur
+ * du statut affiché (statut_color) et la date de dernière mise à jour
+ * (last_update : tri par défaut, plus récent en tête).
  */
 async function listAvailable(req, res, next) {
   try {
@@ -484,6 +501,8 @@ async function listAvailable(req, res, next) {
               p.en_agence     AS en_agence,
               p.parcel_address AS adresse,
               p.parcel_report_time AS report_time,
+              p.parcel_last_update AS last_update,
+              sc.color        AS statut_color,
               t.nom_ville     AS ville,
               c.customers_store AS magasin,
               ul.users_name   AS livreur_actuel,
@@ -494,11 +513,12 @@ async function listAvailable(req, res, next) {
          JOIN delevery_tarifs t         ON t.ville_id = p.parcel_city
          LEFT JOIN delevery_customers c ON c.customers_id = p.parcel_customer
          LEFT JOIN delevery_users ul    ON ul.users_id = p.parcel_livreur
+         ${STATUT_COLOR_JOIN}
         WHERE p.parcel_status IN ('RECEIVED', 'IN_PROGRESS') AND t.zone = ?
           AND ${pasEnAttenteReexpeditionSql('p')}
           AND NOT EXISTS (SELECT 1 FROM delevery_dis_parcels dp
                            WHERE dp.dis_parcels_dis = ? AND dp.dis_parcels_parcel = p.parcel_id)
-        ORDER BY p.parcel_received_time DESC, p.parcel_id DESC`,
+        ORDER BY p.parcel_last_update DESC, p.parcel_id DESC`,
       [bon.zone_id, bon.id]
     );
     res.json(rows);
@@ -597,6 +617,7 @@ async function addParcels(req, res, next) {
     const conn = await pool.getConnection();
     try {
       await conn.beginTransaction();
+      const couleurDistribution = await statutColor(conn, 'DISTRIBUTION');
       for (const parcelId of ids) {
         const parcel = await lockParcel(conn, { id: parcelId });
         if (!parcel) {
@@ -626,7 +647,13 @@ async function addParcels(req, res, next) {
           continue;
         }
         await insertParcelIntoBon(conn, bon, parcel, scan, Number(req.user.id), now);
-        added.push({ id: parcel.id, code: parcel.code, ville: parcel.ville, scan: scan ? 1 : 0 });
+        added.push({
+          id: parcel.id,
+          code: parcel.code,
+          ville: parcel.ville,
+          scan: scan ? 1 : 0,
+          statut_color: couleurDistribution
+        });
       }
       await conn.commit();
     } catch (err) {
@@ -704,7 +731,13 @@ async function scanParcel(req, res, next) {
           failure = { status: 409, message: `Colis « ${parcel.code} » déjà dans ce bon.` };
         } else {
           await insertParcelIntoBon(conn, bon, parcel, true, Number(req.user.id), now);
-          addedParcel = { id: parcel.id, code: parcel.code, ville: parcel.ville, scan: 1 };
+          addedParcel = {
+            id: parcel.id,
+            code: parcel.code,
+            ville: parcel.ville,
+            scan: 1,
+            statut_color: await statutColor(conn, 'DISTRIBUTION')
+          };
         }
       }
       if (failure) await conn.rollback();
@@ -762,10 +795,12 @@ async function deleteParcelFromBon(conn, parcel, link, now) {
  * (mêmes champs que GET /:id/available) : statut restauré, statut second,
  * état « en agence » et livreur restaurés depuis le lien dis_parcels, nombre
  * de mises en distribution passées (la ligne d'historique de ce bon étant
- * déjà supprimée).
+ * déjà supprimée), couleur du statut affiché, date de dernière mise à jour
+ * (celle du retrait).
  */
-async function restoredParcelInfo(conn, parcel, link, status) {
+async function restoredParcelInfo(conn, parcel, link, status, now) {
   const enAgence = Number(link.was_en_agence) === 1 ? 1 : 0;
+  const statusSecond = status === 'IN_PROGRESS' ? String(parcel.status_second || '').trim() : '';
   const [[{ nb }]] = await conn.query(
     `SELECT COUNT(*) AS nb FROM delevery_parcel_history
       WHERE parcel_history_status = 'DISTRIBUTION' AND parcel_history_parcel = ?`,
@@ -785,10 +820,12 @@ async function restoredParcelInfo(conn, parcel, link, status) {
     ville: parcel.ville,
     adresse: parcel.adresse || '',
     status,
-    status_second: status === 'IN_PROGRESS' ? String(parcel.status_second || '').trim() : '',
+    status_second: statusSecond,
+    statut_color: await statutColor(conn, statusSecond || status),
     en_agence: enAgence,
     livreur_actuel: livreurActuel,
     report_time: parcel.report_time || '',
+    last_update: now,
     nb_distributions: Number(nb) || 0
   };
 }
@@ -860,7 +897,7 @@ async function removeScanParcel(req, res, next) {
           failure = check.failure;
         } else {
           const status = await deleteParcelFromBon(conn, parcel, check.link, now);
-          removedParcel = await restoredParcelInfo(conn, parcel, check.link, status);
+          removedParcel = await restoredParcelInfo(conn, parcel, check.link, status, now);
         }
       }
       if (failure) await conn.rollback();
@@ -914,7 +951,7 @@ async function removeParcel(req, res, next) {
           failure = check.failure;
         } else {
           const status = await deleteParcelFromBon(conn, parcel, check.link, now);
-          removed = await restoredParcelInfo(conn, parcel, check.link, status);
+          removed = await restoredParcelInfo(conn, parcel, check.link, status, now);
         }
       }
       if (failure) await conn.rollback();

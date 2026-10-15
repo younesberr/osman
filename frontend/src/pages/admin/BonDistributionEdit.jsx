@@ -32,7 +32,7 @@ import { statutLabel } from '../../utils/statuts';
  * Section 2 : colis « Reçu en agence » ou « En cours » de la zone du bon
  * (code + magasin, ville + adresse, livreur actuel, statut + date reportée /
  * programmée ou nombre de mises en distribution passées ; tri par colonne,
- * statut par défaut) — ajout à l'unité, par sélection (cases à cocher), par
+ * dernière mise à jour décroissante par défaut) — ajout à l'unité, par sélection (cases à cocher), par
  * douchette (validation Entrée) ou par caméra.
  * Section 3 : colis du bon (code + magasin, ville, statut, colonne
  * « Scanner » cochée si ajout par scanner ; tri par colonne) et retrait du bon.
@@ -73,6 +73,19 @@ function colisStatutCode(parcel) {
 /** Statut affiché d'un colis (libellé du statut effectif). */
 function colisStatut(parcel) {
   return statutLabel(colisStatutCode(parcel));
+}
+
+/** Badge du statut affiché d'un colis, à la couleur du statut (statut_color,
+ * delevery_parcel_statut) ; gris neutre si le statut n'a pas de couleur. */
+function StatutBadge({ parcel }) {
+  return (
+    <span
+      className={`badge ${parcel.statut_color ? '' : 'badge-neutral'}`}
+      style={parcel.statut_color ? { background: parcel.statut_color } : undefined}
+    >
+      {colisStatut(parcel)}
+    </span>
+  );
 }
 
 /** Statuts pour lesquels on affiche la date reportée / programmée sous le badge. */
@@ -129,6 +142,8 @@ function sortValue(parcel, key) {
       return colisStatut(parcel);
     case 'scan':
       return Number(parcel.scan) === 1 ? 1 : 0;
+    case 'last_update':
+      return Number(parcel.last_update) || 0;
     default:
       return '';
   }
@@ -183,10 +198,10 @@ export default function BonDistributionEdit() {
   const [busy, setBusy] = useState(false);
   // Colis dont la modale « Détail de suivi » est ouverte (ligne de l'un des tableaux).
   const [suiviParcel, setSuiviParcel] = useState(null);
-  // Tri des tableaux : disponibles triés par statut par défaut ; colis du bon
-  // dans l'ordre d'ajout (le dernier ajouté en tête) tant qu'aucune colonne
-  // n'est choisie.
-  const [sortDispo, setSortDispo] = useState({ key: 'statut', dir: 'asc' });
+  // Tri des tableaux : disponibles triés par date de dernière mise à jour par
+  // défaut (le plus récent en tête) ; colis du bon dans l'ordre d'ajout (le
+  // dernier ajouté en tête) tant qu'aucune colonne n'est choisie.
+  const [sortDispo, setSortDispo] = useState({ key: 'last_update', dir: 'desc' });
   const [sortBon, setSortBon] = useState({ key: null, dir: 'asc' });
 
   const [scanValue, setScanValue] = useState('');
@@ -357,9 +372,11 @@ export default function BonDistributionEdit() {
       magasin: bonRow?.magasin || '',
       status: parcel.status || 'RECEIVED',
       status_second: parcel.status_second || '',
+      statut_color: parcel.statut_color || '',
       en_agence: parcel.en_agence ?? 0,
       livreur_actuel: parcel.livreur_actuel || '',
       report_time: parcel.report_time || '',
+      last_update: Number(parcel.last_update) || 0,
       nb_distributions: Number(parcel.nb_distributions) || 0
     };
   }
@@ -727,7 +744,7 @@ export default function BonDistributionEdit() {
                       </td>
                       <td>{livreurLabel(p) || '—'}</td>
                       <td>
-                        <span className="badge badge-neutral">{colisStatut(p)}</span>
+                        <StatutBadge parcel={p} />
                         {colisStatutSub(p) && <div className="cell-sub">{colisStatutSub(p)}</div>}
                       </td>
                       <td>
@@ -884,7 +901,7 @@ export default function BonDistributionEdit() {
                     </td>
                     <td>{p.ville || '—'}</td>
                     <td>
-                      <span className="badge badge-neutral">{colisStatut(p)}</span>
+                      <StatutBadge parcel={p} />
                     </td>
                     <td>
                       <ScanBadge scan={p.scan} />

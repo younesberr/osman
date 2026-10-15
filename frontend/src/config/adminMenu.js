@@ -42,8 +42,13 @@ import {
 /** Fonctions autorisées sur Inventaire / Mouvement produits : le ramasseur (type 6)
  *  n'a droit qu'à « Colis en attente » et « Bon de sortie ». Miroir backend : stock.routes.js. */
 export const GESTION_STOCK_TYPES = [1, 2, 3, 4];
+/** Fonctions qui ont la page Accueil (tableau de bord) : le ramasseur (type 6) n'en a
+ *  pas, il arrive sur Ramassage par scan (adminHomePath). Miroir backend : dashboard.routes.js. */
+export const ACCUEIL_TYPES = [1, 2, 3, 4];
+/** Page d'arrivée des fonctions sans Accueil. */
+const HOME_SANS_ACCUEIL = '/admin/ramassage-scan';
 export const ADMIN_MENU = [
-  { label: 'Accueil', path: '/admin', icon: Home },
+  { label: 'Accueil', path: '/admin', icon: Home, types: ACCUEIL_TYPES },
   { label: 'Colis', path: '/admin/colis', icon: Package, service: 'COLIS' },
   {
     label: 'Import Colis',
@@ -224,4 +229,16 @@ export function adminPages() {
     }
   }
   return pages;
+}
+
+/**
+ * Page d'arrivée du dashboard admin (connexion, retour de ServiceRoute) :
+ * '/admin' (Accueil) pour les fonctions de ACCUEIL_TYPES ; sinon Ramassage par
+ * scan, ou à défaut la première page accessible du menu. null si aucune page
+ * n'est accessible (pas de redirection, sinon boucle avec ServiceRoute).
+ */
+export function adminHomePath(user) {
+  if (hasTypeAccess(user, ACCUEIL_TYPES)) return '/admin';
+  const pages = adminPages().filter((p) => hasAccess(user, p.service) && hasTypeAccess(user, p.types));
+  return (pages.find((p) => p.path === HOME_SANS_ACCUEIL) || pages[0])?.path ?? null;
 }

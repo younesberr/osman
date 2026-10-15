@@ -245,7 +245,7 @@ export default function DocumentationApi() {
               </tr>
               <tr>
                 <td><span className="mono">429</span></td>
-                <td className="api-cell-wrap">Trop de tentatives de connexion : patientez 15 minutes.</td>
+                <td className="api-cell-wrap">Trop de requêtes : patientez 1 minute.</td>
               </tr>
               <tr>
                 <td><span className="mono">500</span></td>

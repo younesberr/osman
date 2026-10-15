@@ -6,7 +6,9 @@ const { clientStatistiques } = require('../controllers/statistiquesClient.contro
 const { compteursSidebar } = require('../controllers/compteursSidebar.controller');
 const { ADMIN_TYPES, LIVREUR_TYPE } = require('../controllers/auth.controller');
 
-router.get('/admin', requireAuth, requireRole(...ADMIN_TYPES), adminStats);
+// Tableau de bord de l'Accueil admin : le ramasseur (type 6) n'a pas cette page
+// (miroir : ACCUEIL_TYPES de frontend/src/config/adminMenu.js).
+router.get('/admin', requireAuth, requireRole(1, 2, 3, 4), adminStats);
 // Badges rouges de la sidebar admin (chaque compteur est filtré par service,
 // relu en base pour suivre les menus accordés après le login).
 router.get('/admin/compteurs', requireAuth, requireRole(...ADMIN_TYPES), refreshEmployeeAccess, compteursSidebar);

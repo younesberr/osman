@@ -3,6 +3,7 @@ import { BRAND } from '../config/brand';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Brand from '../components/Brand';
+import { adminHomePath } from '../config/adminMenu';
 
 export default function Login() {
   const [tab, setTab] = useState('clients');
@@ -20,10 +21,10 @@ export default function Login() {
     try {
       const user = await login(tab, identifiant.trim(), password);
       // Le livreur arrive directement sur sa liste des colis,
-      // le ramasseur (type 6) sur la page Ramassage.
+      // le ramasseur (type 6, sans Accueil) sur Ramassage par scan.
       let target = `/${user.dashboard}`;
       if (user.dashboard === 'livreur') target = '/livreur/colis';
-      else if (user.kind === 'employee' && Number(user.role) === 6) target = '/admin/ramassage';
+      else if (user.dashboard === 'admin') target = adminHomePath(user) || '/admin';
       navigate(target, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'Connexion impossible. Vérifiez le serveur.');

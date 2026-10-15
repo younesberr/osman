@@ -9,7 +9,8 @@
  *  - type 3 (Responsable d'agence) : liste fixe, non modifiable ;
  *  - type 4 (Agent d'agence)       : menus par défaut + menus optionnels cochés ;
  *  - type 5 (Livreur)              : pas d'accès au dashboard admin ;
- *  - type 6 (Ramasseur)            : menus par défaut + menus optionnels cochés.
+ *  - type 6 (Ramasseur)            : Ramassage par scan + Ramassage, le reste en
+ *                                    optionnel ; pas d'Accueil (dashboard.routes.js).
  */
 
 /** Tous les codes de service du menu admin (ordre du menu). */
@@ -71,8 +72,8 @@ const TYPE_RULES = {
   },
   5: { defaults: [], optional: [] }, // livreur : pas de dashboard admin
   6: {
-    defaults: ['COLIS', 'RAMASSAGE_SCAN', 'BON_ENVOI', 'RAMASSAGE'],
-    optional: ['STOCK']
+    defaults: ['RAMASSAGE_SCAN', 'RAMASSAGE'],
+    optional: ['COLIS', 'STOCK', 'BON_ENVOI']
   }
 };
 
